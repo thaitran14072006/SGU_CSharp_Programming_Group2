@@ -45,7 +45,8 @@ dotnet publish .\MocBakery\src\MocBakery.GUI\MocBakery.GUI.csproj -c Release --s
 
 Đây là các console kiểm tra, không chạy bằng `dotnet test`. Bộ tích hợp mặc định cần SQL LocalDB,
 có thể chọn SQL Server thử bằng biến `MOCBAKERY_TEST_CONNECTION`. Bộ kiểm tra luôn tạo CSDL mới,
-không tái sử dụng hay xóa CSDL nghiệp vụ. Backup và file khôi phục ở thư mục `backup-check` cạnh DLL test.
+không tái sử dụng hay xóa CSDL nghiệp vụ. Mặc định dọn các CSDL thử do chính lần chạy đó tạo;
+thêm `--keep-database` để giữ lại. Backup ở thư mục `backup-check` cạnh DLL test.
 Không cam kết môi trường LocalDB tương đương mọi cấu hình SQL Server Express 2022.
 
 Bản publish hiện tại phụ thuộc .NET Desktop Runtime 10. Giao toàn bộ thư mục publish, không chỉ executable.

@@ -96,4 +96,5 @@ dotnet .\MocBakery\tests\Unit\CatalogInventory\bin\Debug\net10.0\MocBakery.Catal
 Lệnh tích hợp mặc định dùng `(localdb)\MSSQLLocalDB`, tự tạo CSDL có tiền tố
 `MocBakery_NhuTest_` và bản khôi phục `MocBakery_NhuRestore_`. Không ghi đè hay xóa
 CSDL có sẵn. Có thể đặt `MOCBAKERY_TEST_CONNECTION` để chọn SQL Server thử khác.
-Các CSDL thử và tệp backup trong thư mục `bin` được giữ lại để đối chiếu.
+CSDL thử do lần chạy đó tạo được dọn khi kết thúc để tránh chiếm dung lượng; thêm
+`--keep-database` nếu cần giữ để đối chiếu. Tệp backup nằm trong thư mục `bin`.

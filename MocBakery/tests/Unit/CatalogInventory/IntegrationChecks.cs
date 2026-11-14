@@ -21,9 +21,11 @@ internal static class IntegrationChecks
             ?? @"Server=(localdb)\MSSQLLocalDB;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=10"};
         builder["Initial Catalog"]="master";
         var master=new DbConnectionFactory(builder.ConnectionString);
+        using var cleanup=new TemporaryDatabases(master,args.Contains("--keep-database"));
         using(var c=master.Open())
         {
             using(var q=c.CreateCommand()) { q.CommandText=$"CREATE DATABASE [{name}]";q.ExecuteNonQuery(); }
+            cleanup.Add(name);
             string script=File.ReadAllText(schema).Replace("QuanLyTiemBanh",name,StringComparison.Ordinal);
             foreach(string batch in Regex.Split(script,@"^\s*GO\s*$",RegexOptions.Multiline|RegexOptions.IgnoreCase))
             {
@@ -110,6 +112,7 @@ internal static class IntegrationChecks
                 foreach(var (key,value) in new[]{("@backup",backup),("@data",dataLogical),("@log",logLogical),("@mdf",Path.Combine(folder,restored+".mdf")),("@ldf",Path.Combine(folder,restored+"_log.ldf"))}){
                     var p=q.CreateParameter();p.ParameterName=key;p.Value=value;q.Parameters.Add(p);}
                 q.ExecuteNonQuery();
+                cleanup.Add(restored);
             }
             var restoredBuilder=new DbConnectionStringBuilder{ConnectionString=builder.ConnectionString};restoredBuilder["Initial Catalog"]=restored;
             var restoredDb=new DbConnectionFactory(restoredBuilder.ConnectionString);
@@ -117,7 +120,24 @@ internal static class IntegrationChecks
             Checks.Assert(new SanPhamRepository(restoredDb).List().SequenceEqual(products.List()));
             Console.WriteLine("RESTORED TEST DATABASE: "+restored);
         });
-        Console.WriteLine("Test database retained for evidence. No business database was modified.");
+        Console.WriteLine("No business database was modified. Temporary test databases are cleaned unless --keep-database is specified.");
         return checks.Finish();
+    }
+    private sealed class TemporaryDatabases(DbConnectionFactory master,bool keep):IDisposable
+    {
+        private readonly List<string> names=[];
+        public void Add(string name)=>names.Add(name);
+        public void Dispose()
+        {
+            if(keep)return;
+            using var c=master.Open();
+            foreach(string name in names.AsEnumerable().Reverse())
+            {
+                if(!Regex.IsMatch(name,@"^MocBakery_Nhu(Test|Restore)_[a-zA-Z0-9_]+$"))throw new InvalidOperationException("Unexpected test database name");
+                using var q=c.CreateCommand();
+                q.CommandText=$"ALTER DATABASE [{name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{name}]";q.ExecuteNonQuery();
+                Console.WriteLine("CLEANED TEST DATABASE: "+name);
+            }
+        }
     }
 }
