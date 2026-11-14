@@ -6,6 +6,13 @@ GO
 USE QuanLyTiemBanh;
 GO
 SET XACT_ABORT ON;
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET ARITHABORT ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET NUMERIC_ROUNDABORT OFF;
 IF EXISTS (SELECT 1 FROM sys.tables WHERE name IN
     (N'TaiKhoan',N'KhachHang',N'LoaiBanh',N'SanPham',N'LoBanh',N'DonDatBanh',N'ChiTietDonDat',N'HoaDon',N'ChiTietHoaDon'))
     THROW 50001, 'Business tables already exist. Use a new database; do not overwrite existing data.', 1;

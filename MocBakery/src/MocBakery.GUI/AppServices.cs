@@ -6,12 +6,18 @@ using MocBakery.DAL.Repositories.Accounts;
 using MocBakery.DAL.Repositories.Customers;
 using MocBakery.Models;
 using MocBakery.Models.Entities;
+using MocBakery.BLL.Services.Catalog;
+using MocBakery.BLL.Services.Inventory;
+using MocBakery.DAL.Repositories.Catalog;
+using MocBakery.DAL.Repositories.Inventory;
 namespace MocBakery.GUI;
 internal sealed class AppServices
 {
     internal AuthService Auth { get; }
     internal AccountService Accounts { get; }
     internal CustomerService Customers { get; }
+    internal CatalogService Catalog { get; }
+    internal InventoryService Inventory { get; }
     private readonly TaiKhoanRepository repository;
     internal AppServices()
     {
@@ -25,6 +31,10 @@ internal sealed class AppServices
         connection ??= @"Server=.\SQLEXPRESS;Database=QuanLyTiemBanh;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=5";
         var db = new DbConnectionFactory(connection); repository = new(db);
         Auth = new(repository); Accounts = new(repository,Auth); Customers = new(new KhachHangRepository(db),Auth);
+        var categories = new LoaiBanhRepository(db);
+        var products = new SanPhamRepository(db);
+        Catalog = new(categories,products,Auth);
+        Inventory = new(new LoBanhRepository(db),products,Auth);
     }
     internal void Bootstrap(string username,string name,string password)
     {

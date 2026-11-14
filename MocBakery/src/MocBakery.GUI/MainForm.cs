@@ -2,6 +2,8 @@ using MocBakery.GUI.Forms.Accounts;
 using MocBakery.GUI.Forms.Customers;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Accounts;
+using MocBakery.GUI.Forms.Catalog;
+using MocBakery.GUI.Forms.Inventory;
 namespace MocBakery.GUI;
 internal sealed class MainForm : Form
 {
@@ -17,12 +19,15 @@ internal sealed class MainForm : Form
         var header=new Label{Text=$"MỘC BAKERY  |  {session.HoTen} • {(session.VaiTro==Roles.ChuTiem?"Chủ tiệm":"Nhân viên")}",
             Dock=DockStyle.Fill,TextAlign=ContentAlignment.MiddleLeft,Padding=new Padding(20,0,0,0),Font=new Font("Segoe UI",14,FontStyle.Bold),BackColor=Color.White};
         root.Controls.Add(header,0,0);root.SetColumnSpan(header,2);
-        var nav=Ui.Flow(true);nav.BackColor=Ui.Brown;nav.Padding=new Padding(12,15,8,10);root.Controls.Add(nav,0,1);root.Controls.Add(body,1,1);
+        var nav=Ui.Flow(true);nav.BackColor=Ui.Brown;nav.Padding=new Padding(12,10,12,10);root.Controls.Add(nav,0,1);root.Controls.Add(body,1,1);
         AddNav(nav,"Tổng quan",()=>Placeholder("Tổng quan"));
         AddNav(nav,"Bán hàng",()=>Placeholder("Bán hàng"));
         AddNav(nav,"Hóa đơn",()=>Placeholder("Hóa đơn"));
         AddNav(nav,"Đặt bánh",()=>Placeholder("Đặt bánh"));
         AddNav(nav,"Khách hàng",()=>ShowPage(new CustomerPage(services,session)));
+        AddNav(nav,"Loại bánh",()=>ShowPage(new CategoryPage(services,session)));
+        AddNav(nav,"Sản phẩm",()=>ShowPage(new ProductPage(services,session)));
+        AddNav(nav,"Kho bánh",()=>ShowPage(new InventoryPage(services,session)));
         if(session.VaiTro==Roles.ChuTiem)AddNav(nav,"Tài khoản",()=>ShowPage(new AccountPage(services,session)));
         AddNav(nav,"Đổi mật khẩu",()=>{using var dialog=new ChangePasswordForm(services,session);dialog.ShowDialog(this);});
         AddNav(nav,"Đăng xuất",()=>{if(Ui.Confirm(this,"Đăng xuất khỏi phiên làm việc?")){services.Auth.Logout(session);SignedOut=true;Close();}});
@@ -30,7 +35,8 @@ internal sealed class MainForm : Form
     }
     private static void AddNav(FlowLayoutPanel nav,string title,Action action)
     {
-        var button=Ui.Button(title,(_,_)=>action(),true);button.Width=165;button.TextAlign=ContentAlignment.MiddleLeft;nav.Controls.Add(button);
+        var button=Ui.Button(title,(_,_)=>action(),true);button.AutoSize=false;button.MinimumSize=new Size(152,38);button.Size=new Size(152,38);
+        button.Margin=new Padding(0,3,0,3);button.TextAlign=ContentAlignment.MiddleLeft;nav.Controls.Add(button);
     }
     internal void ShowPage(Control page)
     {
@@ -40,7 +46,7 @@ internal sealed class MainForm : Form
     private void Placeholder(string title)
     {
         var panel=Ui.Flow(true);panel.Controls.Add(Ui.Title(title));
-        panel.Controls.Add(new Label{Text="Module này chưa được tích hợp.\nPhần hiện có: Khách hàng, Tài khoản và Đổi mật khẩu.",AutoSize=true});
+        panel.Controls.Add(new Label{Text="Module này chưa được tích hợp.\nPhần hiện có: Khách hàng, Tài khoản, Đổi mật khẩu, Loại bánh, Sản phẩm và Kho bánh.",AutoSize=true});
         // Replace this routing with the corresponding member's page during integration.
         ShowPage(panel);
     }

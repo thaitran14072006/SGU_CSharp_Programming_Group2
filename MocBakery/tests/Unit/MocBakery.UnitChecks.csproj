@@ -1,1 +1,1 @@
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType></PropertyGroup><ItemGroup><ProjectReference Include="../../src/MocBakery.BLL/MocBakery.BLL.csproj" /></ItemGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType></PropertyGroup><ItemGroup><ProjectReference Include="../../src/MocBakery.BLL/MocBakery.BLL.csproj" /><Compile Remove="CatalogInventory/**/*.cs" /></ItemGroup></Project>

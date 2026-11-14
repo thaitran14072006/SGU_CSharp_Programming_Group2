@@ -66,3 +66,34 @@ Kiểm tra nghiệp vụ: build `tests/Unit/MocBakery.UnitChecks.csproj` rồi c
 `docs/testing/results/2026-11-14-thai.md`. README hướng dẫn chi tiết được bàn giao ngoài repo theo yêu cầu.
 
 Các tệp `.gitkeep` giữ các thư mục chưa có nội dung. Chỉ ghi kết quả kiểm thử thực tế sau khi chạy.
+
+## Catalog và Inventory của Như
+
+Đã tích hợp menu Loại bánh, Sản phẩm, Kho bánh cho hai vai trò. Nhân viên chỉ tra cứu;
+mọi lệnh ghi đều kiểm tra quyền chủ tiệm tại BLL. Sản phẩm chuyển ngừng kinh doanh,
+không xóa lịch sử. Lô chỉ nhập mới hoặc đổi trạng thái, không sửa trực tiếp lượng còn.
+Hạn dùng DATE có hiệu lực hết ngày ghi trên lô; dùng cùng ngày nghiệp vụ ở máy ứng dụng
+và máy SQL Server. Dữ liệu demo dùng ngày SQL Server tại lúc chạy seed.
+
+Chạy tùy chọn `database/seeds/03_CatalogInventory_Demo.sql` trên CSDL thử. Script chạy lại
+không reset tồn đã bán. Đối chiếu bằng `database/queries/VerifyCatalogInventory.sql`.
+
+- Hướng dẫn sử dụng: `docs/deployment/HuongDanSuDung_Nhu.md`.
+- Bàn giao tích hợp Sales: `docs/deployment/BanGiao_CatalogInventory.md`.
+- Ca kiểm thử và kết quả: `docs/testing/test-cases/nhu-catalog-inventory.md`,
+  `docs/testing/results/2026-11-14-nhu.md`.
+- Đóng góp báo cáo: `docs/report/chapter05/Nhu_CatalogInventory.md` và
+  `docs/report/chapter06/Nhu_CatalogInventory.md`.
+
+Từ gốc repo:
+
+```powershell
+dotnet build .\MocBakery\MocBakery.sln
+dotnet .\MocBakery\tests\Unit\CatalogInventory\bin\Debug\net10.0\MocBakery.CatalogInventoryChecks.dll
+dotnet .\MocBakery\tests\Unit\CatalogInventory\bin\Debug\net10.0\MocBakery.CatalogInventoryChecks.dll --integration
+```
+
+Lệnh tích hợp mặc định dùng `(localdb)\MSSQLLocalDB`, tự tạo CSDL có tiền tố
+`MocBakery_NhuTest_` và bản khôi phục `MocBakery_NhuRestore_`. Không ghi đè hay xóa
+CSDL có sẵn. Có thể đặt `MOCBAKERY_TEST_CONNECTION` để chọn SQL Server thử khác.
+Các CSDL thử và tệp backup trong thư mục `bin` được giữ lại để đối chiếu.
