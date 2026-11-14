@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup><ProjectReference Include="../MocBakery.Models/MocBakery.Models.csproj" /></ItemGroup>
+  <!-- Set RestoreSqlClient=false only for offline compilation; SQL needs the package. -->
+  <ItemGroup Condition="'$(RestoreSqlClient)' != 'false'"><PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" /></ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+# MocBakery build outputs and per-machine settings
+MocBakery/**/bin/
+MocBakery/**/obj/
+MocBakery/.vs/
+MocBakery/**/*.local.json
+MocBakery/**/logs/
