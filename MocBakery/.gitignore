@@ -1,0 +1,16 @@
+# Build output and local IDE state
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Machine-specific configuration and secrets
+*.local.json
+.env
+.env.*
+!.env.example
+
+# Generated test results and published binaries
+**/TestResults/
+artifacts/
