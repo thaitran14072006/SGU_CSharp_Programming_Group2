@@ -47,9 +47,22 @@ Chín bảng thống nhất: `TaiKhoan`, `LoaiBanh`, `SanPham`, `LoBanh`, `Khach
 Chạy script trong `database/schema/` trước, sau đó `database/seeds/`.
 Chỉ đưa cấu hình mẫu không chứa bí mật lên Git; cấu hình theo máy đặt trong tệp `*.local.json`.
 
-## Trạng thái khởi tạo
+## Trạng thái triển khai — 14/11/2026
 
-Đã tạo cấu trúc thư mục. Chưa tạo Solution, project, mã chức năng hoặc script SQL.
-Các tệp `.gitkeep` giúp Git lưu thư mục trống; có thể xóa khi thư mục đã có tệp thực tế.
-Khi triển khai, tạo Solution trong `MocBakery/` và bốn project tại đúng thư mục `src/` đã chuẩn bị.
-Chỉ ghi kết quả kiểm thử và kết quả báo cáo sau khi thực hiện thực tế.
+Nguồn chuẩn: `BaoCao_QuanLyTiemBanh_Updated(3).docx`, UC01, UC02, UC03, UC10 và mục 4.4.
+Đã có `MocBakery.sln`, bốn project, mã Accounts/Customers của Thái và script nền tảng 9 bảng.
+Vai trò là `ChuTiem`/`NhanVien`; họ tên nằm trong `TaiKhoan`, không thêm bảng Nhân viên hoặc Nhà cung cấp.
+Các module của thành viên khác chưa được tích hợp; trang thông báo chưa tích hợp không phải chức năng đã hoàn thành.
+
+Mở Solution, đặt `MocBakery.GUI` làm Startup Project. Chạy `database/schema/01_CreateDatabase.sql`
+trên CSDL mới rồi tùy chọn `database/seeds/02_Customers.sql`. Script không ghi đè bảng đã có.
+Driver `Microsoft.Data.SqlClient` cần được restore từ NuGet. Kết nối mặc định là
+`.\SQLEXPRESS`, CSDL `QuanLyTiemBanh`, Windows Authentication. Có thể đặt biến môi trường
+`MOCBAKERY_CONNECTION_STRING` hoặc `appsettings.local.json` cạnh executable theo tệp mẫu.
+Tại Đăng nhập, dùng **Thiết lập lần đầu** để tạo chủ tiệm khi bảng `TaiKhoan` rỗng; không có mật khẩu mặc định.
+
+Kiểm tra nghiệp vụ: build `tests/Unit/MocBakery.UnitChecks.csproj` rồi chạy DLL tương ứng;
+đây là bộ kiểm tra console, không dùng `dotnet test`. Kết quả và giới hạn ghi trong
+`docs/testing/results/2026-11-14-thai.md`. README hướng dẫn chi tiết được bàn giao ngoài repo theo yêu cầu.
+
+Các tệp `.gitkeep` giữ các thư mục chưa có nội dung. Chỉ ghi kết quả kiểm thử thực tế sau khi chạy.
