@@ -1,0 +1,1 @@
+UI CHECK: 16 layouts; 3 staff permission layouts; 3 editor input bindings passed. Preview/fake callbacks only, no live SQL GUI workflow.
