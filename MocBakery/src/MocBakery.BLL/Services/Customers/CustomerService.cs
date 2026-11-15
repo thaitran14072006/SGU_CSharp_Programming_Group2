@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using MocBakery.BLL.Services.Accounts;
 using MocBakery.Models;
 using MocBakery.Models.Entities;
@@ -9,12 +9,12 @@ public sealed class CustomerService(ICustomerRepository customers, AuthService a
 {
     public IReadOnlyList<KhachHang> Search(UserSession session, string keyword)
     {
-        auth.Require(session);
+        auth.RequireSales(session);
         return customers.Search(keyword.Trim());
     }
     public int Save(UserSession session, KhachHang input)
     {
-        auth.Require(session);
+        auth.RequireSales(session);
         string name = Regex.Replace(input.HoTen.Trim(), @"\s+", " ");
         string phone = input.SoDienThoai.Trim();
         if (name.Length is < 1 or > 100) throw new BusinessException("Họ tên phải có 1–100 ký tự.", "FullName");
@@ -28,7 +28,7 @@ public sealed class CustomerService(ICustomerRepository customers, AuthService a
     }
     public IReadOnlyList<InvoiceSummary> History(UserSession session, int id)
     {
-        auth.Require(session);
+        auth.RequireSales(session);
         if (id <= 0) throw new BusinessException("Chọn khách hàng trước.");
         return customers.History(id);
     }

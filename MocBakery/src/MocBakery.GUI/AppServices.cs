@@ -21,6 +21,7 @@ internal sealed class AppServices
 {
     internal AuthService Auth { get; }
     internal AccountService Accounts { get; }
+    internal StaffService Staff { get; }
     internal CustomerService Customers { get; }
     internal SalesService Sales { get; }
     internal OrderService Orders { get; }
@@ -33,7 +34,9 @@ internal sealed class AppServices
     internal AppServices(string connection)
     {
         var db = new DbConnectionFactory(connection); repository = new(db);
-        Auth = new(repository); Accounts = new(repository,Auth); Customers = new(new KhachHangRepository(db),Auth);
+        Auth = new(repository);
+        var staff=new StaffRepository(db);Staff=new(staff,Auth);Accounts=new(repository,Auth,staff);
+        Customers = new(new KhachHangRepository(db),Auth);
         Sales = new(new SalesRepository(db),Auth);
         Orders = new(new OrderRepository(db),Auth);
         Reports = new(new ReportRepository(db),Auth);

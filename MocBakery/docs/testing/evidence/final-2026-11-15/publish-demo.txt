@@ -1,0 +1,6 @@
+Publish: Release win-x64 self-contained; dotnet publish exited 0.
+Packaged executable: UI check exited 0, 18 layouts.
+Initialize-Demo.ps1 executed successfully with LocalDB.
+New isolated demo database: MocBakery_Demo_1937f158d81d.
+Verified with SQL: 16 user tables, 5 products, 0 accounts, total cake stock 103.
+This is a recorded summary of observed tool results, not raw publish stdout.

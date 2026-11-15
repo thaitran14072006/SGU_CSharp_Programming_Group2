@@ -15,6 +15,11 @@ internal static class Program
             {
                 using var login = new LoginForm(services);
                 if(login.ShowDialog() != DialogResult.OK || login.Session is null) break;
+                if(services.Auth.NeedsPasswordChange(login.Session))
+                {
+                    using var change=new ChangePasswordForm(services,login.Session);
+                    change.ShowDialog();services.Auth.Logout(login.Session);continue;
+                }
                 using var main = new MainForm(services,login.Session);
                 main.ShowDialog();
                 services.Auth.Logout(login.Session);

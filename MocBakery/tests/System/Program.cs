@@ -31,11 +31,11 @@ internal static class Program
         if(staff&&repository.FindByUsername("gui-staff") is null)
             repository.Create(new("gui-staff","Nhân viên thử giao diện",Roles.NhanVien,true,PasswordHasher.Hash(password)));
         var session=services.Auth.Login(staff?"gui-staff":"gui-owner",password);
-        if(args.Contains("--verify-design"))
+        if(args.Contains("--verify-design")||args.Contains("--verify-thai"))
         {
             using var runner=new Form{ShowInTaskbar=false,StartPosition=FormStartPosition.Manual,Location=new Point(-20000,-20000),Size=new Size(1,1)};
             runner.Shown+=(_,_)=>runner.BeginInvoke(new Action(()=>{
-                try{Environment.ExitCode=GuiDesignWorkflow.Run(services,session);}
+                try{Environment.ExitCode=args.Contains("--verify-thai")?GuiThaiWorkflow.Run(services,session):GuiDesignWorkflow.Run(services,session);}
                 catch(Exception ex){Console.Error.WriteLine(ex);Environment.ExitCode=1;}
                 finally{runner.Close();}
             }));

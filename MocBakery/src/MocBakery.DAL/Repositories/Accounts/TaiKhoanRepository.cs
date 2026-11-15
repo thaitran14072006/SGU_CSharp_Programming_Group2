@@ -5,8 +5,8 @@ using MocBakery.Models.Entities;
 namespace MocBakery.DAL.Repositories.Accounts;
 public sealed class TaiKhoanRepository(DbConnectionFactory db) : IAccountRepository
 {
-    private const string Columns = "MaTaiKhoan,TenDangNhap,MatKhauHash,HoTen,VaiTro,TrangThai,NgayTao";
-    private static TaiKhoan Read(DbDataReader r) => new(r.GetInt32(0),r.GetString(1),r.GetString(2),r.GetString(3),r.GetString(4),r.GetBoolean(5),r.GetDateTime(6));
+    private const string Columns = "MaTaiKhoan,TenDangNhap,MatKhauHash,HoTen,VaiTro,TrangThai,NgayTao,BatBuocDoiMatKhau";
+    private static TaiKhoan Read(DbDataReader r) => new(r.GetInt32(0),r.GetString(1),r.GetString(2),r.GetString(3),r.GetString(4),r.GetBoolean(5),r.GetDateTime(6)){BatBuocDoiMatKhau=r.GetBoolean(7)};
     public TaiKhoan? FindByUsername(string username)
     {
         using var c = db.Open(); using var q = Db.Command(c, $"SELECT {Columns} FROM dbo.TaiKhoan WHERE TenDangNhap=@u");
@@ -32,8 +32,13 @@ public sealed class TaiKhoanRepository(DbConnectionFactory db) : IAccountReposit
     }
     public int Create(AccountData input)
     {
-        using var c = db.Open();
-        return Insert(c, null, input);
+        using var c = db.Open();using var tx=c.BeginTransaction();
+        int id=Insert(c,tx,input);InsertProfile(c,tx,id,input);tx.Commit();return id;
+    }
+    private static void InsertProfile(DbConnection c,DbTransaction tx,int id,AccountData input)
+    {
+        using var profile=Db.Command(c,"INSERT dbo.NhanVien(HoTen,ChucVu,NgayVaoLam,DangLam,MaTaiKhoan) VALUES(@name,@role,CONVERT(date,SYSDATETIME()),1,@id)",tx);
+        profile.Param("@name",input.FullName,DbType.String,100);profile.Param("@role",input.Role,DbType.String,20);profile.Param("@id",id,DbType.Int32);profile.ExecuteNonQuery();
     }
     private static int Insert(DbConnection c, DbTransaction? tx, AccountData input)
     {
@@ -47,7 +52,9 @@ public sealed class TaiKhoanRepository(DbConnectionFactory db) : IAccountReposit
         using var c = db.Open(); using var tx = c.BeginTransaction(IsolationLevel.Serializable);
         using (var count = Db.Command(c,"SELECT COUNT(*) FROM dbo.TaiKhoan WITH (UPDLOCK,HOLDLOCK)",tx))
             if (Convert.ToInt32(count.ExecuteScalar()) != 0) throw new BusinessException("Đã có tài khoản. Chỉ khởi tạo khi bảng TaiKhoan rỗng.");
-        int id = Insert(c,tx,input); tx.Commit(); return id;
+        int id = Insert(c,tx,input);
+        InsertProfile(c,tx,id,input);
+        tx.Commit(); return id;
     }
     public void Update(int actorId, int id, AccountData input)
     {
@@ -58,18 +65,27 @@ public sealed class TaiKhoanRepository(DbConnectionFactory db) : IAccountReposit
         if (!rows.Any(a => a.MaTaiKhoan == actorId && a.TrangThai && a.VaiTro == Roles.ChuTiem))
             throw new BusinessException("Tài khoản hiện tại không còn quyền chủ tiệm.");
         var original = rows.Find(a => a.MaTaiKhoan == id) ?? throw new BusinessException("Tài khoản không còn tồn tại.");
+        using(var profile=Db.Command(c,"SELECT DangLam FROM dbo.NhanVien WITH(UPDLOCK,HOLDLOCK) WHERE MaTaiKhoan=@id",tx))
+        {
+            profile.Param("@id",id,DbType.Int32);
+            if(profile.ExecuteScalar() is false && input.Active)
+                throw new BusinessException("Nhân viên đã nghỉ việc. Cập nhật hồ sơ trước khi mở khóa.","Active");
+        }
         if ((actorId == id || rows.Count(a => a.TrangThai && a.VaiTro == Roles.ChuTiem) == 1 && original.TrangThai && original.VaiTro == Roles.ChuTiem)
             && (!input.Active || input.Role != Roles.ChuTiem))
             throw new BusinessException("Không thể khóa hoặc hạ quyền chủ tiệm này.", "Active");
         using var q = Db.Command(c,"UPDATE dbo.TaiKhoan SET HoTen=@name,VaiTro=@role,TrangThai=@active WHERE MaTaiKhoan=@id",tx);
         q.Param("@name",input.FullName,DbType.String,100); q.Param("@role",input.Role,DbType.String,20);
         q.Param("@active",input.Active,DbType.Boolean); q.Param("@id",id,DbType.Int32);
-        q.ExecuteNonQuery(); tx.Commit();
+        q.ExecuteNonQuery();
+        using(var profile=Db.Command(c,"UPDATE dbo.NhanVien SET HoTen=@name,ChucVu=@role WHERE MaTaiKhoan=@id",tx))
+        {profile.Param("@name",input.FullName,DbType.String,100);profile.Param("@role",input.Role,DbType.String,20);profile.Param("@id",id,DbType.Int32);profile.ExecuteNonQuery();}
+        tx.Commit();
     }
     public bool ChangePassword(int id, string expectedHash, string newHash, bool requireActive = true)
     {
         using var c = db.Open();
-        using var q = Db.Command(c,"UPDATE dbo.TaiKhoan SET MatKhauHash=@new WHERE MaTaiKhoan=@id AND MatKhauHash COLLATE Latin1_General_100_BIN2=@old AND (@requireActive=0 OR TrangThai=1)");
+        using var q = Db.Command(c,"UPDATE dbo.TaiKhoan SET MatKhauHash=@new,BatBuocDoiMatKhau=CASE WHEN @requireActive=0 THEN 1 ELSE 0 END WHERE MaTaiKhoan=@id AND MatKhauHash COLLATE Latin1_General_100_BIN2=@old AND (@requireActive=0 OR TrangThai=1)");
         q.Param("@requireActive",requireActive,DbType.Boolean);
         q.Param("@id",id,DbType.Int32); q.Param("@old",expectedHash,DbType.String,255); q.Param("@new",newHash,DbType.String,255);
         return q.ExecuteNonQuery() == 1;

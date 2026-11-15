@@ -1,4 +1,4 @@
-using MocBakery.BLL.Services.Accounts;
+﻿using MocBakery.BLL.Services.Accounts;
 using MocBakery.BLL.Services.Sales;
 using MocBakery.Models;
 using MocBakery.Models.DTOs.Accounts;
@@ -6,13 +6,13 @@ using MocBakery.Models.DTOs.Orders;
 namespace MocBakery.BLL.Services.Orders;
 public sealed class OrderService(IOrderRepository repository,AuthService auth)
 {
- public IReadOnlyList<OrderSummary> List(UserSession s){auth.Require(s);return repository.List();}
- public IReadOnlyList<OrderLine> Lines(UserSession s,int id){auth.Require(s);return repository.Lines(id);}
- public int Create(UserSession s,int customerId,DateTime pickup,decimal deposit,string? note,IReadOnlyList<OrderLine> lines){int actor=auth.Require(s).MaTaiKhoan;Validate(customerId,deposit,note,lines);return repository.Create(customerId,actor,pickup,deposit,note,lines);}
- public void Update(UserSession s,int id,int customerId,DateTime pickup,decimal deposit,string? note,IReadOnlyList<OrderLine> lines){auth.Require(s);Validate(customerId,deposit,note,lines);repository.Update(id,customerId,pickup,deposit,note,lines);}
- public void Prepare(UserSession s,int id){auth.Require(s);repository.Prepare(id);}
- public void Cancel(UserSession s,int id,string reason){auth.Require(s);if(string.IsNullOrWhiteSpace(reason)||reason.Trim().Length>255)throw new BusinessException("Hủy đơn phải có lý do (tối đa 255 ký tự).");repository.Cancel(id,reason.Trim());}
- public int Deliver(UserSession s,int id){int actor=auth.Require(s).MaTaiKhoan;return repository.Deliver(id,actor,SalesService.Allocate);}
+ public IReadOnlyList<OrderSummary> List(UserSession s){auth.RequireSales(s);return repository.List();}
+ public IReadOnlyList<OrderLine> Lines(UserSession s,int id){auth.RequireSales(s);return repository.Lines(id);}
+ public int Create(UserSession s,int customerId,DateTime pickup,decimal deposit,string? note,IReadOnlyList<OrderLine> lines){int actor=auth.RequireSales(s).MaTaiKhoan;Validate(customerId,deposit,note,lines);return repository.Create(customerId,actor,pickup,deposit,note,lines);}
+ public void Update(UserSession s,int id,int customerId,DateTime pickup,decimal deposit,string? note,IReadOnlyList<OrderLine> lines){auth.RequireSales(s);Validate(customerId,deposit,note,lines);repository.Update(id,customerId,pickup,deposit,note,lines);}
+ public void Prepare(UserSession s,int id){auth.RequireSales(s);repository.Prepare(id);}
+ public void Cancel(UserSession s,int id,string reason){auth.RequireSales(s);if(string.IsNullOrWhiteSpace(reason)||reason.Trim().Length>255)throw new BusinessException("Hủy đơn phải có lý do (tối đa 255 ký tự).");repository.Cancel(id,reason.Trim());}
+ public int Deliver(UserSession s,int id){int actor=auth.RequireSales(s).MaTaiKhoan;return repository.Deliver(id,actor,SalesService.Allocate);}
  public static void Validate(int customerId,decimal deposit,string? note,IReadOnlyList<OrderLine> lines)
  {
   if(customerId<=0||lines.Count==0||lines.Any(x=>x.ProductId<=0||x.Quantity<=0||x.Price<0)||lines.Select(x=>x.ProductId).Distinct().Count()!=lines.Count)throw new BusinessException("Đơn phải có khách hàng và ít nhất một sản phẩm hợp lệ.");

@@ -25,7 +25,7 @@ public sealed class AuthService(IAccountRepository accounts)
         return new(token, account.MaTaiKhoan, account.TenDangNhap, account.HoTen, account.VaiTro);
     }
     // Public session data is display-only. Authority is reloaded from the database.
-    public TaiKhoan Require(UserSession session, bool owner = false)
+    public TaiKhoan Require(UserSession session, bool owner = false, bool allowPasswordChange = false)
     {
         if (!sessions.TryGetValue(session.Token, out var issued))
             throw new BusinessException("Phiên đã kết thúc. Vui lòng đăng nhập lại.");
@@ -37,12 +37,21 @@ public sealed class AuthService(IAccountRepository accounts)
         }
         if (!Roles.IsValid(account.VaiTro) || (owner && account.VaiTro != Roles.ChuTiem))
             throw new BusinessException("Chỉ chủ tiệm được thực hiện chức năng này.");
+        if(account.BatBuocDoiMatKhau && !allowPasswordChange)
+            throw new BusinessException("Bạn phải đổi mật khẩu tạm trước khi sử dụng chức năng.");
         return account;
     }
+    public TaiKhoan RequireSales(UserSession session)
+    {
+        var account=Require(session);
+        if(!Roles.CanSell(account.VaiTro))throw new BusinessException("Chỉ quản lý hoặc thu ngân được thực hiện chức năng này.");
+        return account;
+    }
+    public bool NeedsPasswordChange(UserSession session) => Require(session,allowPasswordChange:true).BatBuocDoiMatKhau;
     public void Logout(UserSession session) => sessions.TryRemove(session.Token, out _);
     public void ChangePassword(UserSession session, string oldPassword, string newPassword, string confirmation)
     {
-        var current = Require(session);
+        var current = Require(session,allowPasswordChange:true);
         ValidatePassword(newPassword);
         if (newPassword != confirmation) throw new BusinessException("Xác nhận mật khẩu không khớp.", "Confirmation");
         if (!PasswordHasher.Verify(oldPassword, current.MatKhauHash))
@@ -51,8 +60,8 @@ public sealed class AuthService(IAccountRepository accounts)
         string hash = PasswordHasher.Hash(newPassword);
         if (!accounts.ChangePassword(current.MaTaiKhoan, current.MatKhauHash, hash))
             throw new BusinessException("Tài khoản đã thay đổi. Hãy đăng nhập lại.");
-        sessions[session.Token] = (current.MaTaiKhoan, hash);
-        // Keep this session per UC02; other sessions are invalidated by the changed hash.
+        Logout(session);
+        // Excel screen 02 requires signing in again; all other sessions fail the hash check.
     }
     public static void ValidatePassword(string password)
     {

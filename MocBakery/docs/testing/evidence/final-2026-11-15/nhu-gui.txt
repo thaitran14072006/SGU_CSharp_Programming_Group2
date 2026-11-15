@@ -1,0 +1,8 @@
+PASS GUI detail validation prevents empty product save
+PASS GUI product detail saves fields through real SQL services
+PASS GUI adds cake and raw material lines to receipt
+PASS GUI Save draft leaves stock unchanged and computes total
+PASS GUI Post receipt creates stock once and locks line editing
+PASS GUI stock screen loads both item types after posting
+PASS GUI cashier stock screen exposes no inventory write actions
+GUI SQL RESULT: 7 passed, 0 failed. Offscreen form events with real SQL; confirmation responses supplied by test host.

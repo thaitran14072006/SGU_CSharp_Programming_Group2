@@ -1,4 +1,4 @@
-using MocBakery.BLL.Services.Accounts;
+﻿using MocBakery.BLL.Services.Accounts;
 using MocBakery.BLL.Services.Customers;
 using MocBakery.BLL.Services.Sales;
 using MocBakery.Models;
@@ -48,7 +48,7 @@ Check("Staff cannot reset password",()=>Reject(()=>service.ResetPassword(staff,1
 Check("Wrong old password leaves existing hash",()=>{string before=repo.FindById(2)!.MatKhauHash;Reject(()=>auth.ChangePassword(staff,"bad","NewPass@123","NewPass@123"),"OldPassword");Assert(before==repo.FindById(2)!.MatKhauHash);});
 Check("Password confirmation mismatch",()=>Reject(()=>auth.ChangePassword(staff,"Staff@123","NewPass@123","mismatch"),"Confirmation"));
 Check("Same password rejected",()=>Reject(()=>auth.ChangePassword(staff,"Staff@123","Staff@123","Staff@123"),"Password"));
-Check("Change password succeeds; same session remains valid",()=>{auth.ChangePassword(staff,"Staff@123","NewPass@123","NewPass@123");Assert(auth.Require(staff).MaTaiKhoan==2);Reject(()=>auth.Login("staff","Staff@123"));Assert(auth.Login("staff","NewPass@123").MaTaiKhoan==2);});
+Check("Change password requires signing in again",()=>{auth.ChangePassword(staff,"Staff@123","NewPass@123","NewPass@123");Reject(()=>auth.Require(staff));Reject(()=>auth.Login("staff","Staff@123"));staff=auth.Login("staff","NewPass@123");Assert(staff.MaTaiKhoan==2);});
 Check("Owner reset invalidates existing staff sessions",()=>{service.ResetPassword(owner,2,"ResetPass@123");Reject(()=>cs.Search(staff,""));staff=auth.Login("staff","ResetPass@123");});
 Check("Customer add normalizes name and preserves leading zero",()=>{int id=cs.Save(staff,new(0,"  Nguyễn   Văn An ","0901112233","  TP.HCM  "," Ghi chú "));var c=customers.Rows.Single(x=>x.MaKhachHang==id);Assert(c.HoTen=="Nguyễn Văn An"&&c.SoDienThoai=="0901112233"&&c.DiaChi=="TP.HCM");});
 Check("Customer duplicate phone rejected",()=>Reject(()=>cs.Save(staff,new(0,"Trùng","0901112233",null,null)),"Phone"));

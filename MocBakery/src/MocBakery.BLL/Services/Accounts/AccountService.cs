@@ -2,14 +2,14 @@ using MocBakery.Models;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Accounts;
 namespace MocBakery.BLL.Services.Accounts;
-public sealed class AccountService(IAccountRepository accounts, AuthService auth)
+public sealed class AccountService(IAccountRepository accounts, AuthService auth, IStaffRepository? staff = null)
 {
     public IReadOnlyList<AccountSummary> List(UserSession session)
     {
         auth.Require(session, owner: true);
         return accounts.List().Select(a => new AccountSummary(a.MaTaiKhoan, a.TenDangNhap, a.HoTen, a.VaiTro, a.TrangThai)).ToList();
     }
-    public int Save(UserSession session, int id, AccountInput input)
+    public int Save(UserSession session, int id, AccountInput input, int? employeeId = null)
     {
         var actor = auth.Require(session, owner: true);
         string username = input.TenDangNhap.Trim(), name = input.HoTen.Trim();
@@ -40,6 +40,11 @@ public sealed class AccountService(IAccountRepository accounts, AuthService auth
                 throw new BusinessException("Phải giữ ít nhất một chủ tiệm hoạt động.", "Active");
         }
         var data = new AccountData(username, name, input.VaiTro, id == 0 || input.TrangThai, hash);
+        if (employeeId.HasValue)
+        {
+            if(staff is null)throw new BusinessException("Chưa cấu hình hồ sơ nhân viên.");
+            return staff.SaveAccount(actor.MaTaiKhoan,employeeId.Value,id,data);
+        }
         if (id == 0) return accounts.Create(data);
         accounts.Update(actor.MaTaiKhoan, id, data);
         return id;

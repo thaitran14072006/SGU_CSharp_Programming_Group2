@@ -1,5 +1,10 @@
 # Kiểm thử GUI Catalog và Inventory với SQL thật
 
+Bản chốt có thêm `--verify-thai --owner` kiểm tra Nhân viên/Tài khoản/Khách hàng và giữ dữ liệu chưa lưu.
+Chạy toàn bộ từ gốc repo: `.\MocBakery\scripts\Validate-Project.ps1 -IncludeGui`.
+Schema hiện hành có 16 bảng; fixture 15 bảng cần migration 03.
+Kết quả hiện hành: `docs/testing/results/2026-11-15-final.md`.
+
 Project GuiChecks là bộ chạy thử độc lập, không phải executable giao cho người dùng cuối.
 Nó dùng đúng MainForm, page, dialog và AppServices của ứng dụng, kết nối SQL LocalDB thật.
 Chỉ chấp nhận database có tiền tố `MocBakery_NhuGuiTest_`; không mở CSDL nghiệp vụ.

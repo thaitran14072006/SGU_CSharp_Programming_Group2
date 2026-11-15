@@ -14,7 +14,7 @@ internal sealed class ChangePasswordForm : Form
             string o=old.Text,p=pass.Text,c=confirm.Text;
             await Task.Run(() => services.Auth.ChangePassword(session,o,p,c));
             old.Clear();pass.Clear();confirm.Clear();
-            MessageBox.Show(this,"Đổi mật khẩu thành công."); DialogResult=DialogResult.OK; Close();
+            MessageBox.Show(this,"Đổi mật khẩu thành công. Vui lòng đăng nhập lại."); DialogResult=DialogResult.OK; Close();
         }),true);
         var cancel=Ui.Button("Hủy",(_,_) => Close()); panel.Controls.Add(save); panel.Controls.Add(cancel); AcceptButton=save;CancelButton=cancel;
     }

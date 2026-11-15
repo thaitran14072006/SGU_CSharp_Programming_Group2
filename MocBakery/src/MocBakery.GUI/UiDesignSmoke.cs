@@ -3,6 +3,8 @@ using MocBakery.GUI.Forms.Accounts;
 using MocBakery.GUI.Forms.Customers;
 using MocBakery.GUI.Forms.Catalog;
 using MocBakery.GUI.Forms.Inventory;
+using MocBakery.GUI.Forms.Orders;
+using MocBakery.GUI.Forms.Reports;
 using MocBakery.Models.DTOs.Accounts;
 using MocBakery.Models.Entities;
 namespace MocBakery.GUI;
@@ -22,6 +24,10 @@ internal static class UiSmoke
             new(6, "Bánh mì sữa", 22000, 24) { Category = "Bánh mì" }
         ]);
         var pages=new List<(string Name,Control Page)>();
+        var staffPage=new StaffPage(services,owner);staffPage.Preview();pages.Add(("15-NhanVien",staffPage));
+        var accountPage=new AccountPage(services,owner);accountPage.Preview();pages.Add(("16-TaiKhoan",accountPage));
+        var customerPage=new CustomerPage(services,owner);customerPage.Preview();pages.Add(("11-KhachHang",customerPage));
+        pages.Add(("10-DonDat",new OrderPage(services,owner)));pages.Add(("17-BaoCao",new ReportsPage(services,owner)));
         pages.Add(("BanHang",salesPage));
         pages.Add(("HoaDon",new SalesPage(services,owner,showInvoices:true)));
         var products=new ProductPage(services,owner);products.Preview();pages.Add(("05-QuanLyBanh",products));

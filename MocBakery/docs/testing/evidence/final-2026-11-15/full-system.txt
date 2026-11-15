@@ -1,0 +1,41 @@
+ISOLATED SYSTEM DATABASE: MocBakery_FinalTest_292fb1643207
+PASS Thai bootstrap is single-use and links owner profile
+PASS Thai SQL staff create, normalize, code/name/phone search
+PASS Thai staff rejects phone, role and future date
+PASS Thai duplicate staff phone is friendly and leaves profile unchanged
+PASS Thai create account and employee link atomically
+PASS Thai temporary password cannot access business functions
+PASS Thai change password invalidates all old sessions and clears temporary flag
+PASS Thai duplicate link cannot create second account
+PASS Thai failed account insert rolls back employee link
+PASS Thai cashier cannot administer employees or accounts
+PASS Thai warehouse cannot sell, access customers/orders/reports or catalog writes
+PASS Thai live role reload rejects forged display role
+PASS Thai staff cannot self-retire or demote owner
+PASS Thai SQL customer Unicode/leading zero and escaped wildcard search
+PASS Thai duplicate customer phone rejected without extra row
+PASS Thai customer edit keeps phone; empty history initially
+PASS Group catalog and inventory supply sellable FEFO stock
+PASS Group KT06 sale allocates 4 + 2, history stores 150000
+PASS Group sale rejects insufficient stock and stale price without invoice
+PASS Group KT10 create order 200000 deposit 50000 does not reserve stock
+PASS Group KT11 deliver creates one invoice, deducts deposit once
+PASS Group KT12 duplicate delivery cannot duplicate invoice or stock
+PASS Group KT13 delivered order cannot edit or cancel
+PASS Group KT12 shortage delivery rolls back order and balances
+PASS Group KT13 cancellation requires reason and prevents later edit/delivery
+PASS Group KT12 SQL failure mid-delivery rolls back invoice/details/stock/status
+PASS Group KT12 concurrent delivery succeeds exactly once
+EVIDENCE: invoice revenue=400000; receipts collected=340000; sold=16; stock=18; invoice count=3.
+PASS Group reports reconcile total invoices, history and sold quantities without double deposit
+PASS Group report empty/reversed/date boundaries and owner-only permission
+PASS Thai password reset marks temporary and cannot unlock inactive account
+PASS Thai retirement locks linked login and revokes live sessions atomically
+PASS Thai restoring employment does not silently unlock login
+PASS Thai job change updates role and live BLL checks
+PASS Group KT08 SQL failure during direct sale rolls back all balances
+PASS Group KT09 concurrent sale of last cake succeeds once
+PASS Thai staff migration is repeatable and preserves links, hashes, stock
+PASS Thai upgrade from fifteen tables backfills profiles without changing credentials or locks
+RESULT: 37 passed, 0 failed
+CLEANED ISOLATED SYSTEM DATABASE: MocBakery_FinalTest_292fb1643207

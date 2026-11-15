@@ -1,5 +1,8 @@
 # Hướng dẫn triển khai phần Nam
 
+**Bản chốt:** đã tích hợp main, kiểm thử KT10–KT13 và publish bản Windows x64 kèm runtime.
+Xem `CHOT_DO_AN.md` và `../testing/results/2026-11-15-final.md`. Nội dung ZIP chưa chạy bên dưới là lịch sử.
+
 1. Cài .NET 10 SDK + Visual Studio hỗ trợ WinForms trên máy phát triển; SQL Server 2022 Express và SSMS. Máy sử dụng cần Windows, SQL Server truy cập được, .NET Desktop Runtime 10 nếu không publish self-contained.
 2. Tại repo `SGU_CSharp_Programming_Group2`, triển khai `MocBakery/database/schema/01_CreateDatabase.sql` **trên CSDL thử mới**, không ghi đè dữ liệu hiện hữu. Nhóm thống nhất seed cho Accounts, Customers, Catalog, Inventory trước khi chạy Orders.
 3. Đặt `MOCBAKERY_CONNECTION_STRING` hoặc cấu hình `appsettings.local.json` theo `src/MocBakery.GUI/appsettings.example.json`. Không commit mật khẩu hay chuỗi kết nối bí mật.

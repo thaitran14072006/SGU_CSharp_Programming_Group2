@@ -1,4 +1,4 @@
-using MocBakery.BLL.Services.Accounts;
+﻿using MocBakery.BLL.Services.Accounts;
 using MocBakery.Models;
 using MocBakery.Models.DTOs.Accounts;
 using MocBakery.Models.DTOs.Customers;
@@ -11,25 +11,25 @@ public sealed class SalesService(ISalesRepository repository, AuthService auth)
 {
     public IReadOnlyList<SalesProduct> Products(UserSession session)
     {
-        auth.Require(session);
+        auth.RequireSales(session);
         return repository.ListProducts();
     }
 
     public IReadOnlyList<InvoiceSummary> Invoices(UserSession session)
     {
-        auth.Require(session);
+        auth.RequireSales(session);
         return repository.ListInvoices();
     }
 
     public IReadOnlyList<InvoiceLine> Invoice(UserSession session, int id)
     {
-        auth.Require(session);
+        auth.RequireSales(session);
         return repository.ReadInvoice(id);
     }
 
     public int Sell(UserSession session, int? customerId, IReadOnlyList<CartItem> cart)
     {
-        int actor = auth.Require(session).MaTaiKhoan;
+        int actor = auth.RequireSales(session).MaTaiKhoan;
         if (cart.Count == 0 || cart.Any(item => item.ProductId <= 0 || item.Quantity <= 0 || item.UnitPrice < 0))
             throw new BusinessException("Giỏ hàng trống hoặc có sản phẩm không hợp lệ.");
         if (cart.Select(item => item.ProductId).Distinct().Count() != cart.Count)

@@ -76,11 +76,14 @@ internal sealed class MainForm : Form
         Button? orders = null;
         Button? sales = null;
         Button? overview = owner ? AddNav(nav, "Tổng quan", OpenOverview) : null;
-        sales = AddNav(nav, "Bán hàng", () => ShowPage(new SalesPage(services, session)));
+        if(Roles.CanSell(session.VaiTro))sales = AddNav(nav, "Bán hàng", () => ShowPage(new SalesPage(services, session)));
         AddNav(nav, "Quản lý bánh", () => ShowPage(new ProductPage(services, session)));
-        AddNav(nav, "Hóa đơn", () => ShowPage(new SalesPage(services, session, showInvoices: true)));
-        orders = AddNav(nav, "Đặt bánh theo yêu cầu", () => ShowPage(new OrderPage(services, session)));
-        AddNav(nav, "Khách hàng", () => ShowPage(new CustomerPage(services, session)));
+        if(Roles.CanSell(session.VaiTro))
+        {
+            AddNav(nav, "Hóa đơn", () => ShowPage(new SalesPage(services, session, showInvoices: true)));
+            orders = AddNav(nav, "Đặt bánh theo yêu cầu", () => ShowPage(new OrderPage(services, session)));
+            AddNav(nav, "Khách hàng", () => ShowPage(new CustomerPage(services, session)));
+        }
         AddNav(nav, "Tồn kho và hạn dùng", () => ShowPage(new InventoryPage(services, session)));
         AddNav(nav, "Danh mục bánh", () => ShowPage(new CategoryPage(services, session)));
         if (Roles.CanManageInventory(session.VaiTro))
@@ -90,6 +93,7 @@ internal sealed class MainForm : Form
         }
         if (owner)
         {
+            AddNav(nav, "Nhân viên", () => ShowPage(new StaffPage(services, session)));
             AddNav(nav, "Tài khoản", () => ShowPage(new AccountPage(services, session)));
             AddNav(nav, "Báo cáo thống kê", () => ShowPage(new ReportsPage(services, session)));
         }
@@ -103,8 +107,9 @@ internal sealed class MainForm : Form
         var password = new LinkLabel { Text = "Đổi mật khẩu", AutoSize = true, LinkColor = CaptionColor };
         password.LinkClicked += (_, _) =>
         {
+            if(!CanLeavePage())return;
             using var dialog = new ChangePasswordForm(services, session);
-            dialog.ShowDialog(this);
+            if(dialog.ShowDialog(this)==DialogResult.OK){services.Auth.Logout(session);SignedOut=true;Close();}
         };
         footer.Controls.Add(password);
         var logout = new LinkLabel { Text = "Đăng xuất", AutoSize = true, LinkColor = CaptionColor };
@@ -123,16 +128,16 @@ internal sealed class MainForm : Form
             SelectNav(overview);
             OpenOverview();
         }
-        else
+        else if(sales is not null)
         {
             SelectNav(sales);
             ShowPage(new SalesPage(services, session));
         }
+        else ShowPage(new InventoryPage(services,session));
 
         void OpenOverview() => ShowPage(new OverviewPage(this.services, this.session,
             () => sales?.PerformClick(), id =>
             {
-                if (orders is not null) SelectNav(orders);
                 ShowPage(new OrderPage(this.services, this.session, id));
             }));
     }
@@ -183,6 +188,7 @@ internal sealed class MainForm : Form
             item.BackColor = item == selected ? ActiveColor : Color.White;
             item.ForeColor = item == selected ? CaptionColor : Muted;
         }
+        if(selected.Parent is FlowLayoutPanel panel)panel.ScrollControlIntoView(selected);
     }
 
     internal void ShowPage(Control page)
@@ -200,6 +206,7 @@ internal sealed class MainForm : Form
             SupplierPage => "Nhà cung cấp",
             CustomerPage => "Khách hàng",
             AccountPage => "Tài khoản",
+            StaffPage => "Nhân viên",
             SalesPage => "",
             OrderPage => "Đặt bánh theo yêu cầu",
             ReportsPage => "Báo cáo thống kê",

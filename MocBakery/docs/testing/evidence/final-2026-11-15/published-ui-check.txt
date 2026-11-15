@@ -1,0 +1,1 @@
+UI DESIGN CHECK: 18 layouts rendered. Preview values only; SQL workflows checked separately.

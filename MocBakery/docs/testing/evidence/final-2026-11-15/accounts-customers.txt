@@ -1,0 +1,46 @@
+PASS Hash uses random salt
+PASS Hash accepts correct and rejects incorrect password
+PASS Malformed hash rejected
+PASS Login blank username
+PASS Login blank password
+PASS Login wrong password
+PASS Login nonexistent username
+PASS Locked account cannot login
+PASS Login trims username
+PASS Staff cannot list accounts
+PASS Forged owner data does not elevate staff
+PASS Unissued token rejected
+PASS Owner can create staff
+PASS Duplicate username case insensitive
+PASS Reject invalid role
+PASS Reject blank account full name
+PASS Reject short password
+PASS Staff cannot create owner
+PASS Owner cannot self-lock
+PASS Owner cannot self-demote
+PASS Update staff name
+PASS Username immutable after creation
+PASS Staff cannot reset password
+PASS Wrong old password leaves existing hash
+PASS Password confirmation mismatch
+PASS Same password rejected
+PASS Change password requires signing in again
+PASS Owner reset invalidates existing staff sessions
+PASS Customer add normalizes name and preserves leading zero
+PASS Customer duplicate phone rejected
+PASS Customer edit can keep same phone
+PASS Customer blank name rejected
+PASS Customer short phone rejected
+PASS Customer non-digit phone rejected
+PASS Customer long address rejected
+PASS Customer long note rejected
+PASS Customer search finds by phone
+PASS History requires selection
+PASS Empty invoice history is empty
+PASS Locking an account rejects its next operation
+PASS Revoked role is checked again by BLL
+PASS Owner can reset locked account without unlocking it
+PASS Logout invalidates session
+PASS KT06: FEFO allocates 4 + 2
+PASS KT07: FEFO rejects insufficient stock
+RESULT: 45 passed, 0 failed

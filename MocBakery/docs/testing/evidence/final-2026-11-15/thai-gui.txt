@@ -1,0 +1,9 @@
+PASS Thai GUI staff validates phone without SQL insert
+PASS Thai GUI saves staff through real SQL
+PASS Thai GUI account requires employee selection
+PASS Thai GUI creates linked account and displays permission matrix
+PASS Thai GUI refuses navigation when unsaved changes are kept
+PASS Thai GUI customer validates phone
+PASS Thai GUI customer saves Unicode and leading-zero phone
+PASS Thai GUI cashier menu hides accounts/staff and warehouse menu hides sales/customers
+THAI GUI SQL RESULT: 8 passed, 0 failed. Offscreen form events with real SQL.

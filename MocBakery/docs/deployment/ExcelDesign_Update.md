@@ -1,5 +1,8 @@
 # Hướng dẫn bản Catalog và Inventory theo thiết kế Excel
 
+**Bản chốt:** đã tích hợp main cùng các module nhóm, CSDL 16 bảng. Bản 15 bảng cần migration 03.
+Xem `CHOT_DO_AN.md` để triển khai hiện hành; mô tả chưa gộp nhóm bên dưới là lịch sử bản nhánh.
+
 Chuẩn đối chiếu là `Thiet_ke_giao_dien_quan_ly_tiem_banh.xlsx`, bản 1.0 ngày 25/10/2026 do người dùng yêu cầu áp dụng.
 Phạm vi phần Như là các sheet 05, 06, 07, 12 và 13; bổ sung Nhà cung cấp và danh sách nguyên liệu để lập phiếu nhập hoạt động.
 Bản này thay thế cách nhập lô đơn giản và các trang giao diện của bản trước. Không gộp Sales/Orders từ nhánh nhóm trong thay đổi này.

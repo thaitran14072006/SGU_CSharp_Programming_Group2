@@ -5,6 +5,7 @@ using MocBakery.Models;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Inventory;
 
+if(args.Contains("--system")) { Environment.ExitCode=FullSystemChecks.Run(); return; }
 if(args.Contains("--excel")) { Environment.ExitCode=ExcelDesignChecks.Run(args); return; }
 if(args.Contains("--integration")) { Environment.ExitCode=IntegrationChecks.Run(args); return; }
 var checks=new Checks();var data=new MemoryCatalog();var accounts=new TestAccounts();var auth=new AuthService(accounts);

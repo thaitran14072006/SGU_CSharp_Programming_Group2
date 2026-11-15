@@ -1,0 +1,44 @@
+PASS Category normalizes whitespace
+PASS Blank category rejected
+PASS Duplicate category rejected
+PASS Long category description rejected
+PASS Used category cannot be deleted
+PASS Unused category can be deleted
+PASS Staff cannot add category
+PASS Staff cannot delete category
+PASS Staff cannot edit product
+PASS Negative price rejected KT04
+PASS Price with excess decimals rejected
+PASS Oversize price rejected
+PASS Zero price rejected by Excel screen rule
+PASS Missing category rejected
+PASS Duplicate product rejected
+PASS Empty unit rejected
+PASS Product filter works
+PASS Staff cannot receive lot
+PASS Zero quantity rejected
+PASS Negative quantity rejected
+PASS Expiry before manufacture rejected KT04
+PASS Future manufacture rejected
+PASS Missing product rejected
+PASS Long source rejected
+PASS Received lot starts with full remaining quantity
+PASS FEFO sorts earliest expiry before creation ID
+PASS Expiry date remains sellable KT05 boundary
+PASS Expired and stopped lots excluded KT05
+PASS Stock reconciles physical 14 / expired 3 / stopped 2
+PASS Lot filters return expired and stopped
+PASS Staff cannot change lot state
+PASS Unknown lot state rejected
+PASS Empty lot selection rejected
+PASS Stopping lot excludes stock immediately
+PASS Re-enabling expired lot cannot make it sellable
+PASS Deactivation preserves history and excludes all lots
+PASS Inactive product cannot receive lots
+PASS Next business day changes expiry calculation
+PASS Zero remaining stock excluded
+PASS Total stock uses 64-bit sum
+PASS Forged role does not grant management rights
+PASS Revoked owner role checked in BLL
+PASS Revoked session cannot query inventory
+RESULT: 43 passed, 0 failed
