@@ -8,6 +8,7 @@ ma trận quyền, mật khẩu tạm và kiểm thử SQL toàn luồng. CSDL h
 - Bắt đầu tại [Hướng dẫn bàn giao](docs/deployment/CHOT_DO_AN.md).
 - [Kịch bản demo và vấn đáp](docs/deployment/DEMO_VA_VAN_DAP.md).
 - [Báo cáo tổng hợp chương 5–6](docs/report/CHUONG_5_6_TONG_HOP.md).
+- [Báo cáo Word chương 5–6 có mục lục và ảnh minh chứng](docs/report/Bao_cao_MocBakery_Chuong_5_6.docx).
 - [Kết quả bản chốt: 190 ca đạt](docs/testing/results/2026-11-15-final.md).
 - Kiểm tra lại: `.\MocBakery\scripts\Validate-Project.ps1 -IncludeGui` từ gốc repository.
 - CSDL 9 bảng nâng cấp bằng 02 rồi 03; CSDL 15 bảng chạy 03. Script 01 chỉ dùng cho CSDL mới.
