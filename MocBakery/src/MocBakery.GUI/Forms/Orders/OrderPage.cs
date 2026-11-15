@@ -1,0 +1,37 @@
+using MocBakery.Models;
+using MocBakery.Models.DTOs.Accounts;
+using MocBakery.Models.DTOs.Orders;
+using MocBakery.Models.DTOs.Sales;
+using MocBakery.GUI.Forms.Customers;
+namespace MocBakery.GUI.Forms.Orders;
+internal sealed class OrderPage:UserControl
+{
+ internal OrderPage(AppServices services,UserSession session)
+ {
+  var errors=new ErrorProvider{ContainerControl=this};Disposed+=(_,_)=>errors.Dispose();
+  var orders=Ui.Grid(("Id","Mã đơn"),("Customer","Khách"),("Pickup","Ngày nhận"),("Total","Tổng tiền"),("Deposit","Cọc"),("Due","Còn thu"),("Status","Trạng thái"));
+  var products=Ui.Grid(("Name","Sản phẩm"),("Price","Đơn giá"),("Stock","Tồn"));
+  var lines=Ui.Grid(("Product","Sản phẩm"),("Quantity","SL"),("Price","Đơn giá"),("Total","Thành tiền"));
+  var chosen=new Dictionary<int,OrderLine>();int? customerId=null;string customerName="Chưa chọn khách";int editId=0;
+  var top=Ui.Flow();var customer=new Label{Text=customerName,AutoSize=true};var picker=Ui.Button("Chọn khách",(_,_)=>{using var f=new CustomerPickerForm(services,session);if(f.ShowDialog(this)==DialogResult.OK&&f.SelectedCustomer is {} c){customerId=c.MaKhachHang;customerName=c.HoTen;customer.Text=customerName;}});
+  var pickup=new DateTimePicker{Format=DateTimePickerFormat.Custom,CustomFormat="dd/MM/yyyy HH:mm",Width=170,Value=DateTime.Now.AddDays(1)};
+  var deposit=new NumericUpDown{Minimum=0,Maximum=1000000000,DecimalPlaces=2,Width=140};var note=Ui.Input(500);var quantity=new NumericUpDown{Minimum=1,Maximum=100000,Width=90};var reason=Ui.Input(255);reason.PlaceholderText="Lý do hủy";
+  top.Controls.Add(picker);top.Controls.Add(customer);Ui.Field(top,"Ngày nhận",pickup);Ui.Field(top,"Tiền cọc",deposit);Ui.Field(top,"Yêu cầu",note);Ui.Field(top,"Số lượng",quantity);
+  top.Controls.Add(Ui.Button("Thêm bánh",(_,_)=>{if(products.CurrentRow?.DataBoundItem is not SalesProduct p){MessageBox.Show(this,"Chọn bánh.");return;}var old=chosen.GetValueOrDefault(p.Id);chosen[p.Id]=new(p.Id,p.Name,(old?.Quantity??0)+(int)quantity.Value,p.Price);ReloadLines();}));
+  top.Controls.Add(Ui.Button("Xóa dòng",(_,_)=>{if(lines.CurrentRow?.DataBoundItem is OrderLine p)chosen.Remove(p.ProductId);ReloadLines();}));
+  top.Controls.Add(Ui.Button("Tạo đơn",async(_,_)=>await Run(async()=>{int cid=customerId??throw new BusinessException("Chọn khách hàng.");await Task.Run(()=>services.Orders.Create(session,cid,pickup.Value,deposit.Value,note.Text,chosen.Values.ToArray()));Reset();await LoadOrders();}),true));
+  top.Controls.Add(Ui.Button("Sửa đơn",async(_,_)=>await Run(async()=>{int cid=customerId??throw new BusinessException("Chọn khách hàng.");if(editId==0)throw new BusinessException("Chọn đơn trước.");await Task.Run(()=>services.Orders.Update(session,editId,cid,pickup.Value,deposit.Value,note.Text,chosen.Values.ToArray()));Reset();await LoadOrders();})));
+  top.Controls.Add(Ui.Button("Chuẩn bị",async(_,_)=>await Run(async()=>{int id=Selected();await Task.Run(()=>services.Orders.Prepare(session,id));await LoadOrders();})));
+  top.Controls.Add(Ui.Button("Giao đơn",async(_,_)=>await Run(async()=>{int id=Selected();if(!Ui.Confirm(this,"Giao đơn và trừ tồn kho?"))return;int invoice=await Task.Run(()=>services.Orders.Deliver(session,id));MessageBox.Show(this,$"Đã giao, hóa đơn #{invoice}.");await LoadOrders();})));
+  top.Controls.Add(reason);top.Controls.Add(Ui.Button("Hủy đơn",async(_,_)=>await Run(async()=>{int id=Selected();if(!Ui.Confirm(this,"Hủy đơn này?"))return;await Task.Run(()=>services.Orders.Cancel(session,id,reason.Text));await LoadOrders();})));
+  top.Controls.Add(Ui.Button("Làm mới",async(_,_)=>{Reset();await LoadOrders();}));
+  var layout=new TableLayoutPanel{Dock=DockStyle.Fill,RowCount=3,ColumnCount=2,Padding=new Padding(10)};layout.ColumnStyles.Add(new(SizeType.Percent,50));layout.ColumnStyles.Add(new(SizeType.Percent,50));layout.RowStyles.Add(new(SizeType.Absolute,245));layout.RowStyles.Add(new(SizeType.Percent,50));layout.RowStyles.Add(new(SizeType.Percent,50));layout.Controls.Add(top,0,0);layout.SetColumnSpan(top,2);layout.Controls.Add(orders,0,1);layout.SetRowSpan(orders,2);layout.Controls.Add(products,1,1);layout.Controls.Add(lines,1,2);Controls.Add(layout);
+  orders.SelectionChanged+=async(_,_)=>{if(orders.CurrentRow?.DataBoundItem is not OrderSummary o)return;editId=o.Id;customerId=o.CustomerId;customerName=o.Customer;customer.Text=customerName;pickup.Value=o.Pickup;deposit.Value=Math.Clamp(o.Deposit,deposit.Minimum,deposit.Maximum);note.Text=o.Note??"";if(UiSmoke.Active)return;try{var ls=await Task.Run(()=>services.Orders.Lines(session,o.Id));if(IsDisposed)return;chosen.Clear();foreach(var l in ls)chosen[l.ProductId]=l;ReloadLines();}catch(Exception ex){ErrorLog.Write(ex);}};
+  Load+=async(_,_)=>{if(UiSmoke.Active)return;await Run(async()=>products.DataSource=(await Task.Run(()=>services.Sales.Products(session))).ToList());await LoadOrders();};
+  int Selected()=>orders.CurrentRow?.DataBoundItem is OrderSummary o?o.Id:throw new BusinessException("Chọn đơn trước.");
+  void ReloadLines()=>lines.DataSource=chosen.Values.ToList();
+  void Reset(){editId=0;customerId=null;customer.Text="Chưa chọn khách";chosen.Clear();ReloadLines();note.Clear();deposit.Value=0;pickup.Value=DateTime.Now.AddDays(1);}
+  async Task Run(Func<Task> f)=>await Ui.Run(this,errors,new(),f);
+  async Task LoadOrders()=>await Run(async()=>orders.DataSource=(await Task.Run(()=>services.Orders.List(session))).ToList());
+ }
+}
