@@ -1,0 +1,29 @@
+EXCEL TEST DATABASE: MocBakery_ExcelTest_17dc214f9629
+PASS Excel category status, codes and product count source
+PASS Excel stopped category excluded from new product choices
+PASS Excel price positive, name length and unit rules
+PASS Excel product image, default shelf life and low stock roundtrip
+PASS Excel warehouse role manages suppliers and materials
+PASS Excel supplier email phone validation
+PASS Excel cashier and legacy cannot write inventory, warehouse cannot edit catalog
+PASS Excel empty receipt future date wrong units and date bounds rejected
+PASS Excel receipt quantities costs duplicate lines rejected
+PASS Excel multiline draft total saved without changing stock
+PASS Excel stale draft version cannot overwrite another editor
+PASS Excel post creates both stocks and audit once
+PASS Excel repeat post and posted edits rejected
+PASS Excel migration reruns without deleting or changing stock
+PASS Excel failure on second posting line rolls back first line and audit
+PASS Excel concurrent post only one succeeds
+PASS Excel FEFO raw material export spans earliest lots with exact decimal quantities
+PASS Excel overstock export rolls back and mandatory reason
+PASS Excel expired raw lot excluded from production but disposal uses it first
+PASS Excel stocktake increase preserves original receipt and records before after actor reason
+PASS Excel cake count supports excess and zero without changing quantity received
+PASS Excel low stock soon expiry and expired filters
+PASS Excel inactive supplier blocked at post, history preserved
+PASS Excel inactive item blocked at post
+PASS Excel upgrades original nine-table database without losing legacy balances
+EVIDENCE: draft total 552000; post once; rollback and concurrent posting verified; stocktake 18 -> 25.125 Kg with audit.
+RESULT: 25 passed, 0 failed
+CLEANED EXCEL TEST DATABASE: MocBakery_ExcelTest_17dc214f9629

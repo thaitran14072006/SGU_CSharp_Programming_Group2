@@ -5,6 +5,7 @@ using MocBakery.Models;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Inventory;
 
+if(args.Contains("--excel")) { Environment.ExitCode=ExcelDesignChecks.Run(args); return; }
 if(args.Contains("--integration")) { Environment.ExitCode=IntegrationChecks.Run(args); return; }
 var checks=new Checks();var data=new MemoryCatalog();var accounts=new TestAccounts();var auth=new AuthService(accounts);
 var owner=auth.Login("owner","Password123");var staff=auth.Login("staff","Password123");
@@ -24,7 +25,7 @@ checks.Test("Staff cannot edit product",()=>Checks.Reject(()=>catalog.SaveProduc
 checks.Test("Negative price rejected KT04",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{GiaBan=-1}),"Price"));
 checks.Test("Price with excess decimals rejected",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{GiaBan=1.001m}),"Price"));
 checks.Test("Oversize price rejected",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{GiaBan=10000000000000000m}),"Price"));
-checks.Test("Zero price accepted",()=>{catalog.SaveProduct(owner,data.Products[0] with{GiaBan=0});Checks.Assert(data.Products[0].GiaBan==0);});
+checks.Test("Zero price rejected by Excel screen rule",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{GiaBan=0}),"Price"));
 checks.Test("Missing category rejected",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{MaLoai=999}),"Category"));
 checks.Test("Duplicate product rejected",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{MaSanPham=0}),"Name"));
 checks.Test("Empty unit rejected",()=>Checks.Reject(()=>catalog.SaveProduct(owner,data.Products[0] with{DonViTinh=" "}),"Unit"));

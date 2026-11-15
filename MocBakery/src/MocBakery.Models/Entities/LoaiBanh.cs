@@ -1,2 +1,2 @@
 namespace MocBakery.Models.Entities;
-public sealed record LoaiBanh(int MaLoai, string TenLoai, string? MoTa);
+public sealed record LoaiBanh(int MaLoai, string TenLoai, string? MoTa, bool DangSuDung = true);

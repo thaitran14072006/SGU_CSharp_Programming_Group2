@@ -1,5 +1,7 @@
 # Đóng góp Chương 5 của Như
 
+Bản lịch sử trước Excel. Nội dung báo cáo hiện hành: `Nhu_TheoThietKeExcel.md` cùng thư mục.
+
 ## 5.1 Triển khai Catalog và Inventory
 
 Phần Catalog và Inventory được hiện thực theo luồng GUI → BLL → DAL → SQL Server, sử dụng chung Models và AuthService của hệ thống.

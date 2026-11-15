@@ -15,7 +15,7 @@ public sealed class AccountService(IAccountRepository accounts, AuthService auth
         string username = input.TenDangNhap.Trim(), name = input.HoTen.Trim();
         if (username.Length is < 3 or > 50) throw new BusinessException("Tên đăng nhập phải có 3–50 ký tự.", "Username");
         if (name.Length is < 1 or > 100) throw new BusinessException("Họ tên phải có 1–100 ký tự.", "FullName");
-        if (input.VaiTro is not (Roles.ChuTiem or Roles.NhanVien))
+        if (!Roles.IsValid(input.VaiTro))
             throw new BusinessException("Vai trò không hợp lệ.", "Role");
         var duplicate = accounts.FindByUsername(username);
         if (duplicate is not null && duplicate.MaTaiKhoan != id)

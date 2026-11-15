@@ -2,6 +2,9 @@ using MocBakery.Models;
 namespace MocBakery.GUI;
 internal static class Ui
 {
+    // Internal test-host hooks; normal application startup leaves both null.
+    internal static Action<Exception>? TestErrorSink { get; set; }
+    internal static Func<string,bool>? TestConfirmation { get; set; }
     internal static readonly Color Cream = Color.FromArgb(250,246,238), Brown = Color.FromArgb(91,61,43),
         Accent = Color.FromArgb(160,107,65), Selection = Color.FromArgb(237,219,192);
     internal static void Style(Form form, string title)
@@ -53,17 +56,19 @@ internal static class Ui
             owner.Enabled = true;
             if(ex.Field is not null && fields.TryGetValue(ex.Field,out var field))
             { errors.SetError(field,ex.Message); field.Focus(); }
-            MessageBox.Show(owner,ex.Message,"Kiểm tra thông tin",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+            if(TestErrorSink is not null)TestErrorSink(ex);
+            else MessageBox.Show(owner,ex.Message,"Kiểm tra thông tin",MessageBoxButtons.OK,MessageBoxIcon.Warning);
         }
         catch(Exception ex)
         {
             string code = ErrorLog.Write(ex);
-            MessageBox.Show(owner,"Không thể hoàn tất thao tác. Kiểm tra cấu hình/kết nối SQL Server và thử lại.\nMã lỗi: " + code,
+            if(TestErrorSink is not null)TestErrorSink(ex);
+            else MessageBox.Show(owner,"Không thể hoàn tất thao tác. Kiểm tra cấu hình/kết nối SQL Server và thử lại.\nMã lỗi: " + code,
                 "Lỗi hệ thống",MessageBoxButtons.OK,MessageBoxIcon.Error);
         }
         finally { if(!owner.IsDisposed) { owner.Enabled = true; owner.UseWaitCursor = false; } }
     }
-    internal static bool Confirm(Control owner,string message) => MessageBox.Show(owner,message,"Xác nhận",MessageBoxButtons.YesNo,MessageBoxIcon.Question) == DialogResult.Yes;
+    internal static bool Confirm(Control owner,string message) => TestConfirmation?.Invoke(message)??(MessageBox.Show(owner,message,"Xác nhận",MessageBoxButtons.YesNo,MessageBoxIcon.Question) == DialogResult.Yes);
 }
 internal static class ErrorLog
 {

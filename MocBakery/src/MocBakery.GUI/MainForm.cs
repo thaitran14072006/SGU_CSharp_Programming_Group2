@@ -82,7 +82,12 @@ internal sealed class MainForm : Form
         orders = AddNav(nav, "Đặt bánh theo yêu cầu", () => ShowPage(new OrderPage(services, session)));
         AddNav(nav, "Khách hàng", () => ShowPage(new CustomerPage(services, session)));
         AddNav(nav, "Tồn kho và hạn dùng", () => ShowPage(new InventoryPage(services, session)));
-        AddNav(nav, "Loại bánh", () => ShowPage(new CategoryPage(services, session)));
+        AddNav(nav, "Danh mục bánh", () => ShowPage(new CategoryPage(services, session)));
+        if (Roles.CanManageInventory(session.VaiTro))
+        {
+            AddNav(nav, "Phiếu nhập kho", () => ShowPage(new ReceiptListPage(services, session)));
+            AddNav(nav, "Nhà cung cấp", () => ShowPage(new SupplierPage(services, session)));
+        }
         if (owner)
         {
             AddNav(nav, "Tài khoản", () => ShowPage(new AccountPage(services, session)));
@@ -94,7 +99,7 @@ internal sealed class MainForm : Form
         var name = SideLabel(session.HoTen, 9, true, CaptionColor);
         name.MaximumSize = new Size(150, 0);
         footer.Controls.Add(name);
-        footer.Controls.Add(SideLabel(owner ? "Chủ tiệm / Quản lý" : "Thu ngân / Nhân viên", 8, false, Muted));
+        footer.Controls.Add(SideLabel(Roles.Display(session.VaiTro), 8, false, Muted));
         var password = new LinkLabel { Text = "Đổi mật khẩu", AutoSize = true, LinkColor = CaptionColor };
         password.LinkClicked += (_, _) =>
         {
@@ -105,13 +110,14 @@ internal sealed class MainForm : Form
         var logout = new LinkLabel { Text = "Đăng xuất", AutoSize = true, LinkColor = CaptionColor };
         logout.LinkClicked += (_, _) =>
         {
-            if (!Ui.Confirm(this, "Đăng xuất khỏi phiên làm việc?")) return;
+            if (!CanLeavePage() || !Ui.Confirm(this, "Đăng xuất khỏi phiên làm việc?")) return;
             services.Auth.Logout(session);
             SignedOut = true;
             Close();
         };
         footer.Controls.Add(logout);
         sidebar.Controls.Add(footer, 0, 2);
+        FormClosing += (_, e) => { if (!SignedOut && !CanLeavePage()) e.Cancel = true; };
         if (overview is not null)
         {
             SelectNav(overview);
@@ -161,8 +167,9 @@ internal sealed class MainForm : Form
         button.FlatAppearance.BorderSize = 0;
         button.Click += (_, _) =>
         {
-            SelectNav(button);
+            var previous = body.Controls.Count > 0 ? body.Controls[0] : null;
             action();
+            if (body.Controls.Count > 0 && body.Controls[0] != previous) SelectNav(button);
         };
         navigation.Add(button);
         nav.Controls.Add(button);
@@ -180,8 +187,29 @@ internal sealed class MainForm : Form
 
     internal void ShowPage(Control page)
     {
+        if (!CanLeavePage()) { page.Dispose(); return; }
         while (body.Controls.Count > 0) body.Controls[0].Dispose();
         page.Dock = DockStyle.Fill;
         body.Controls.Add(page);
+        string title = page switch
+        {
+            ProductPage or ProductDetailPage => "Quản lý bánh",
+            CategoryPage => "Danh mục bánh",
+            InventoryPage or MaterialPage => "Tồn kho và hạn dùng",
+            ReceiptPage or ReceiptListPage => "Phiếu nhập kho",
+            SupplierPage => "Nhà cung cấp",
+            CustomerPage => "Khách hàng",
+            AccountPage => "Tài khoản",
+            SalesPage => "",
+            OrderPage => "Đặt bánh theo yêu cầu",
+            ReportsPage => "Báo cáo thống kê",
+            OverviewPage => "Tổng quan",
+            _ => ""
+        };
+        var selected = navigation.FirstOrDefault(b => b.AccessibleName == title);
+        if (selected is not null) SelectNav(selected);
     }
+
+    private bool CanLeavePage() => body.Controls.Count == 0 ||
+        body.Controls[0] is not IUnsavedPage page || page.CanLeave();
 }

@@ -17,7 +17,7 @@ internal static class Program
         string? config=File.Exists(Path.Combine(AppContext.BaseDirectory,"fixture.local.json"))
             ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"fixture.local.json")) : null;
         using var json=JsonDocument.Parse(config??"{}");
-        string database=args.FirstOrDefault()??(json.RootElement.TryGetProperty("Database",out var value)?value.GetString():null)??"";
+        string database=args.FirstOrDefault(a=>!a.StartsWith("--",StringComparison.Ordinal))??(json.RootElement.TryGetProperty("Database",out var value)?value.GetString():null)??"";
         if(!Regex.IsMatch(database,@"^MocBakery_NhuGuiTest_[a-zA-Z0-9_]+$"))
             throw new ArgumentException("Provide an isolated MocBakery_NhuGuiTest_ database. This test host never opens business databases.");
         string connection=$@"Server=(localdb)\MSSQLLocalDB;Database={database};Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=3";
@@ -27,10 +27,20 @@ internal static class Program
         const string password="GuiFixtureOnly2026!";
         if(repository.FindByUsername("gui-owner") is null)
             repository.Bootstrap(new("gui-owner","Chủ tiệm thử giao diện",Roles.ChuTiem,true,PasswordHasher.Hash(password)));
-        bool staff=args.Contains("--staff")||(json.RootElement.TryGetProperty("Staff",out var role)&&role.GetBoolean());
+        bool staff=!args.Contains("--owner")&&(args.Contains("--staff")||(json.RootElement.TryGetProperty("Staff",out var role)&&role.GetBoolean()));
         if(staff&&repository.FindByUsername("gui-staff") is null)
             repository.Create(new("gui-staff","Nhân viên thử giao diện",Roles.NhanVien,true,PasswordHasher.Hash(password)));
         var session=services.Auth.Login(staff?"gui-staff":"gui-owner",password);
+        if(args.Contains("--verify-design"))
+        {
+            using var runner=new Form{ShowInTaskbar=false,StartPosition=FormStartPosition.Manual,Location=new Point(-20000,-20000),Size=new Size(1,1)};
+            runner.Shown+=(_,_)=>runner.BeginInvoke(new Action(()=>{
+                try{Environment.ExitCode=GuiDesignWorkflow.Run(services,session);}
+                catch(Exception ex){Console.Error.WriteLine(ex);Environment.ExitCode=1;}
+                finally{runner.Close();}
+            }));
+            Application.Run(runner);return;
+        }
         using var main=new MainForm(services,session);
         main.Text="Mộc Bakery • Kiểm thử SQL GUI • "+(staff?"Nhân viên":"Chủ tiệm");
         Application.Run(main);

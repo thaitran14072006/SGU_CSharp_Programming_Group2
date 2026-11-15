@@ -1,4 +1,21 @@
-# Mộc Bakery
+﻿# Mộc Bakery
+
+## Bản hiện hành theo thiết kế Excel
+
+Phần Như hiện bám `Thiet_ke_giao_dien_quan_ly_tiem_banh.xlsx`: Quản lý bánh, Chi tiết bánh,
+Danh mục bánh, Tồn kho và hạn dùng, Phiếu nhập kho. Có nguyên liệu, nhà cung cấp,
+ảnh/hạn dùng mặc định, danh mục ngừng dùng, nháp/ghi sổ và xuất/kiểm kê có nhật ký.
+
+- Hướng dẫn đang áp dụng: `docs/deployment/ExcelDesign_Update.md`.
+- Kết quả mới: `docs/testing/results/2026-11-15-excel-design.md`.
+- Báo cáo mới: `docs/report/chapter05/Nhu_TheoThietKeExcel.md`, `docs/report/chapter06/Nhu_TheoThietKeExcel.md`.
+- CSDL mới chạy `database/schema/01_CreateDatabase.sql`; CSDL 9 bảng đang có chạy riêng
+  `database/schema/02_Upgrade_ExcelDesign.sql` sau khi sao lưu. Không chạy 01 đè lên dữ liệu đang dùng.
+- Dữ liệu mở đầu theo mẫu: `database/seeds/04_ExcelDesign_Demo.sql`, chỉ dùng trên CSDL thử.
+- Bộ kiểm tra bổ sung: console CatalogInventoryChecks với `--excel`; test form SQL với GuiChecks `--verify-design --owner`.
+
+Các mục lịch sử bên dưới mô tả bản khởi tạo trước Excel. Bản trên main đã tích hợp phần Như
+với Bán hàng, Đơn đặt và Báo cáo của nhóm; giữ khung giao diện hiện hành của main.
 
 Cấu trúc theo tài liệu `Huong_dan_4_thanh_vien_MocBakery_Chuong_5_6.docx`.
 Mã nguồn ứng dụng nằm trong `MocBakery/`; bài thực hành vẫn nằm trong `Lab01/` ở gốc repo.
@@ -40,14 +57,14 @@ Mỗi thành viên thực hiện GUI, BLL, DAL, DTO, kiểm thử và nội dung
 | Nguyễn Thị Trúc Mai | `Sales` |
 | Trần Thanh Nam | `Orders`, `Reports` |
 
-## Phạm vi dữ liệu
+## Phạm vi dữ liệu bản gốc
 
-Chín bảng thống nhất: `TaiKhoan`, `LoaiBanh`, `SanPham`, `LoBanh`, `KhachHang`,
+Bản gốc có chín bảng: `TaiKhoan`, `LoaiBanh`, `SanPham`, `LoBanh`, `KhachHang`,
 `HoaDon`, `ChiTietHoaDon`, `DonDatBanh`, `ChiTietDonDat`.
 Chạy script trong `database/schema/` trước, sau đó `database/seeds/`.
 Chỉ đưa cấu hình mẫu không chứa bí mật lên Git; cấu hình theo máy đặt trong tệp `*.local.json`.
 
-## Trạng thái triển khai — 14/11/2026
+## Lịch sử triển khai ngày 14 tháng 11 năm 2026
 
 Nguồn chuẩn: `BaoCao_QuanLyTiemBanh_Updated(3).docx`, UC01, UC02, UC03, UC10 và mục 4.4.
 Đã có `MocBakery.sln`, bốn project, mã Accounts/Customers của Thái và script nền tảng 9 bảng.
@@ -67,7 +84,7 @@ Kiểm tra nghiệp vụ: build `tests/Unit/MocBakery.UnitChecks.csproj` rồi c
 
 Các tệp `.gitkeep` giữ các thư mục chưa có nội dung. Chỉ ghi kết quả kiểm thử thực tế sau khi chạy.
 
-## Catalog và Inventory của Như
+## Lịch sử Catalog và Inventory ban đầu
 
 Đã tích hợp menu Loại bánh, Sản phẩm, Kho bánh cho hai vai trò. Nhân viên chỉ tra cứu;
 mọi lệnh ghi đều kiểm tra quyền chủ tiệm tại BLL. Sản phẩm chuyển ngừng kinh doanh,

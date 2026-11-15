@@ -27,6 +27,7 @@ internal sealed class AppServices
     internal ReportService Reports { get; }
     internal CatalogService Catalog { get; }
     internal InventoryService Inventory { get; }
+    internal WarehouseService Warehouse { get; }
     private readonly TaiKhoanRepository repository;
     internal AppServices() : this(ResolveConnection()) { }
     internal AppServices(string connection)
@@ -40,6 +41,7 @@ internal sealed class AppServices
         var products = new SanPhamRepository(db);
         Catalog = new(categories,products,Auth);
         Inventory = new(new LoBanhRepository(db),products,Auth);
+        Warehouse = new(new WarehouseRepository(db),Auth);
     }
     private static string ResolveConnection()
     {

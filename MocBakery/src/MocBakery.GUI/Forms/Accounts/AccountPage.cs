@@ -6,7 +6,8 @@ internal sealed class AccountPage : UserControl
 {
     private readonly AppServices services; private readonly UserSession session;
     private readonly TextBox username=Ui.Input(50), name=Ui.Input(100), password=Ui.Input(64,true);
-    private readonly ComboBox role=Ui.Choice("Chủ tiệm","Nhân viên"), active=Ui.Choice("Hoạt động","Khóa");
+    private static readonly string[] RoleValues=[Roles.ChuTiem,Roles.ThuNgan,Roles.Kho,Roles.NhanVien];
+    private readonly ComboBox role=Ui.Choice("Quản lý","Thu ngân","Nhân viên kho"), active=Ui.Choice("Hoạt động","Khóa");
     private readonly DataGridView grid=Ui.Grid(("TenDangNhap","Tên đăng nhập"),("HoTen","Họ tên"),("VaiTro","Vai trò"),("TrangThai","Trạng thái"));
     private readonly Label count=new() { AutoSize=true };
     private readonly ErrorProvider errors; private int id;
@@ -30,17 +31,17 @@ internal sealed class AccountPage : UserControl
         grid.CellFormatting += (_,e) =>
         {
             if(e.ColumnIndex < 0)return;
-            if(grid.Columns[e.ColumnIndex].Name=="VaiTro")e.Value=e.Value?.ToString()==Roles.ChuTiem?"Chủ tiệm":"Nhân viên";
+            if(grid.Columns[e.ColumnIndex].Name=="VaiTro")e.Value=Roles.Display(e.Value?.ToString()??"");
             if(grid.Columns[e.ColumnIndex].Name=="TrangThai")e.Value=e.Value is true?"Hoạt động":"Khóa";
         };
         Load += async (_,_) => { if(!UiSmoke.Active) await Reload(); }; New();
     }
-    private void New() { id=0;grid.ClearSelection();username.Clear();username.ReadOnly=false;name.Clear();password.Clear();password.Enabled=true;role.SelectedIndex=1;active.SelectedIndex=0;active.Enabled=false;errors.Clear();username.Focus(); }
+    private void New() { id=0;grid.ClearSelection();username.Clear();username.ReadOnly=false;name.Clear();password.Clear();password.Enabled=true;if(role.Items.Count>3)role.Items.RemoveAt(3);role.SelectedIndex=1;active.SelectedIndex=0;active.Enabled=false;errors.Clear();username.Focus(); }
     private void SelectAccount()
     {
         if(grid.SelectedRows.Count==0 || grid.SelectedRows[0].DataBoundItem is not AccountSummary a)return;
         id=a.MaTaiKhoan;username.Text=a.TenDangNhap;username.ReadOnly=true;name.Text=a.HoTen;
-        role.SelectedIndex=a.VaiTro==Roles.ChuTiem?0:1;active.SelectedIndex=a.TrangThai?0:1;
+        if(a.VaiTro==Roles.NhanVien&&role.Items.Count==3)role.Items.Add("Nhân viên (cũ)");role.SelectedIndex=Array.IndexOf(RoleValues,a.VaiTro);active.SelectedIndex=a.TrangThai?0:1;
         active.Enabled=true;password.Clear();password.Enabled=false;
     }
     private async Task Reload() => await Ui.Run(this,errors,Fields(),async () =>
@@ -52,7 +53,7 @@ internal sealed class AccountPage : UserControl
     private async Task Save() => await Ui.Run(this,errors,Fields(),async () =>
     {
         if(id>0&&!Ui.Confirm(this,"Lưu thay đổi tài khoản này?"))return;
-        int current=id;var input=new AccountInput(username.Text,name.Text,role.SelectedIndex==0?Roles.ChuTiem:Roles.NhanVien,active.SelectedIndex==0,password.Text);
+        int current=id;var input=new AccountInput(username.Text,name.Text,RoleValues[Math.Max(0,role.SelectedIndex)],active.SelectedIndex==0,password.Text);
         await Task.Run(() => services.Accounts.Save(session,current,input));
         password.Clear();var rows=await Task.Run(() => services.Accounts.List(session));
         grid.DataSource=rows.ToList();count.Text=$"{rows.Count} tài khoản";New();MessageBox.Show(this,"Đã lưu tài khoản.");

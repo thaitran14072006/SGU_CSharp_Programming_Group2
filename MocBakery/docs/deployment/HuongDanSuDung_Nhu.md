@@ -1,5 +1,7 @@
 # Hướng dẫn sử dụng Mộc Bakery
 
+Tài liệu này ghi nhận bản trước khi chỉnh theo Excel. Hướng dẫn bản hiện hành nằm trong `ExcelDesign_Update.md` cùng thư mục.
+
 Phạm vi bản hiện tại gồm tài khoản, khách hàng, loại bánh, sản phẩm và kho bánh.
 Bán hàng, hóa đơn, đặt bánh và tổng quan chưa tích hợp; các menu đó chỉ hiển thị thông báo.
 
