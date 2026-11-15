@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><ProjectReference Include="../MocBakery.Models/MocBakery.Models.csproj" /></ItemGroup></Project>
