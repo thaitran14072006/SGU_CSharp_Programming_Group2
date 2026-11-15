@@ -1,5 +1,6 @@
 using MocBakery.GUI.Forms.Accounts;
 using MocBakery.GUI.Forms.Customers;
+using MocBakery.GUI.Forms.Sales;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Accounts;
 namespace MocBakery.GUI;
@@ -19,14 +20,15 @@ internal sealed class MainForm : Form
         root.Controls.Add(header,0,0);root.SetColumnSpan(header,2);
         var nav=Ui.Flow(true);nav.BackColor=Ui.Brown;nav.Padding=new Padding(12,15,8,10);root.Controls.Add(nav,0,1);root.Controls.Add(body,1,1);
         AddNav(nav,"Tổng quan",()=>Placeholder("Tổng quan"));
-        AddNav(nav,"Bán hàng",()=>Placeholder("Bán hàng"));
-        AddNav(nav,"Hóa đơn",()=>Placeholder("Hóa đơn"));
+        AddNav(nav,"Bán hàng",()=>ShowPage(new SalesPage(services,session)));
+        AddNav(nav,"Hóa đơn",()=>ShowPage(new SalesPage(services,session,showInvoices:true)));
         AddNav(nav,"Đặt bánh",()=>Placeholder("Đặt bánh"));
         AddNav(nav,"Khách hàng",()=>ShowPage(new CustomerPage(services,session)));
         if(session.VaiTro==Roles.ChuTiem)AddNav(nav,"Tài khoản",()=>ShowPage(new AccountPage(services,session)));
         AddNav(nav,"Đổi mật khẩu",()=>{using var dialog=new ChangePasswordForm(services,session);dialog.ShowDialog(this);});
         AddNav(nav,"Đăng xuất",()=>{if(Ui.Confirm(this,"Đăng xuất khỏi phiên làm việc?")){services.Auth.Logout(session);SignedOut=true;Close();}});
-        Placeholder(session.VaiTro==Roles.ChuTiem?"Tổng quan":"Bán hàng");
+        if (session.VaiTro == Roles.ChuTiem) Placeholder("Tổng quan");
+        else ShowPage(new SalesPage(services, session));
     }
     private static void AddNav(FlowLayoutPanel nav,string title,Action action)
     {

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using MocBakery.BLL.Services.Accounts;
 using MocBakery.BLL.Services.Customers;
+using MocBakery.BLL.Services.Sales;
+using MocBakery.DAL.Repositories.Sales;
 using MocBakery.DAL;
 using MocBakery.DAL.Repositories.Accounts;
 using MocBakery.DAL.Repositories.Customers;
@@ -9,6 +11,7 @@ using MocBakery.Models.Entities;
 namespace MocBakery.GUI;
 internal sealed class AppServices
 {
+    internal SalesService Sales { get; }
     internal AuthService Auth { get; }
     internal AccountService Accounts { get; }
     internal CustomerService Customers { get; }
@@ -25,6 +28,7 @@ internal sealed class AppServices
         connection ??= @"Server=.\SQLEXPRESS;Database=QuanLyTiemBanh;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=5";
         var db = new DbConnectionFactory(connection); repository = new(db);
         Auth = new(repository); Accounts = new(repository,Auth); Customers = new(new KhachHangRepository(db),Auth);
+        Sales = new(new SalesRepository(db), Auth);
     }
     internal void Bootstrap(string username,string name,string password)
     {

@@ -1,5 +1,6 @@
 using MocBakery.BLL.Services.Accounts;
 using MocBakery.BLL.Services.Customers;
+using MocBakery.BLL.Services.Sales;
 using MocBakery.Models;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Accounts;
@@ -64,6 +65,14 @@ Check("Locking an account rejects its next operation",()=>{service.Save(owner,2,
 Check("Revoked role is checked again by BLL",()=>{int id=service.Save(owner,0,new("owner2","Chủ 2",Roles.ChuTiem,true,"OwnerTwo@123"));var s=auth.Login("owner2","OwnerTwo@123");service.Save(owner,id,new("owner2","Chủ 2",Roles.NhanVien,true,""));Reject(()=>service.List(s));});
 Check("Owner can reset locked account without unlocking it",()=>{service.ResetPassword(owner,3,"ResetLocked@123");Assert(PasswordHasher.Verify("ResetLocked@123",repo.FindById(3)!.MatKhauHash));Reject(()=>auth.Login("locked","ResetLocked@123"));});
 Check("Logout invalidates session",()=>{var s=auth.Login("admin","Owner@123");auth.Logout(s);Reject(()=>cs.Search(s,""));});
+var near = new LoBanh { MaLo = 101, HanDung = new DateTime(2026,11,16), SoLuongCon = 4, DuocPhepBan = true };
+var later = new LoBanh { MaLo = 102, HanDung = new DateTime(2026,11,18), SoLuongCon = 5, DuocPhepBan = true };
+Check("KT06: FEFO allocates 4 + 2", () =>
+{
+    var lines = SalesService.Allocate([later, near], 6);
+    Assert(lines.Select(line => (line.LotId, line.Quantity)).SequenceEqual(new[] { (101, 4), (102, 2) }));
+});
+Check("KT07: FEFO rejects insufficient stock", () => Reject(() => SalesService.Allocate([near, later], 10)));
 Console.WriteLine($"RESULT: {passed} passed, {failed} failed");
 Environment.ExitCode=failed==0?0:1;
 
