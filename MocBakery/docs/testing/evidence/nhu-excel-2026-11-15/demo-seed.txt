@@ -1,0 +1,30 @@
+Changed database context to 'MocBakery_ExcelDemo_bfe676ec4c'.
+
+(5 rows affected)
+
+(0 rows affected)
+
+(0 rows affected)
+
+(0 rows affected)
+
+(2 rows affected)
+
+(0 rows affected)
+
+(0 rows affected)
+Products
+-----------
+          5
+
+(1 rows affected)
+Lots        Remaining
+----------- -----------
+          5         103
+
+(1 rows affected)
+MaterialLots Remaining
+------------ ----------------------------------------
+           2                                   20.000
+
+(1 rows affected)
