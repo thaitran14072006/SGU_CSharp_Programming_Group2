@@ -19,7 +19,17 @@ internal sealed class AppServices
     internal CatalogService Catalog { get; }
     internal InventoryService Inventory { get; }
     private readonly TaiKhoanRepository repository;
-    internal AppServices()
+    internal AppServices() : this(ResolveConnection()) { }
+    internal AppServices(string connection)
+    {
+        var db = new DbConnectionFactory(connection); repository = new(db);
+        Auth = new(repository); Accounts = new(repository,Auth); Customers = new(new KhachHangRepository(db),Auth);
+        var categories = new LoaiBanhRepository(db);
+        var products = new SanPhamRepository(db);
+        Catalog = new(categories,products,Auth);
+        Inventory = new(new LoBanhRepository(db),products,Auth);
+    }
+    private static string ResolveConnection()
     {
         string? connection = Environment.GetEnvironmentVariable("MOCBAKERY_CONNECTION_STRING");
         string config = Path.Combine(AppContext.BaseDirectory,"appsettings.local.json");
@@ -29,12 +39,7 @@ internal sealed class AppServices
             connection = json.RootElement.GetProperty("ConnectionString").GetString();
         }
         connection ??= @"Server=.\SQLEXPRESS;Database=QuanLyTiemBanh;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=5";
-        var db = new DbConnectionFactory(connection); repository = new(db);
-        Auth = new(repository); Accounts = new(repository,Auth); Customers = new(new KhachHangRepository(db),Auth);
-        var categories = new LoaiBanhRepository(db);
-        var products = new SanPhamRepository(db);
-        Catalog = new(categories,products,Auth);
-        Inventory = new(new LoBanhRepository(db),products,Auth);
+        return connection;
     }
     internal void Bootstrap(string username,string name,string password)
     {

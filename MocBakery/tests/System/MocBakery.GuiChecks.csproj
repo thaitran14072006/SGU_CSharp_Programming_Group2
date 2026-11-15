@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../src/MocBakery.GUI/MocBakery.GUI.csproj" /></ItemGroup>
+</Project>
