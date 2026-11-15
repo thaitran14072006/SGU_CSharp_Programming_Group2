@@ -3,7 +3,10 @@ using MocBakery.Models.Entities;
 
 namespace MocBakery.Models.DTOs.Sales;
 
-public sealed record SalesProduct(int Id, string Name, decimal Price, long Stock);
+public sealed record SalesProduct(int Id, string Name, decimal Price, long Stock)
+{
+    public string Category { get; init; } = "";
+}
 public sealed record CartItem(int ProductId, int Quantity, decimal UnitPrice);
 public sealed record LotAllocation(int LotId, int Quantity);
 public sealed record InvoiceLine(int LotId, string Product, int Quantity, decimal UnitPrice)

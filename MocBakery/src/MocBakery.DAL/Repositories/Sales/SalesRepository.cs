@@ -15,16 +15,18 @@ public sealed class SalesRepository(DbConnectionFactory db) : ISalesRepository
     {
         using var connection = db.Open();
         using var command = Db.Command(connection, $"""
-            SELECT p.MaSanPham,p.TenSanPham,p.GiaBan,COALESCE(SUM(CONVERT(bigint,l.SoLuongCon)),0)
-            FROM dbo.SanPham p LEFT JOIN dbo.LoBanh l ON l.MaSanPham=p.MaSanPham AND {Sellable}
+            SELECT p.MaSanPham,p.TenSanPham,p.GiaBan,COALESCE(SUM(CONVERT(bigint,l.SoLuongCon)),0),c.TenLoai
+            FROM dbo.SanPham p JOIN dbo.LoaiBanh c ON c.MaLoai=p.MaLoai
+            LEFT JOIN dbo.LoBanh l ON l.MaSanPham=p.MaSanPham AND {Sellable}
             WHERE p.DangKinhDoanh=1
-            GROUP BY p.MaSanPham,p.TenSanPham,p.GiaBan ORDER BY p.TenSanPham
+            GROUP BY p.MaSanPham,p.TenSanPham,p.GiaBan,c.TenLoai ORDER BY p.TenSanPham
             """);
         command.Param("@day", ReadClock(connection).Date, DbType.Date);
         using var reader = command.ExecuteReader();
         var result = new List<SalesProduct>();
         while (reader.Read())
-            result.Add(new(reader.GetInt32(0), reader.GetString(1), reader.GetDecimal(2), reader.GetInt64(3)));
+            result.Add(new(reader.GetInt32(0), reader.GetString(1), reader.GetDecimal(2), reader.GetInt64(3))
+                { Category = reader.GetString(4) });
         return result;
     }
 
@@ -32,13 +34,16 @@ public sealed class SalesRepository(DbConnectionFactory db) : ISalesRepository
     {
         using var connection = db.Open();
         using var command = Db.Command(connection, """
-            SELECT MaHoaDon,NgayLap,TongTien,TienCocTru,SoTienThu
-            FROM dbo.HoaDon ORDER BY NgayLap DESC,MaHoaDon DESC
+            SELECT h.MaHoaDon,h.NgayLap,h.TongTien,h.TienCocTru,h.SoTienThu,
+                   COALESCE(k.HoTen,N'Khách lẻ'),COALESCE(k.SoDienThoai,'')
+            FROM dbo.HoaDon h LEFT JOIN dbo.KhachHang k ON k.MaKhachHang=h.MaKhachHang
+            ORDER BY h.NgayLap DESC,h.MaHoaDon DESC
             """);
         using var reader = command.ExecuteReader();
         var result = new List<InvoiceSummary>();
         while (reader.Read())
-            result.Add(new(reader.GetInt32(0), reader.GetDateTime(1), reader.GetDecimal(2), reader.GetDecimal(3), reader.GetDecimal(4)));
+            result.Add(new(reader.GetInt32(0), reader.GetDateTime(1), reader.GetDecimal(2), reader.GetDecimal(3), reader.GetDecimal(4))
+                { CustomerName = reader.GetString(5), Phone = reader.GetString(6) });
         return result;
     }
 

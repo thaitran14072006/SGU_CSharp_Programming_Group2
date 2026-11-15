@@ -1,5 +1,6 @@
 using MocBakery.GUI.Forms.Accounts;
 using MocBakery.GUI.Forms.Customers;
+using MocBakery.GUI.Forms.Sales;
 using MocBakery.Models.DTOs.Accounts;
 using MocBakery.Models.Entities;
 namespace MocBakery.GUI;
@@ -11,7 +12,8 @@ internal static class UiSmoke
         Active=true;
         var session=new UserSession("UI-check-no-login",0,"layout","Kiểm tra bố cục",Roles.ChuTiem);
         var items=new List<Form>{new LoginForm(services),new SetupForm(services),new ChangePasswordForm(services,session),new MainForm(services,session)};
-        foreach(var page in new UserControl[]{new AccountPage(services,session),new CustomerPage(services,session)})
+        foreach(var page in new UserControl[]{new AccountPage(services,session),new CustomerPage(services,session),
+            new SalesPage(services,session),new SalesPage(services,session,showInvoices:true)})
         {
             var host=new MainForm(services,session);host.ShowPage(page);host.Text=page.GetType().Name;items.Add(host);
         }
@@ -31,6 +33,6 @@ internal static class UiSmoke
                 form.Close();
             }
         }
-        File.WriteAllText(Path.Combine(AppContext.BaseDirectory,"ui-check.local.json"),"{\"result\":\"6 forms constructed and laid out; no SQL or interaction tests performed\"}");
+        File.WriteAllText(Path.Combine(AppContext.BaseDirectory,"ui-check.local.json"),$"{{\"result\":\"{index} forms constructed and laid out\"}}");
     }
 }
