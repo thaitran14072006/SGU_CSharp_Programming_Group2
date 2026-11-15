@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using MocBakery.Models;
+using MocBakery.DAL.Repositories.Inventory;
 using MocBakery.Models.DTOs.Customers;
 using MocBakery.Models.DTOs.Sales;
 using MocBakery.Models.Entities;
@@ -9,7 +10,7 @@ namespace MocBakery.DAL.Repositories.Sales;
 
 public sealed class SalesRepository(DbConnectionFactory db) : ISalesRepository
 {
-    private const string Sellable = "l.TinhTrang=N'DangBan' AND l.SoLuongCon>0 AND l.HanSuDung>=@day";
+    private const string Sellable = "l.TinhTrang=N'DangBan' AND l.SoLuongCon>0 AND l.NgaySanXuat<=@day AND l.HanSuDung>=@day";
 
     public IReadOnlyList<SalesProduct> ListProducts()
     {
@@ -96,17 +97,8 @@ public sealed class SalesRepository(DbConnectionFactory db) : ISalesRepository
                 throw new BusinessException("Sản phẩm đã ngừng kinh doanh hoặc không còn tồn tại.");
             if (orderId is null && currentPrice != item.UnitPrice)
                 throw new BusinessException("Giá bán đã thay đổi. Hãy tải lại danh sách bánh.");
-            using var lots = Db.Command(connection, $"""
-                SELECT l.MaLo,l.HanSuDung,l.SoLuongCon FROM dbo.LoBanh l WITH (UPDLOCK,HOLDLOCK)
-                WHERE l.MaSanPham=@id AND {Sellable} ORDER BY l.HanSuDung,l.MaLo
-                """, transaction);
-            lots.Param("@id", item.ProductId, DbType.Int32);
-            lots.Param("@day", now.Date, DbType.Date);
-            var available = new List<LoBanh>();
-            using (var reader = lots.ExecuteReader())
-                while (reader.Read())
-                    available.Add(new() { MaLo = reader.GetInt32(0), HanDung = reader.GetDateTime(1),
-                        SoLuongCon = reader.GetInt32(2), DuocPhepBan = true });
+            var available = LoBanhRepository.ReadSellableLots(connection, transaction, item.ProductId,
+                DateOnly.FromDateTime(now));
             foreach (var allocation in allocate(available, item.Quantity))
                 invoice.ChiTiet.Add(new() { MaLo = allocation.LotId, SoLuong = allocation.Quantity, DonGia = item.UnitPrice });
         }

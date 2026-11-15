@@ -5,6 +5,8 @@ using MocBakery.GUI.Forms.Orders;
 using MocBakery.GUI.Forms.Reports;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Accounts;
+using MocBakery.GUI.Forms.Catalog;
+using MocBakery.GUI.Forms.Inventory;
 namespace MocBakery.GUI;
 internal sealed class MainForm:Form
 {
@@ -23,6 +25,9 @@ internal sealed class MainForm:Form
   AddNav(nav,"Hóa đơn",()=>ShowPage(new SalesPage(services,session,showInvoices:true)));
   AddNav(nav,"Đặt bánh",()=>ShowPage(new OrderPage(services,session)));
   AddNav(nav,"Khách hàng",()=>ShowPage(new CustomerPage(services,session)));
+  AddNav(nav,"Loại bánh",()=>ShowPage(new CategoryPage(services,session)));
+  AddNav(nav,"Sản phẩm",()=>ShowPage(new ProductPage(services,session)));
+  AddNav(nav,"Kho bánh",()=>ShowPage(new InventoryPage(services,session)));
   if(session.VaiTro==Roles.ChuTiem){AddNav(nav,"Báo cáo",()=>ShowPage(new ReportsPage(services,session)));AddNav(nav,"Tài khoản",()=>ShowPage(new AccountPage(services,session)));}
   AddNav(nav,"Đổi mật khẩu",()=>{using var dialog=new ChangePasswordForm(services,session);dialog.ShowDialog(this);});
   AddNav(nav,"Đăng xuất",()=>{if(Ui.Confirm(this,"Đăng xuất khỏi phiên làm việc?")){services.Auth.Logout(session);SignedOut=true;Close();}});

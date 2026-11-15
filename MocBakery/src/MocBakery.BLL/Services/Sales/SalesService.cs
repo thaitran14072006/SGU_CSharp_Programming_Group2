@@ -41,8 +41,8 @@ public sealed class SalesService(ISalesRepository repository, AuthService auth)
     {
         if (quantity <= 0) throw new BusinessException("Số lượng bán phải lớn hơn 0.");
         var allocations = new List<LotAllocation>();
-        foreach (var lot in lots.Where(lot => lot.DuocPhepBan && lot.SoLuongCon > 0)
-                     .OrderBy(lot => lot.HanDung).ThenBy(lot => lot.MaLo))
+        foreach (var lot in lots.Where(lot => lot.TinhTrang == LotStatus.Selling && lot.SoLuongCon > 0)
+                     .OrderBy(lot => lot.HanSuDung).ThenBy(lot => lot.MaLo))
         {
             int taken = Math.Min(quantity, lot.SoLuongCon);
             allocations.Add(new(lot.MaLo, taken));

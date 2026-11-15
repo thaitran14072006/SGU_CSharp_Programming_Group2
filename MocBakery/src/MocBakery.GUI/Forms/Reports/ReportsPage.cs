@@ -17,6 +17,7 @@ internal sealed class ReportsPage:UserControl
   var chart=new RevenueChart{Dock=DockStyle.Fill,BackColor=Color.White};
   var days=Ui.Grid(("Day","Ngày"),("InvoiceCount","Số hóa đơn"),("Revenue","Doanh thu (đ)"));
   var items=Ui.Grid(("ProductId","Mã"),("Name","Bánh bán chạy"),("Quantity","Số lượng"),("Revenue","Doanh thu (đ)"));
+  IReadOnlyList<RevenueDay> revenue=[];IReadOnlyList<ProductSales> best=[];Dashboard? overview=null;
   var panel=Ui.Flow();Ui.Field(panel,"Từ ngày *",start);Ui.Field(panel,"Đến ngày *",end);
   Ui.Field(panel,"Nhóm theo",grouping);
   panel.Controls.Add(Ui.Button("Xem báo cáo",async(_,_)=>await LoadData(),true));
@@ -30,7 +31,6 @@ internal sealed class ReportsPage:UserControl
   layout.Controls.Add(summary,0,1);layout.SetColumnSpan(summary,2);
   layout.Controls.Add(chart,0,2);layout.SetColumnSpan(chart,2);
   layout.Controls.Add(days,0,3);layout.Controls.Add(items,1,3);Controls.Add(layout);
-  IReadOnlyList<RevenueDay> revenue=[];IReadOnlyList<ProductSales> best=[];Dashboard? overview=null;
   Load+=async(_,_)=>{if(!UiSmoke.Active)await LoadData();};
   grouping.SelectedIndexChanged+=(_,_)=>{if(revenue.Count>0)RefreshSeries();};
   async Task LoadData()=>await Ui.Run(this,errors,new(),async()=>
@@ -88,6 +88,7 @@ internal sealed class ReportsPage:UserControl
  private sealed record ReportRow(string Day,int InvoiceCount,decimal Revenue);
  private sealed class RevenueChart:Control
  {
+  [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
   public List<(string Label,decimal Revenue)> Points{get;set;}=[];
   public RevenueChart(){DoubleBuffered=true;}
   protected override void OnPaint(PaintEventArgs e)

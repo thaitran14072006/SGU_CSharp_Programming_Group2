@@ -1,0 +1,1 @@
+2026-11-15T13:31:34.3690824+07:00 b8c0d8ad31 Microsoft.Data.SqlClient.SqlException HResult=-2146232060

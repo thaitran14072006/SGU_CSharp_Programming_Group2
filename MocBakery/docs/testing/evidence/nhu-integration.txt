@@ -1,0 +1,31 @@
+TEST DATABASE: MocBakery_NhuTest_20261114_214724_a72fee
+PASS SQL category insert and Unicode roundtrip
+PASS SQL unique category handles database collation
+PASS SQL category update
+PASS SQL product insert with decimal price
+PASS SQL duplicate product is friendly error
+PASS SQL category FK prevents delete
+PASS SQL invalid category update is rejected
+PASS SQL price/date validation leaves database unchanged KT04
+PASS SQL receive initializes both quantities
+PASS SQL FEFO / inclusive DATE / stopped / expired KT05
+PASS SQL transaction overload participates without committing
+EVIDENCE product=1; physical=14; sellable=9; expired=3; stopped=2
+PASS SQL stock reconciles 14 physical / 9 sellable
+PASS SQL staff direct write forbidden
+PASS SQL stop and resume valid lot
+PASS SQL resume expired lot cannot bypass expiry
+PASS SQL deactivate product preserves all lots
+PASS SQL DAL guards inactive receive even without service
+PASS SQL reactivation restores eligible stock
+PASS SQL tomorrow excludes today's expiry
+PASS SQL depleted lot excluded
+PASS SQL deletion of unused category
+PASS SQL missing records report friendly errors
+PASS SQL demo seed is repeatable without resetting stock
+RESTORED TEST DATABASE: MocBakery_NhuRestore_df94abc4b0
+PASS SQL backup and restore independent test copy
+No business database was modified. Temporary test databases are cleaned unless --keep-database is specified.
+RESULT: 24 passed, 0 failed
+CLEANED TEST DATABASE: MocBakery_NhuRestore_df94abc4b0
+CLEANED TEST DATABASE: MocBakery_NhuTest_20261114_214724_a72fee

@@ -1,0 +1,91 @@
+Window: "Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm", App: MocBakery.GuiChecks.exe.
+	0 window Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm Secondary Actions: Raise
+		631 window (dialog) Lỗi hệ thống Secondary Actions: Raise
+			632 button OK ID: 2
+			633 image ID: 20
+			634 text Không thể hoàn tất thao tác. Kiểm tra cấu hình/kết nối SQL Server và thử lại. Mã lỗi: b8c0d8ad31 ID: 65535
+			635 title bar (settable, string) Value: Lỗi hệ thống
+				636 button Close
+		1 pane
+			2 text MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+			3 pane MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+				4 button Tổng quan
+				5 button Bán hàng
+				6 button Hóa đơn
+				7 button Đặt bánh
+				8 button Khách hàng
+				9 button Loại bánh
+				10 button Sản phẩm
+				11 button Kho bánh
+				12 button Tài khoản
+				13 button Đổi mật khẩu
+				14 button Đăng xuất
+			15 pane
+				553 pane (disabled) ID: 3016802
+					554 pane (disabled)
+						555 text (disabled) Sản phẩm
+						556 pane (disabled) Sản phẩm
+							557 text field (edit) (disabled, settable, string) Sản phẩm Description: Tìm tên sản phẩm
+							558 combo box (disabled, settable, string) Tất cả loại bánh Value: Tất cả loại bánh
+								559 text (disabled)
+								560 button (disabled) Open
+							561 combo box (disabled, settable, string) Tất cả trạng thái Value: Tất cả trạng thái
+								562 text (disabled)
+								563 button (disabled) Open
+							564 button (disabled) Tìm / Tải lại
+							565 button (disabled) Xem chi tiết
+							566 button (disabled) Thêm bánh
+							567 button (disabled) Sửa / Ngừng bán
+							568 scroll bar (settable, float) Vertical Value: 0 ID: NonClientVerticalScrollBar
+								569 button Line up ID: UpButton
+								570 thumb Position ID: ScrollbarThumb
+								571 button Page down ID: DownPageButton
+								572 button Line down ID: DownButton
+						573 data grid (disabled)
+							574 custom (disabled) Top Row
+								575 header (disabled) Mã ID: 4213312032
+								576 header (disabled) Tên bánh ID: 4238838693
+								577 header (disabled) Loại bánh ID: 4235140970
+								578 header (disabled) Đơn vị ID: 4254179428
+								579 header (disabled) Giá bán ID: 4233243924
+								580 header (disabled) Kinh doanh ID: 4229517836
+								581 header (disabled) Mô tả ID: 4248187549
+							607 custom (disabled) Row 1
+								608 data item (item) (disabled) Mã Row 1, Not sorted. Value: 1 ID: 4217276552
+								609 data item (item) (disabled) Tên bánh Row 1, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4223268594
+								610 data item (item) (disabled) Loại bánh Row 1, Not sorted. Value: DEMO - Bánh Mộc ID: 4234056278
+								611 data item (item) (disabled) Đơn vị Row 1, Not sorted. Value: Cái ID: 4240078440
+								612 data item (item) (disabled) Giá bán Row 1, Not sorted. Value: 25.000,00 ID: 4251257679
+								613 data item (item) (disabled) Kinh doanh Row 1, Not sorted. Value: Đang bán ID: 4262370057
+								614 data item (item) (disabled) Mô tả Row 1, Not sorted. Value: Tồn ban đầu: 14; có thể bán: 9 ID: 425504385
+							615 custom (disabled) Row 2
+								616 data item (item) (disabled) Mã Row 2, Not sorted. Value: 2 ID: 421987186
+								617 data item (item) (disabled) Tên bánh Row 2, Not sorted. Value: DEMO - Bánh ngừng kinh doanh ID: 4225833429
+								618 data item (item) (disabled) Loại bánh Row 2, Not sorted. Value: DEMO - Bánh Mộc ID: 42290264
+								619 data item (item) (disabled) Đơn vị Row 2, Not sorted. Value: Cái ID: 423773441
+								620 data item (item) (disabled) Giá bán Row 2, Not sorted. Value: 30.000,00 ID: 4249054740
+								621 data item (item) (disabled) Kinh doanh Row 2, Not sorted. Value: Ngừng bán ID: 4233731848
+								622 data item (item) (disabled) Mô tả Row 2, Not sorted. Value: (null) ID: 4235860843
+							623 custom (disabled) Row 3
+								624 data item (item) (disabled) Mã Row 3, Not sorted. Value: 3 ID: 4220684820
+								625 data item (item) (disabled) Tên bánh Row 3, Not sorted. Value: GUI - Bánh kem thử ID: 42467213
+								626 data item (item) (disabled) Loại bánh Row 3, Not sorted. Value: GUI - Bánh thử 15-11 ID: 426073781
+								627 data item (item) (disabled) Đơn vị Row 3, Not sorted. Value: Cái ID: 4211850296
+								628 data item (item) (disabled) Giá bán Row 3, Not sorted. Value: 40.000,00 ID: 4219836132
+								629 data item (item) (disabled) Kinh doanh Row 3, Not sorted. Value: Đang bán ID: 4256543126
+								630 data item (item) (disabled) Mô tả Row 3, Not sorted. Value: (null) ID: 4263972006
+						606 text (disabled) 3 sản phẩm • Giữ sản phẩm ngừng kinh doanh để bảo toàn lịch sử
+		57 title bar (settable, string) Value: Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm
+			58 menu bar System ID: MenuBar
+				59 menu item System
+			60 button Minimize
+			61 button Maximize
+			62 button Close
+		631 window (dialog) Lỗi hệ thống Secondary Actions: Raise
+			632 button OK ID: 2
+			633 image ID: 20
+			634 text Không thể hoàn tất thao tác. Kiểm tra cấu hình/kết nối SQL Server và thử lại. Mã lỗi: b8c0d8ad31 ID: 65535
+			635 title bar (settable, string) Value: Lỗi hệ thống
+				636 button Close
+
+The focused UI element is 557 text field (edit) (disabled, settable, string) Sản phẩm Description: Tìm tên sản phẩm.

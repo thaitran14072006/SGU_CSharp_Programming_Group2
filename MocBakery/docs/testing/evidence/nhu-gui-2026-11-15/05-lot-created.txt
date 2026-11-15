@@ -1,0 +1,125 @@
+Window: "Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm", App: MocBakery.GuiChecks.exe.
+	0 window Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm Secondary Actions: Raise
+		1 pane
+			2 text MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+			3 pane MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+				4 button Tổng quan
+				5 button Bán hàng
+				6 button Hóa đơn
+				7 button Đặt bánh
+				8 button Khách hàng
+				9 button Loại bánh
+				10 button Sản phẩm
+				11 button Kho bánh
+				12 button Tài khoản
+				13 button Đổi mật khẩu
+				14 button Đăng xuất
+			15 pane
+				158 pane ID: 2951266
+					159 pane
+						160 text Kho bánh và hạn dùng
+						161 pane Kho bánh và hạn dùng
+							162 text field (edit) (settable, string) Kho bánh và hạn dùng Description: Tìm tên bánh trong tổng tồn
+							163 combo box (settable, string) Tất cả sản phẩm Value: Tất cả sản phẩm
+								164 text
+								165 button Open
+							166 combo box (settable, string) Tất cả lô Value: Tất cả lô
+								167 text
+								168 button Open
+							169 button Tìm / Tải lại
+							170 button Chi tiết lô
+							171 button Nhập lô
+							172 button Ngừng bán lô
+							173 button Cho bán lại
+						174 tab
+							217 pane Chi tiết lô • FEFO
+								218 data grid
+									219 scroll bar (settable, float) Vertical Value: 0
+										220 button Line up
+										221 thumb Position
+										222 button Page down
+										223 button Line down
+									224 custom Top Row
+										225 header Mã lô ID: 4259769885
+										226 header Tên bánh ID: 4238811001
+										227 header Ngày SX ID: 4234780975
+										228 header Hạn dùng ID: 4249499501
+										229 header SL nhập ID: 4239513739
+										230 header SL còn ID: 4243916562
+										231 header Trạng thái ID: 4234044397
+										232 header Nguồn nhập ID: 4239923983
+									233 custom Row 1
+										234 data item (item) Mã lô Row 1, Not sorted. Value: 3 ID: 4236266745
+										235 data item (item) Tên bánh Row 1, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 421705646
+										236 data item (item) Ngày SX Row 1, Not sorted. Value: 12/11/2026 ID: 4222173400
+										237 data item (item) Hạn dùng Row 1, Not sorted. Value: 14/11/2026 ID: 4219818744
+										238 data item (item) SL nhập Row 1, Not sorted. Value: 3 ID: 4256317088
+										239 data item (item) SL còn Row 1, Not sorted. Value: 3 ID: 4261033505
+										240 data item (item) Trạng thái Row 1, Not sorted. Value: Hết hạn ID: 4255238071
+										241 data item (item) Nguồn nhập Row 1, Not sorted. Value: DEMO ID: 4247006295
+									242 custom Row 2
+										243 data item (item) Mã lô Row 2, Not sorted. Value: 1 ID: 4254952078
+										244 data item (item) Tên bánh Row 2, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4243288385
+										245 data item (item) Ngày SX Row 2, Not sorted. Value: 14/11/2026 ID: 4225878103
+										246 data item (item) Hạn dùng Row 2, Not sorted. Value: 15/11/2026 ID: 42871023
+										247 data item (item) SL nhập Row 2, Not sorted. Value: 4 ID: 4211323310
+										248 data item (item) SL còn Row 2, Not sorted. Value: 4 ID: 4212985309
+										249 data item (item) Trạng thái Row 2, Not sorted. Value: Có thể bán ID: 4234591298
+										250 data item (item) Nguồn nhập Row 2, Not sorted. Value: DEMO ID: 4247033697
+									251 custom Row 3
+										252 data item (item) Mã lô Row 3, Not sorted. Value: 7 ID: 4225506075
+										253 data item (item) Tên bánh Row 3, Not sorted. Value: GUI - Bánh kem thử ID: 4263143526
+										254 data item (item) Ngày SX Row 3, Not sorted. Value: 15/11/2026 ID: 4215559471
+										255 data item (item) Hạn dùng Row 3, Not sorted. Value: 15/11/2026 ID: 42946539
+										256 data item (item) SL nhập Row 3, Not sorted. Value: 6 ID: 4212305011
+										257 data item (item) SL còn Row 3, Not sorted. Value: 6 ID: 4225747421
+										258 data item (item) Trạng thái Row 3, Not sorted. Value: Có thể bán ID: 4266281021
+										259 data item (item) Nguồn nhập Row 3, Not sorted. Value: GUI Test 15-11 ID: 4256346906
+									260 custom Row 4
+										261 data item (item) Mã lô Row 4, Not sorted. Value: 4 ID: 4237991716
+										262 data item (item) Tên bánh Row 4, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4224130271
+										263 data item (item) Ngày SX Row 4, Not sorted. Value: 15/11/2026 ID: 4245258072
+										264 data item (item) Hạn dùng Row 4, Not sorted. Value: 17/11/2026 ID: 4251484025
+										265 data item (item) SL nhập Row 4, Not sorted. Value: 2 ID: 4265312552
+										266 data item (item) SL còn Row 4, Not sorted. Value: 2 ID: 4243756808
+										267 data item (item) Trạng thái Row 4, Not sorted. Value: Ngừng bán ID: 4231967602
+										268 data item (item) Nguồn nhập Row 4, Not sorted. Value: DEMO ID: 4212925652
+									269 custom Row 5
+										270 data item (item) Mã lô Row 5, Not sorted. Value: 2 ID: 4260366207
+										271 data item (item) Tên bánh Row 5, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4246563188
+										272 data item (item) Ngày SX Row 5, Not sorted. Value: 15/11/2026 ID: 421341678
+										273 data item (item) Hạn dùng Row 5, Not sorted. Value: 18/11/2026 ID: 4217441826
+										274 data item (item) SL nhập Row 5, Not sorted. Value: 5 ID: 4225417156
+										275 data item (item) SL còn Row 5, Not sorted. Value: 5 ID: 4261987579
+										276 data item (item) Trạng thái Row 5, Not sorted. Value: Có thể bán ID: 42532165
+										277 data item (item) Nguồn nhập Row 5, Not sorted. Value: DEMO ID: 426918157
+									278 custom Row 6
+										279 data item (item) Mã lô Row 6, Not sorted. Value: 5 ID: 428027073
+										280 data item (item) Tên bánh Row 6, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4237243092
+										281 data item (item) Ngày SX Row 6, Not sorted. Value: 15/11/2026 ID: 4214398157
+										282 data item (item) Hạn dùng Row 6, Not sorted. Value: 18/11/2026 ID: 4252958320
+										283 data item (item) SL nhập Row 6, Not sorted. Value: 1 ID: 4217369524
+										284 data item (item) SL còn Row 6, Not sorted. Value: 0 ID: 4224477223
+										285 data item (item) Trạng thái Row 6, Not sorted. Value: Hết hàng ID: 4249768451
+										286 data item (item) Nguồn nhập Row 6, Not sorted. Value: DEMO ID: 4243010096
+									287 custom Row 7
+										288 data item (item) Mã lô Row 7, Not sorted. Value: 6 ID: 4220949041
+										289 data item (item) Tên bánh Row 7, Not sorted. Value: DEMO - Bánh ngừng kinh doanh ID: 423902084
+										290 data item (item) Ngày SX Row 7, Not sorted. Value: 15/11/2026 ID: 4250727104
+										291 data item (item) Hạn dùng Row 7, Not sorted. Value: 18/11/2026 ID: 4255472578
+										292 data item (item) SL nhập Row 7, Not sorted. Value: 7 ID: 4250054882
+										293 data item (item) SL còn Row 7, Not sorted. Value: 7 ID: 4246733697
+										294 data item (item) Trạng thái Row 7, Not sorted. Value: Sản phẩm ngừng kinh doanh ID: 423558286
+										295 data item (item) Nguồn nhập Row 7, Not sorted. Value: (null) ID: 4246257726
+							213 tab item (selectable) Tổng tồn
+							214 tab item (selectable) Chi tiết lô • FEFO
+						215 text 3 sản phẩm • 7 lô theo bộ lọc • Cập nhật 15/11/2026 13:29:02
+						216 text Hạn dùng có hiệu lực hết ngày ghi trên lô. Tồn hết hạn và ngừng bán có thể trùng nhau. Nhấp đúp sản phẩm để xem lô. Tải lại để cập nhật sau bán hàng hoặc sang ngày mới.
+		57 title bar (settable, string) Value: Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm
+			58 menu bar System ID: MenuBar
+				59 menu item System
+			60 button Minimize
+			61 button Maximize
+			62 button Close
+
+The focused UI element is 162 text field (edit) (settable, string) Kho bánh và hạn dùng Description: Tìm tên bánh trong tổng tồn.

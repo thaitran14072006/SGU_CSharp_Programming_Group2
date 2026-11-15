@@ -1,0 +1,12 @@
+  MocBakery.Models -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.Models\bin\Release\net10.0\MocBakery.Models.dll
+  MocBakery.DAL -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.DAL\bin\Release\net10.0\MocBakery.DAL.dll
+  MocBakery.BLL -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.BLL\bin\Release\net10.0\MocBakery.BLL.dll
+  MocBakery.UnitChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\Unit\bin\Release\net10.0\MocBakery.UnitChecks.dll
+  MocBakery.CatalogInventoryChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\Unit\CatalogInventory\bin\Release\net10.0\MocBakery.CatalogInventoryChecks.dll
+  MocBakery.GUI -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.GUI\bin\Release\net10.0-windows\MocBakery.GUI.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.36

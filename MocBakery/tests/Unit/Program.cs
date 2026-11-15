@@ -65,8 +65,8 @@ Check("Locking an account rejects its next operation",()=>{service.Save(owner,2,
 Check("Revoked role is checked again by BLL",()=>{int id=service.Save(owner,0,new("owner2","Chủ 2",Roles.ChuTiem,true,"OwnerTwo@123"));var s=auth.Login("owner2","OwnerTwo@123");service.Save(owner,id,new("owner2","Chủ 2",Roles.NhanVien,true,""));Reject(()=>service.List(s));});
 Check("Owner can reset locked account without unlocking it",()=>{service.ResetPassword(owner,3,"ResetLocked@123");Assert(PasswordHasher.Verify("ResetLocked@123",repo.FindById(3)!.MatKhauHash));Reject(()=>auth.Login("locked","ResetLocked@123"));});
 Check("Logout invalidates session",()=>{var s=auth.Login("admin","Owner@123");auth.Logout(s);Reject(()=>cs.Search(s,""));});
-var near = new LoBanh { MaLo = 101, HanDung = new DateTime(2026,11,16), SoLuongCon = 4, DuocPhepBan = true };
-var later = new LoBanh { MaLo = 102, HanDung = new DateTime(2026,11,18), SoLuongCon = 5, DuocPhepBan = true };
+var near = new LoBanh(101, 1, new DateTime(2026,11,15), null, new(2026,11,15), new(2026,11,16), 4, 4, LotStatus.Selling);
+var later = near with { MaLo = 102, HanSuDung = new(2026,11,18), SoLuongNhap = 5, SoLuongCon = 5 };
 Check("KT06: FEFO allocates 4 + 2", () =>
 {
     var lines = SalesService.Allocate([later, near], 6);

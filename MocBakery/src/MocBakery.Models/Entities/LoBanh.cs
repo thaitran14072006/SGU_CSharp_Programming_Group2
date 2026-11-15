@@ -1,11 +1,7 @@
 namespace MocBakery.Models.Entities;
-
-public class LoBanh
+public static class LotStatus
 {
-    public int MaLo { get; set; }
-    public int MaSP { get; set; }
-    public DateTime NgaySanXuat { get; set; }
-    public DateTime HanDung { get; set; }
-    public int SoLuongCon { get; set; }
-    public bool DuocPhepBan { get; set; }
+    public const string Selling = "DangBan", Stopped = "NgungBan";
 }
+public sealed record LoBanh(int MaLo, int MaSanPham, DateTime NgayNhap, string? NguonNhap,
+    DateOnly NgaySanXuat, DateOnly HanSuDung, int SoLuongNhap, int SoLuongCon, string TinhTrang);

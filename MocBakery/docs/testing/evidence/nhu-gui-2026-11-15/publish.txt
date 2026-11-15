@@ -1,0 +1,7 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  MocBakery.Models -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.Models\bin\Release\net10.0\MocBakery.Models.dll
+  MocBakery.BLL -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.BLL\bin\Release\net10.0\MocBakery.BLL.dll
+  MocBakery.DAL -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.DAL\bin\Release\net10.0\MocBakery.DAL.dll
+  MocBakery.GUI -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.GUI\bin\Release\net10.0-windows\MocBakery.GUI.dll
+  MocBakery.GUI -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\artifacts\publish\

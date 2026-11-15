@@ -1,0 +1,84 @@
+Window: "Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm", App: MocBakery.GuiChecks.exe.
+	0 window Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm Secondary Actions: Raise
+		1 pane
+			2 text MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+			3 pane MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+				4 button Tổng quan
+				5 button Bán hàng
+				6 button Hóa đơn
+				7 button Đặt bánh
+				8 button Khách hàng
+				9 button Loại bánh
+				10 button Sản phẩm
+				11 button Kho bánh
+				12 button Tài khoản
+				13 button Đổi mật khẩu
+				14 button Đăng xuất
+			15 pane
+				158 pane ID: 2951266
+					159 pane
+						160 text Kho bánh và hạn dùng
+						161 pane Kho bánh và hạn dùng
+							162 text field (edit) (settable, string) Kho bánh và hạn dùng Description: Tìm tên bánh trong tổng tồn
+							163 combo box (settable, string) Tất cả sản phẩm Value: Tất cả sản phẩm
+								164 text
+								165 button Open
+							166 combo box (settable, string) Tất cả lô Value: Tất cả lô
+								167 text
+								168 button Open
+							169 button Tìm / Tải lại
+							170 button Chi tiết lô
+							171 button Nhập lô
+							172 button Ngừng bán lô
+							173 button Cho bán lại
+						174 tab
+							366 pane Tổng tồn
+								367 data grid
+									368 custom Top Row
+										369 header Mã ID: 4244094127
+										370 header Tên bánh ID: 4236352739
+										371 header Đơn vị ID: 422823569
+										372 header Kinh doanh ID: 4236706407
+										373 header Tồn vật lý ID: 427421245
+										374 header Có thể bán ID: 4229367324
+										375 header Hết hạn ID: 4246230895
+										376 header Ngừng bán ID: 4264130729
+									377 custom Row 1
+										378 data item (item) Mã Row 1, Not sorted. Value: 1 ID: 4248754644
+										379 data item (item) Tên bánh Row 1, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4229830600
+										380 data item (item) Đơn vị Row 1, Not sorted. Value: Cái ID: 4252253491
+										381 data item (item) Kinh doanh Row 1, Not sorted. Value: Đang bán ID: 428206750
+										382 data item (item) Tồn vật lý Row 1, Not sorted. Value: 14 ID: 4239578895
+										383 data item (item) Có thể bán Row 1, Not sorted. Value: 9 ID: 4244763594
+										384 data item (item) Hết hạn Row 1, Not sorted. Value: 3 ID: 4245055814
+										385 data item (item) Ngừng bán Row 1, Not sorted. Value: 2 ID: 4248854673
+									386 custom Row 2
+										387 data item (item) Mã Row 2, Not sorted. Value: 2 ID: 4230058696
+										388 data item (item) Tên bánh Row 2, Not sorted. Value: DEMO - Bánh ngừng kinh doanh ID: 4255218736
+										389 data item (item) Đơn vị Row 2, Not sorted. Value: Cái ID: 4246754932
+										390 data item (item) Kinh doanh Row 2, Not sorted. Value: Ngừng bán ID: 423834346
+										391 data item (item) Tồn vật lý Row 2, Not sorted. Value: 7 ID: 4249846502
+										392 data item (item) Có thể bán Row 2, Not sorted. Value: 0 ID: 4244024751
+										393 data item (item) Hết hạn Row 2, Not sorted. Value: 0 ID: 4235450851
+										394 data item (item) Ngừng bán Row 2, Not sorted. Value: 0 ID: 4258207884
+									395 custom Row 3
+										396 data item (item) Mã Row 3, Not sorted. Value: 3 ID: 4239238336
+										397 data item (item) Tên bánh Row 3, Not sorted. Value: GUI - Bánh kem thử ID: 4240336329
+										398 data item (item) Đơn vị Row 3, Not sorted. Value: Cái ID: 4254610233
+										399 data item (item) Kinh doanh Row 3, Not sorted. Value: Đang bán ID: 4238844397
+										400 data item (item) Tồn vật lý Row 3, Not sorted. Value: 6 ID: 4235215125
+										401 data item (item) Có thể bán Row 3, Not sorted. Value: 0 ID: 4255143446
+										402 data item (item) Hết hạn Row 3, Not sorted. Value: 0 ID: 4245776161
+										403 data item (item) Ngừng bán Row 3, Not sorted. Value: 6 ID: 4258219192
+							213 tab item (selectable) Tổng tồn
+							214 tab item (selectable) Chi tiết lô • FEFO
+						215 text 3 sản phẩm • 7 lô theo bộ lọc • Cập nhật 15/11/2026 13:29:27
+						216 text Hạn dùng có hiệu lực hết ngày ghi trên lô. Tồn hết hạn và ngừng bán có thể trùng nhau. Nhấp đúp sản phẩm để xem lô. Tải lại để cập nhật sau bán hàng hoặc sang ngày mới.
+		57 title bar (settable, string) Value: Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm
+			58 menu bar System ID: MenuBar
+				59 menu item System
+			60 button Minimize
+			61 button Maximize
+			62 button Close
+
+The focused UI element is 162 text field (edit) (settable, string) Kho bánh và hạn dùng Description: Tìm tên bánh trong tổng tồn.

@@ -1,0 +1,34 @@
+Window: "Thêm loại bánh • Mộc Bakery", App: MocBakery.GuiChecks.exe.
+	0 window Thêm loại bánh • Mộc Bakery Secondary Actions: Raise
+		17 window (dialog) Kiểm tra thông tin Secondary Actions: Raise
+			18 button OK ID: 2
+			19 image ID: 20
+			20 text Tên loại phải có 1–100 ký tự. ID: 65535
+			21 title bar (settable, string) Value: Kiểm tra thông tin
+				22 button Close
+		1 pane
+			2 text Thêm loại bánh
+			3 pane Thêm loại bánh
+				4 pane Thêm loại bánh
+					23 group (disabled) Error provider
+						23 image (disabled) Tên loại phải có 1–100 ký tự.
+					5 text Tên loại *
+					6 text field (edit) (settable, string) Tên loại *
+				7 pane
+					8 text Mô tả
+					9 text field (edit) (settable, string) Mô tả
+			10 pane
+				11 button Lưu
+				12 button Hủy
+		13 title bar (settable, string) Value: Thêm loại bánh • Mộc Bakery
+			14 menu bar System ID: MenuBar
+				15 menu item System
+			16 button Close
+		17 window (dialog) Kiểm tra thông tin Secondary Actions: Raise
+			18 button OK ID: 2
+			19 image ID: 20
+			20 text Tên loại phải có 1–100 ký tự. ID: 65535
+			21 title bar (settable, string) Value: Kiểm tra thông tin
+				22 button Close
+
+The focused UI element is 6 text field (edit) (settable, string) Tên loại *.

@@ -17,7 +17,8 @@ internal sealed class SalesPage : UserControl
     private readonly UserSession session;
     private readonly ErrorProvider errors;
 
-    internal SalesPage(AppServices services, UserSession session, bool showInvoices = false)
+    internal SalesPage(AppServices services, UserSession session, bool showInvoices = false,
+        IReadOnlyList<SalesProduct>? previewProducts = null)
     {
         this.services = services;
         this.session = session;
@@ -25,10 +26,10 @@ internal sealed class SalesPage : UserControl
         Disposed += (_, _) => errors.Dispose();
         BackColor = Surface;
         ForeColor = Ink;
-        Controls.Add(showInvoices ? CreateInvoices() : CreateCheckout());
+        Controls.Add(showInvoices ? CreateInvoices() : CreateCheckout(previewProducts));
     }
 
-    private Control CreateCheckout()
+    private Control CreateCheckout(IReadOnlyList<SalesProduct>? previewProducts)
     {
         var page = Page("Bán hàng", "Chọn bánh, lập giỏ hàng và thanh toán tại quầy.");
         var split = CreateLayout(2);
@@ -69,9 +70,8 @@ internal sealed class SalesPage : UserControl
         total.Margin = new Padding(0, 12, 0, 8);
         var cartActions = Toolbar();
         var quantity = new NumericUpDown { Minimum = 1, Maximum = int.MaxValue, Width = 68 };
-        var update = ActionButton("Đổi SL", false);
         var remove = ActionButton("Xóa dòng", false);
-        cartActions.Controls.AddRange([quantity, update, remove]);
+        cartActions.Controls.AddRange([TextLabel("Số lượng", 10), quantity, remove]);
         var pay = ActionButton("Thanh toán");
         pay.Dock = DockStyle.Top;
         order.Controls.Add(TextLabel("Đơn bán tại quầy", 17, true), 0, 0);
@@ -88,6 +88,7 @@ internal sealed class SalesPage : UserControl
 
         IReadOnlyList<SalesProduct> inventory = [];
         var cart = new Dictionary<int, CartRow>();
+        bool syncingQuantity = false;
         int? customerId = null;
         var reload = ActionButton("Làm mới", false);
         filters.Controls.AddRange([category, reload]);
@@ -104,16 +105,14 @@ internal sealed class SalesPage : UserControl
             customer.Text = selected.HoTen;
         };
         guest.Click += (_, _) => ClearCustomer();
-        cartGrid.SelectionChanged += (_, _) =>
+        cartGrid.CurrentCellChanged += (_, _) => SyncQuantity();
+        quantity.ValueChanged += (_, _) =>
         {
-            if (cartGrid.CurrentRow?.DataBoundItem is CartRow row) quantity.Value = row.Quantity;
+            if (syncingQuantity || cartGrid.CurrentRow?.DataBoundItem is not CartRow row) return;
+            row.Quantity = (int)quantity.Value;
+            cartGrid.Refresh();
+            RefreshTotal();
         };
-        update.Click += async (_, _) => await Run(() =>
-        {
-            if (cartGrid.CurrentRow?.DataBoundItem is CartRow row)
-                SetQuantity(inventory.FirstOrDefault(product => product.Id == row.ProductId), (long)quantity.Value);
-            return Task.CompletedTask;
-        });
         remove.Click += (_, _) =>
         {
             if (cartGrid.CurrentRow?.DataBoundItem is CartRow row) cart.Remove(row.ProductId);
@@ -121,6 +120,8 @@ internal sealed class SalesPage : UserControl
         };
         pay.Click += async (_, _) => await Run(async () =>
         {
+            // Reading Value validates any text still being edited in the quantity box.
+            _ = quantity.Value;
             if (cart.Count == 0) throw new BusinessException("Giỏ hàng đang trống.");
             if (!Ui.Confirm(this, $"Xác nhận thanh toán {Money(cart.Values.Sum(row => row.Total))}?")) return;
             var items = cart.Values.Select(row => new CartItem(row.ProductId, row.Quantity, row.Price)).ToArray();
@@ -134,14 +135,22 @@ internal sealed class SalesPage : UserControl
             await LoadProducts();
         });
 
-        Load += async (_, _) => { if (!UiSmoke.Active) await Run(LoadProducts); };
+        Load += async (_, _) =>
+        {
+            if (previewProducts is not null) SetProducts(previewProducts);
+            else if (!UiSmoke.Active) await Run(LoadProducts);
+        };
         RefreshCart();
         return page;
 
         async Task LoadProducts()
         {
             var rows = await Task.Run(() => services.Sales.Products(session));
-            if (IsDisposed) return;
+            if (!IsDisposed) SetProducts(rows);
+        }
+
+        void SetProducts(IReadOnlyList<SalesProduct> rows)
+        {
             inventory = rows;
             foreach (var product in inventory)
                 if (cart.TryGetValue(product.Id, out var row))
@@ -206,6 +215,29 @@ internal sealed class SalesPage : UserControl
                 foreach (DataGridViewRow row in cartGrid.Rows)
                     if (row.DataBoundItem is CartRow item && item.ProductId == id)
                         cartGrid.CurrentCell = row.Cells[0];
+            SyncQuantity();
+            RefreshTotal();
+        }
+
+        void SyncQuantity()
+        {
+            syncingQuantity = true;
+            try
+            {
+                var row = cartGrid.CurrentRow?.DataBoundItem as CartRow;
+                long stock = row is null ? 0 : inventory.FirstOrDefault(product => product.Id == row.ProductId)?.Stock ?? 0;
+                quantity.Enabled = row is not null;
+                quantity.Maximum = Math.Clamp(stock, row?.Quantity ?? 1, int.MaxValue);
+                quantity.Value = row?.Quantity ?? 1;
+            }
+            finally
+            {
+                syncingQuantity = false;
+            }
+        }
+
+        void RefreshTotal()
+        {
             total.Text = $"Phải trả   {Money(cart.Values.Sum(row => row.Total))}";
             pay.Enabled = cart.Count > 0;
         }
@@ -375,8 +407,9 @@ internal sealed class SalesPage : UserControl
         return grid;
     }
 
-    private sealed record CartRow(int ProductId, string Name, int Quantity, decimal Price)
+    private sealed record CartRow(int ProductId, string Name, int InitialQuantity, decimal Price)
     {
+        public int Quantity { get; set; } = InitialQuantity;
         public decimal Total => Quantity * Price;
     }
 
