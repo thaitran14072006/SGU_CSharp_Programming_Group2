@@ -1,5 +1,7 @@
 # Đóng góp Chương 6 của Như
 
+Bản lịch sử trước Excel. Nội dung báo cáo hiện hành: `Nhu_TheoThietKeExcel.md` cùng thư mục.
+
 ## 6.1 Kết luận
 
 Phần Catalog và Inventory cung cấp quản lý loại bánh, sản phẩm, nhập lô, tra cứu tồn và kiểm soát hạn dùng.

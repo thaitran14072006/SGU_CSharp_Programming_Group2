@@ -1,5 +1,7 @@
 # Bàn giao Catalog và Inventory
 
+Đây là bàn giao bản trước Excel; cập nhật schema, giao diện, quyền Kho và phiếu nhập tại `ExcelDesign_Update.md`.
+
 Như hiện thực Model, Repository, Service, giao diện và kiểm thử cho `LoaiBanh`, `SanPham`, `LoBanh`.
 Không bổ sung bảng, không thay đổi khóa và không sửa nghiệp vụ Accounts/Customers.
 Schema bổ sung các thiết lập SET để chạy nhất quán qua SqlClient và sqlcmd, gồm QUOTED_IDENTIFIER cho filtered index.

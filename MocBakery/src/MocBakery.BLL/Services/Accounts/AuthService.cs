@@ -18,7 +18,7 @@ public sealed class AuthService(IAccountRepository accounts)
         if (account is null || !verified)
             throw new BusinessException("Tên đăng nhập hoặc mật khẩu không đúng");
         if (!account.TrangThai) throw new BusinessException("Tài khoản không còn hoạt động.");
-        if (account.VaiTro is not (Roles.ChuTiem or Roles.NhanVien))
+        if (!Roles.IsValid(account.VaiTro))
             throw new BusinessException("Vai trò tài khoản không hợp lệ.");
         string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         sessions[token] = (account.MaTaiKhoan, account.MatKhauHash);
@@ -35,7 +35,7 @@ public sealed class AuthService(IAccountRepository accounts)
             Logout(session);
             throw new BusinessException("Tài khoản hoặc mật khẩu đã thay đổi. Vui lòng đăng nhập lại.");
         }
-        if (account.VaiTro is not (Roles.ChuTiem or Roles.NhanVien) || (owner && account.VaiTro != Roles.ChuTiem))
+        if (!Roles.IsValid(account.VaiTro) || (owner && account.VaiTro != Roles.ChuTiem))
             throw new BusinessException("Chỉ chủ tiệm được thực hiện chức năng này.");
         return account;
     }

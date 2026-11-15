@@ -25,3 +25,16 @@ Không gọi script NewFixture liên tục để tránh chiếm dung lượng.
 Kịch bản và bằng chứng lần chạy thật được ghi ở `docs/testing/results/2026-11-15-nhu-gui.md`.
 Sau kịch bản đó, chạy `VerifyGuiFixture.sql` trên đúng CSDL thử để xác nhận giá 40.000 và tồn 6.
 Kết quả fixture session không thay thế kiểm thử đăng nhập, máy thứ hai hoặc transaction của Sales/Orders.
+
+## Bản giao diện theo Excel
+
+`PrepareGuiFixture.ps1 -NewFixture` tạo schema 15 bảng hiện hành. Fixture cũ cần migration 02 trước khi mở GUI mới.
+Để tự kiểm tra các form qua sự kiện WinForms và SQL thật:
+
+```powershell
+dotnet .\MocBakery\tests\System\bin\Release\net10.0-windows\MocBakery.GuiChecks.dll --verify-design --owner
+```
+
+Bộ kiểm tra chạy trong message loop WinForms, lưu dữ liệu thật vào fixture và trả lời xác nhận qua callback nội bộ,
+không điều khiển chuột/bàn phím hoặc chụp màn hình desktop. `MOCBAKERY_UI_OUTPUT` chọn nơi lưu ảnh render.
+Nó kiểm tra phiếu nhiều dòng, nháp/ghi sổ và quyền Thu ngân. Hướng dẫn hiện hành ở `docs/deployment/ExcelDesign_Update.md`.

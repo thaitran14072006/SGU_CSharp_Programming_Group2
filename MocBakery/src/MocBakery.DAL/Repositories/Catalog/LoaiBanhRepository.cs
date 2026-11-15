@@ -8,17 +8,18 @@ public sealed class LoaiBanhRepository(DbConnectionFactory db) : ILoaiBanhReposi
     public IReadOnlyList<LoaiBanh> List()
     {
         using var c = db.Open();
-        using var q = Db.Command(c, "SELECT MaLoai,TenLoai,MoTa FROM dbo.LoaiBanh ORDER BY TenLoai,MaLoai");
+        using var q = Db.Command(c, "SELECT MaLoai,TenLoai,MoTa,DangSuDung FROM dbo.LoaiBanh ORDER BY TenLoai,MaLoai");
         using var r = q.ExecuteReader(); List<LoaiBanh> rows = [];
-        while (r.Read()) rows.Add(new(r.GetInt32(0),r.GetString(1),r.IsDBNull(2) ? null : r.GetString(2)));
+        while (r.Read()) rows.Add(new(r.GetInt32(0),r.GetString(1),r.IsDBNull(2) ? null : r.GetString(2),r.GetBoolean(3)));
         return rows;
     }
     public int Save(LoaiBanh input)
     {
         using var c = db.Open();
         using var q = Db.Command(c, input.MaLoai == 0
-            ? "INSERT dbo.LoaiBanh(TenLoai,MoTa) OUTPUT INSERTED.MaLoai VALUES(@name,@note)"
-            : "UPDATE dbo.LoaiBanh SET TenLoai=@name,MoTa=@note OUTPUT INSERTED.MaLoai WHERE MaLoai=@id");
+            ? "INSERT dbo.LoaiBanh(TenLoai,MoTa,DangSuDung) OUTPUT INSERTED.MaLoai VALUES(@name,@note,@active)"
+            : "UPDATE dbo.LoaiBanh SET TenLoai=@name,MoTa=@note,DangSuDung=@active OUTPUT INSERTED.MaLoai WHERE MaLoai=@id");
+        q.Param("@active",input.DangSuDung,DbType.Boolean);
         q.Param("@name",input.TenLoai,DbType.String,100); q.Param("@note",input.MoTa,DbType.String,255);
         if (input.MaLoai != 0) q.Param("@id",input.MaLoai,DbType.Int32);
         try { return Convert.ToInt32(q.ExecuteScalar() ?? throw new BusinessException("Loại bánh không còn tồn tại. Hãy tải lại.")); }

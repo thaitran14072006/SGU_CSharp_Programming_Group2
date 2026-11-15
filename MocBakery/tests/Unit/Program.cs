@@ -35,7 +35,7 @@ Check("Forged owner data does not elevate staff",()=>Reject(()=>service.List(sta
 Check("Unissued token rejected",()=>Reject(()=>service.List(owner with {Token="fake"})));
 Check("Owner can create staff",()=>{int id=service.Save(owner,0,new("newstaff","Người dùng mới",Roles.NhanVien,true,"Valid@123"));Assert(id>0&&auth.Login("newstaff","Valid@123").VaiTro==Roles.NhanVien);});
 Check("Duplicate username case insensitive",()=>Reject(()=>service.Save(owner,0,new("STAFF","Trùng",Roles.NhanVien,true,"Valid@123")),"Username"));
-Check("Reject invalid role",()=>Reject(()=>service.Save(owner,0,new("other","Tên","Kho",true,"Valid@123")),"Role"));
+Check("Reject invalid role",()=>Reject(()=>service.Save(owner,0,new("other","Tên","KhongHopLe",true,"Valid@123")),"Role"));
 Check("Reject blank account full name",()=>Reject(()=>service.Save(owner,0,new("other"," ",Roles.NhanVien,true,"Valid@123")),"FullName"));
 Check("Reject short password",()=>Reject(()=>service.Save(owner,0,new("other","Tên",Roles.NhanVien,true,"short")),"Password"));
 Check("Staff cannot create owner",()=>Reject(()=>service.Save(staff,0,new("evil","Tên",Roles.ChuTiem,true,"Valid@123"))));
