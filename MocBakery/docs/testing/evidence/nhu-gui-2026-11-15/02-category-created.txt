@@ -1,0 +1,53 @@
+Window: "Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm", App: MocBakery.GuiChecks.exe.
+	0 window Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm Secondary Actions: Raise
+		1 pane
+			2 text MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+			3 pane MỘC BAKERY | Chủ tiệm thử giao diện • Chủ tiệm
+				4 button Tổng quan
+				5 button Bán hàng
+				6 button Hóa đơn
+				7 button Đặt bánh
+				8 button Khách hàng
+				9 button Loại bánh
+				10 button Sản phẩm
+				11 button Kho bánh
+				12 button Tài khoản
+				13 button Đổi mật khẩu
+				14 button Đăng xuất
+			15 pane
+				63 pane ID: 2820194
+					64 pane
+						65 text Loại bánh
+						66 pane Loại bánh
+							67 text field (edit) (settable, string) Loại bánh Description: Tìm tên loại bánh
+							68 button Tìm / Tải lại
+							69 button Thêm loại
+							70 button Sửa loại
+							71 button Xóa loại
+							72 scroll bar (settable, float) Vertical Value: 0 ID: NonClientVerticalScrollBar
+								73 button Line up ID: UpButton
+								74 thumb Position ID: ScrollbarThumb
+								75 button Page down ID: DownPageButton
+								76 button Line down ID: DownButton
+						77 data grid
+							78 custom Top Row
+								79 header Mã loại ID: 4247745765
+								80 header Tên loại bánh ID: 4216715179
+								81 header Mô tả ID: 4215970745
+							104 custom Row 1
+								105 data item (item) Mã loại Row 1, Not sorted. Value: 1 ID: 423278603
+								106 data item (item) Tên loại bánh Row 1, Not sorted. Value: DEMO - Bánh Mộc ID: 4242621843
+								107 data item (item) Mô tả Row 1, Not sorted. Value: Dữ liệu thử Catalog/Inventory ID: 4217213053
+							108 custom Row 2
+								109 data item (item) Mã loại Row 2, Not sorted. Value: 2 ID: 4223324858
+								110 data item (item) Tên loại bánh Row 2, Not sorted. Value: GUI - Bánh thử 15-11 ID: 4234787698
+								111 data item (item) Mô tả Row 2, Not sorted. Value: Minh chứng thao tác GUI với SQL thật ID: 4249586895
+						86 text 2 loại bánh • Nhân viên chỉ tra cứu
+		57 title bar (settable, string) Value: Mộc Bakery • Kiểm thử SQL GUI • Chủ tiệm
+			58 menu bar System ID: MenuBar
+				59 menu item System
+			60 button Minimize
+			61 button Maximize
+			62 button Close
+
+The focused UI element is 67 text field (edit) (settable, string) Loại bánh Description: Tìm tên loại bánh.

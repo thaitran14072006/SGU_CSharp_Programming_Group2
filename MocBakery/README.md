@@ -82,6 +82,8 @@ không reset tồn đã bán. Đối chiếu bằng `database/queries/VerifyCata
 - Bàn giao tích hợp Sales: `docs/deployment/BanGiao_CatalogInventory.md`.
 - Ca kiểm thử và kết quả: `docs/testing/test-cases/nhu-catalog-inventory.md`,
   `docs/testing/results/2026-11-14-nhu.md`.
+- Kiểm thử GUI với SQL thật ngày 15/11: `docs/testing/results/2026-11-15-nhu-gui.md`.
+  Bộ chạy thử tách biệt và hướng dẫn ở `tests/System/README.md`.
 - Đóng góp báo cáo: `docs/report/chapter05/Nhu_CatalogInventory.md` và
   `docs/report/chapter06/Nhu_CatalogInventory.md`.
 

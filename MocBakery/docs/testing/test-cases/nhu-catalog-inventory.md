@@ -29,7 +29,8 @@ Mỗi ca tự động in PASS/FAIL riêng; kết quả thực tế nằm trong c
 
 ## Ca còn cần thao tác và tích hợp nhóm
 
-Các ca sau **chưa chạy**, không tính vào tỷ lệ đạt của bộ kiểm tra tự động.
+Trạng thái ban đầu là Chưa chạy. Ngày 15/11 đã bổ sung các kịch bản GUI với SQL thật;
+phạm vi đạt và giới hạn nằm trong `../results/2026-11-15-nhu-gui.md`. Không tính các nhóm này vào tỷ lệ 110 ca tự động.
 
 | Mã | Bước kiểm tra | Mong đợi |
 | --- | --- | --- |
@@ -41,3 +42,14 @@ Các ca sau **chưa chạy**, không tính vào tỷ lệ đạt của bộ ki�
 | NH-M06 | Chạy bản publish trên máy thứ hai: KT14–KT15, bán và giao đơn rồi khởi động lại | Cấu hình, quyền, tồn và doanh thu nhất quán; khôi phục được |
 
 Ảnh ở `nhu-ui-preview/` dùng dữ liệu bố cục minh họa, không phải bằng chứng đã chạy NH-M01 hay NH-M05.
+
+| Nhóm | Cập nhật ngày 15/11/2026 |
+| --- | --- |
+| NH-M01 | Đã chạy thêm loại → sản phẩm → nhập lô với GUI/SQL thật; sửa giá và kiểm chứng sau restart. Chưa kiểm tra hộp thoại đăng nhập người dùng và mọi thao tác sửa/xóa |
+| NH-M02 | Đã xác nhận trường tên loại rỗng bị chặn đúng ô; các biến thể GUI khác chưa chạy đầy đủ |
+| NH-M03 | Chưa kiểm tra thay đổi DPI hệ điều hành |
+| NH-M04 | Đạt luồng đọc: ngắt riêng CSDL thử, tải lại có cảnh báo, nối lại tải được và tồn không đổi; lỗi giữa luồng ghi chưa chạy |
+| NH-M05 | Chưa chạy do Sales chưa có trên remote |
+| NH-M06 | Chưa có máy thứ hai; restart cùng máy đã kiểm tra, không thay thế ca này |
+
+Ảnh thật nằm ở `nhu-gui-2026-11-15/`, tách riêng ảnh preview.

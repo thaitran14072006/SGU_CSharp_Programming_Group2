@@ -1,0 +1,76 @@
+Window: "Mộc Bakery • Kiểm thử SQL GUI • Nhân viên", App: MocBakery.GuiChecks.exe.
+	0 window Mộc Bakery • Kiểm thử SQL GUI • Nhân viên Secondary Actions: Raise
+		1 pane
+			2 text MỘC BAKERY | Nhân viên thử giao diện • Nhân viên
+			3 pane MỘC BAKERY | Nhân viên thử giao diện • Nhân viên
+				4 button Tổng quan
+				5 button Bán hàng
+				6 button Hóa đơn
+				7 button Đặt bánh
+				8 button Khách hàng
+				9 button Loại bánh
+				10 button Sản phẩm
+				11 button Kho bánh
+				12 button Đổi mật khẩu
+				13 button Đăng xuất
+			14 pane
+				44 pane ID: 6362226
+					45 pane
+						46 text Sản phẩm
+						47 pane Sản phẩm
+							48 text field (edit) (settable, string) Sản phẩm Description: Tìm tên sản phẩm
+							49 combo box (settable, string) Tất cả loại bánh Value: Tất cả loại bánh
+								50 text
+								51 button Open
+							52 combo box (settable, string) Tất cả trạng thái Value: Tất cả trạng thái
+								53 text
+								54 button Open
+							55 button Tìm / Tải lại
+							56 button Xem chi tiết
+							57 scroll bar (settable, float) Vertical Value: 0 ID: NonClientVerticalScrollBar
+								58 button Line up ID: UpButton
+								59 thumb Position ID: ScrollbarThumb
+								60 button Page down ID: DownPageButton
+								61 button Line down ID: DownButton
+						62 data grid
+							63 custom Top Row
+								64 header Mã ID: 4224902036
+								65 header Tên bánh ID: 4255291023
+								66 header Loại bánh ID: 4247694669
+								67 header Đơn vị ID: 4216050925
+								68 header Giá bán ID: 427335444
+								69 header Kinh doanh ID: 4228251915
+								70 header Mô tả ID: 4231730584
+							71 custom Row 1
+								72 data item (item) Mã Row 1, Not sorted. Value: 1 ID: 4260868535
+								73 data item (item) Tên bánh Row 1, Not sorted. Value: DEMO - Bánh mì bơ tỏi ID: 4253093454
+								74 data item (item) Loại bánh Row 1, Not sorted. Value: DEMO - Bánh Mộc ID: 4219126270
+								75 data item (item) Đơn vị Row 1, Not sorted. Value: Cái ID: 4247314927
+								76 data item (item) Giá bán Row 1, Not sorted. Value: 25.000,00 ID: 4211114284
+								77 data item (item) Kinh doanh Row 1, Not sorted. Value: Đang bán ID: 4210267976
+								78 data item (item) Mô tả Row 1, Not sorted. Value: Tồn ban đầu: 14; có thể bán: 9 ID: 4266374831
+							79 custom Row 2
+								80 data item (item) Mã Row 2, Not sorted. Value: 2 ID: 4232208667
+								81 data item (item) Tên bánh Row 2, Not sorted. Value: DEMO - Bánh ngừng kinh doanh ID: 4216059488
+								82 data item (item) Loại bánh Row 2, Not sorted. Value: DEMO - Bánh Mộc ID: 427446752
+								83 data item (item) Đơn vị Row 2, Not sorted. Value: Cái ID: 4229698917
+								84 data item (item) Giá bán Row 2, Not sorted. Value: 30.000,00 ID: 4250541607
+								85 data item (item) Kinh doanh Row 2, Not sorted. Value: Ngừng bán ID: 4253061121
+								86 data item (item) Mô tả Row 2, Not sorted. Value: (null) ID: 4218705942
+							87 custom Row 3
+								88 data item (item) Mã Row 3, Not sorted. Value: 3 ID: 427187650
+								89 data item (item) Tên bánh Row 3, Not sorted. Value: GUI - Bánh kem thử ID: 4226330598
+								90 data item (item) Loại bánh Row 3, Not sorted. Value: GUI - Bánh thử 15-11 ID: 426753459
+								91 data item (item) Đơn vị Row 3, Not sorted. Value: Cái ID: 4220686106
+								92 data item (item) Giá bán Row 3, Not sorted. Value: 40.000,00 ID: 42483933
+								93 data item (item) Kinh doanh Row 3, Not sorted. Value: Đang bán ID: 426291134
+								94 data item (item) Mô tả Row 3, Not sorted. Value: (null) ID: 4214675879
+						95 text 3 sản phẩm • Giữ sản phẩm ngừng kinh doanh để bảo toàn lịch sử
+		18 title bar (settable, string) Value: Mộc Bakery • Kiểm thử SQL GUI • Nhân viên
+			19 menu bar System ID: MenuBar
+				20 menu item System
+			21 button Minimize
+			22 button Maximize
+			23 button Close
+
+The focused UI element is 48 text field (edit) (settable, string) Sản phẩm Description: Tìm tên sản phẩm.

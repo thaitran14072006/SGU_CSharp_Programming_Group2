@@ -41,13 +41,20 @@ Backup/restore đã so sánh các record sản phẩm và lô giữa CSDL nguồ
 
 Kiểm tra bố cục tạo 16 ảnh từ WinForms bản Release, gồm giao diện chủ tiệm/nhân viên và hộp thoại.
 Các ảnh dùng dữ liệu minh họa, không chứng minh đã thao tác GUI với SQL hoặc chạy giao dịch bán/giao đơn.
-Sáu nhóm ca manual/system NH-M01–NH-M06 chưa chạy; KT14–KT15 toàn hệ thống chưa được kết luận đạt.
+Ở lần kiểm tra ngày 14/11, sáu nhóm NH-M01–NH-M06 chưa chạy. Cập nhật ngày 15/11 đã bổ sung
+11 kịch bản GUI/SQL đạt: chặn tên loại rỗng, thêm loại/sản phẩm, nhập lô 6 bánh, ngừng/cho bán lại,
+sửa giá 35.000 thành 40.000, mất kết nối khi đọc và phục hồi, restart cùng máy và quyền nhân viên.
+Ảnh thật và truy vấn kiểm chứng nằm ở `docs/testing/evidence/nhu-gui-2026-11-15/`;
+kết quả và giới hạn ở `docs/testing/results/2026-11-15-nhu-gui.md`.
+Phiên thử dùng session từ fixture SQL riêng, không thử hộp thoại đăng nhập cá nhân.
+NH-M01, NH-M02 và NH-M04 đã kiểm tra một phần; NH-M03, NH-M05 và NH-M06 chưa hoàn tất.
+KT14–KT15 toàn hệ thống chưa được kết luận đạt.
 
 ## 5.3 Kết quả và đánh giá
 
 Phạm vi mã chức năng Catalog/Inventory, giao diện tích hợp, dữ liệu demo, truy vấn đối chiếu,
 bộ kiểm tra tự động và hướng dẫn sử dụng đã hoàn thành.
-Tỷ lệ đạt của các ca tự động đã chạy là 110 / (110 + 0) × 100% = 100%; con số này không bao gồm sáu nhóm ca chưa chạy.
+Tỷ lệ đạt của các ca tự động đã chạy là 110 / (110 + 0) × 100% = 100%; con số này không bao gồm các nhóm ca manual/system chưa hoàn tất.
 Không suy rộng tỷ lệ này thành mức hoàn thành kiểm thử toàn hệ thống.
 
 Lỗi thiết lập QUOTED_IDENTIFIER khi tạo CSDL bằng sqlcmd và lỗi bố cục menu/header được phát hiện và sửa trong quá trình triển khai.

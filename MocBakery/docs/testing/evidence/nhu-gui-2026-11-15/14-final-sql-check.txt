@@ -1,0 +1,7 @@
+PASS GUI category persisted
+PASS GUI product price updated from 35000 to 40000
+PASS GUI lot persisted once with quantity 6 and resumed state
+PASS GUI sellable stock matches SQL: 6
+MaSanPham   TenSanPham                                                                                                                                             GiaBan               MaLo        SoLuongNhap SoLuongCon  TinhTrang            HanSuDung
+----------- ------------------------------------------------------------------------------------------------------------------------------------------------------ -------------------- ----------- ----------- ----------- -------------------- ----------------
+          3 GUI - Bánh kem thử                                                                                                                                                 40000.00           7           6           6 DangBan                    2026-11-15

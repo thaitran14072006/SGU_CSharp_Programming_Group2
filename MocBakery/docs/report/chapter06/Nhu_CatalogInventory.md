@@ -13,7 +13,7 @@ kiểm thử biên ngày và kiểm chứng dữ liệu bằng truy vấn SQL. K
 
 ## 6.2 Hạn chế
 
-- Chưa chạy thao tác nhập/sửa qua GUI với tài khoản thật, kiểm thử mất kết nối ở từng bước hoặc rà mọi mức DPI.
+- Đã chạy luồng thêm loại/sản phẩm/nhập lô, sửa giá và mất kết nối khi đọc qua GUI với SQL/session fixture thật ngày 15/11. Chưa thử hộp thoại đăng nhập cá nhân, mọi trường sai, mọi thời điểm mất kết nối hoặc các mức DPI.
 - Chưa kiểm thử chéo Sales vì mã Sales chưa tích hợp; chưa chứng minh cạnh tranh tồn hoặc rollback của giao dịch bán/giao đơn.
 - Kiểm thử SQL thực hiện trên LocalDB; chưa chạy toàn bộ hệ thống trên máy thứ hai hoặc SQL Server Express 2022 riêng.
 - Danh mục và kho hiện tải danh sách về bộ nhớ để lọc/tổng hợp; chưa phân trang và chưa đo hiệu năng dữ liệu lớn.
