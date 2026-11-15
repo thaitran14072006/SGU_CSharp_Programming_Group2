@@ -13,7 +13,15 @@ internal static class UiSmoke
     {
         Active=true;
         var session=new UserSession("UI-check-no-login",0,"layout","Kiểm tra bố cục",Roles.ChuTiem);
-        var salesPage = new SalesPage(services, session, previewProducts: [new(1, "Bánh thử", 15000, 9)]);
+        var salesPage = new SalesPage(services, session, previewProducts:
+        [
+            new(1, "Bánh thử", 15000, 9) { Category = "Bánh mì" },
+            new(2, "Tiramisu mini", 45000, 18) { Category = "Bánh lạnh" },
+            new(3, "Bánh kem dâu", 320000, 5) { Category = "Bánh kem" },
+            new(4, "Cookie chocolate", 18000, 20) { Category = "Bánh quy" },
+            new(5, "Muffin việt quất", 22000, 12) { Category = "Bánh kem" },
+            new(6, "Bánh mì sữa", 22000, 24) { Category = "Bánh mì" }
+        ]);
         var items=new List<Form>{new LoginForm(services),new SetupForm(services),new ChangePasswordForm(services,session),new MainForm(services,session)};
         foreach(var page in new UserControl[]{new AccountPage(services,session),new CustomerPage(services,session),
             salesPage,new SalesPage(services,session,showInvoices:true)})
@@ -65,9 +73,9 @@ internal static class UiSmoke
     {
         var controls = Descendants(page).ToArray();
         controls.OfType<Button>().Single(button => button.Text == "Bánh thử").PerformClick();
-        var quantity = controls.OfType<NumericUpDown>().Single();
+        var quantity = controls.OfType<NumericUpDown>().Single(input => input.AccessibleName == "Số lượng");
         quantity.Value = 3;
-        var cart = controls.OfType<DataGridView>().Single();
+        var cart = controls.OfType<DataGridView>().Single(grid => grid.Columns.Contains("Quantity"));
         if (Convert.ToInt32(cart.Rows[0].Cells["Quantity"].Value) != 3 ||
             Convert.ToDecimal(cart.Rows[0].Cells["Total"].Value) != 45000 ||
             !controls.OfType<Label>().Any(label => label.Text == $"Phải trả   {45000:N0} đ"))

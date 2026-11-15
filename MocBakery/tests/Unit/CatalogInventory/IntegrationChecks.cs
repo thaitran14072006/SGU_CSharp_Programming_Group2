@@ -3,9 +3,12 @@ using System.Text.RegularExpressions;
 using MocBakery.BLL.Services.Accounts;
 using MocBakery.BLL.Services.Catalog;
 using MocBakery.BLL.Services.Inventory;
+using MocBakery.BLL.Services.Sales;
 using MocBakery.DAL;
 using MocBakery.DAL.Repositories.Catalog;
 using MocBakery.DAL.Repositories.Inventory;
+using MocBakery.DAL.Repositories.Accounts;
+using MocBakery.DAL.Repositories.Sales;
 using MocBakery.Models;
 using MocBakery.Models.Entities;
 using MocBakery.Models.DTOs.Inventory;
@@ -95,6 +98,19 @@ internal static class IntegrationChecks
             using(var q=c.CreateCommand()){q.CommandText="UPDATE dbo.LoBanh SET SoLuongCon=3 WHERE MaLo IN (SELECT MIN(MaLo) FROM dbo.LoBanh WHERE NguonNhap=N'DEMO')";q.ExecuteNonQuery();}
             Seed();Checks.Assert(lots.List().Count==count);
             var demo=inventory.Stock(staff,"DEMO - Bánh mì").Single();Checks.Assert(demo.TongTon==13&&demo.TonCoTheBan==8);
+        });
+        checks.Test("Sales loads and sells the Catalog/Inventory demo product",()=>{
+            var sales = new SalesRepository(db);
+            var available = sales.ListProducts();
+            var demo = available.Single(x => x.Name == "DEMO - Bánh mì bơ tỏi");
+            Checks.Assert(demo.Price == 25000 && demo.Stock == 8 && demo.Category == "DEMO - Bánh Mộc");
+            Checks.Assert(available.All(x => x.Name != "DEMO - Bánh ngừng kinh doanh"));
+            int actor = new TaiKhoanRepository(db).Create(new("sales_test", "Sales test", Roles.NhanVien, true,
+                PasswordHasher.Hash("SalesTest@123")));
+            int id = sales.Sell(actor, null, [new(demo.Id, 4, demo.Price)], SalesService.Allocate);
+            Checks.Assert(sales.ReadInvoice(id).Select(line => line.Quantity).SequenceEqual(new[] { 3, 1 }));
+            Checks.Assert(sales.ListInvoices().Single(x => x.MaHoaDon == id).TongTien == 100000);
+            Checks.Assert(inventory.Stock(staff, demo.Name).Single().TonCoTheBan == 4);
         });
         checks.Test("SQL backup and restore independent test copy",()=>{
             string folder=Path.Combine(AppContext.BaseDirectory,"backup-check");Directory.CreateDirectory(folder);

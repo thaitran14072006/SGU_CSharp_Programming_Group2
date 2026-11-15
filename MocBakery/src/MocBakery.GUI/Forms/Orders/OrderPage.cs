@@ -10,6 +10,11 @@ internal sealed class OrderPage:UserControl
  {
   var errors=new ErrorProvider{ContainerControl=this};Disposed+=(_,_)=>errors.Dispose();
   var orders=Ui.Grid(("Id","Mã đơn"),("Customer","Khách"),("Pickup","Ngày nhận"),("Total","Tổng tiền"),("Deposit","Cọc"),("Due","Còn thu"),("Status","Trạng thái"));
+  orders.ColumnHeadersDefaultCellStyle.WrapMode=DataGridViewTriState.True;
+  orders.ColumnHeadersHeightSizeMode=DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+  foreach(DataGridViewColumn column in orders.Columns)column.MinimumWidth=52;
+  orders.Columns["Pickup"]!.FillWeight=125;
+  orders.Columns["Status"]!.FillWeight=115;
   var products=Ui.Grid(("Name","Sản phẩm"),("Price","Đơn giá"),("Stock","Tồn"));
   var lines=Ui.Grid(("Product","Sản phẩm"),("Quantity","SL"),("Price","Đơn giá"),("Total","Thành tiền"));
   var chosen=new Dictionary<int,OrderLine>();int? customerId=null;string customerName="Chưa chọn khách";int editId=0;

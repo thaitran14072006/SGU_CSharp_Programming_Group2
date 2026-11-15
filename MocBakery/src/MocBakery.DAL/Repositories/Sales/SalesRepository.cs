@@ -10,7 +10,7 @@ namespace MocBakery.DAL.Repositories.Sales;
 
 public sealed class SalesRepository(DbConnectionFactory db) : ISalesRepository
 {
-    private const string Sellable = "l.TinhTrang=N'DangBan' AND l.SoLuongCon>0 AND l.NgaySanXuat<=@day AND l.HanSuDung>=@day";
+    private const string Sellable = LoBanhRepository.SellableLotCondition;
 
     public IReadOnlyList<SalesProduct> ListProducts()
     {

@@ -8,9 +8,9 @@ namespace MocBakery.GUI.Forms.Sales;
 
 internal sealed class SalesPage : UserControl
 {
-    private static readonly Color Surface = Color.FromArgb(247, 242, 235);
+    private static readonly Color Surface = Color.FromArgb(246, 241, 234);
     private static readonly Color Ink = Color.FromArgb(62, 43, 34);
-    private static readonly Color Accent = Color.FromArgb(173, 87, 49);
+    private static readonly Color Accent = Color.FromArgb(191, 112, 73);
     private static readonly Color Muted = Color.FromArgb(115, 100, 89);
     private static readonly Color Line = Color.FromArgb(238, 229, 219);
     private readonly AppServices services;
@@ -33,16 +33,14 @@ internal sealed class SalesPage : UserControl
     {
         var page = Page("Bán hàng", "Chọn bánh, lập giỏ hàng và thanh toán tại quầy.");
         var split = CreateLayout(2);
-        split.ColumnStyles.Add(new(SizeType.Percent, 58));
-        split.ColumnStyles.Add(new(SizeType.Percent, 42));
+        split.ColumnStyles.Add(new(SizeType.Percent, 60));
+        split.ColumnStyles.Add(new(SizeType.Percent, 40));
         page.Controls.Add(split, 0, 1);
 
         var catalog = CreateLayout(1);
-        catalog.Margin = new Padding(0, 0, 20, 0);
+        catalog.Margin = new Padding(0, 0, 28, 0);
         var search = SearchBox("Tìm theo tên hoặc mã bánh");
-        var category = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160 };
-        category.Items.Add("Tất cả loại bánh");
-        category.SelectedIndex = 0;
+        string? selectedCategory = null;
         var filters = Toolbar();
         var products = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, Margin = Padding.Empty };
         catalog.Controls.Add(TextLabel("Tìm bánh", 10, color: Muted), 0, 0);
@@ -58,7 +56,8 @@ internal sealed class SalesPage : UserControl
         var order = CreateLayout(1);
         order.BackColor = Color.White;
         order.Padding = new Padding(16);
-        order.Margin = Padding.Empty;
+        order.Margin = new Padding(0, 10, 0, 10);
+        Round(order, 13);
         var customer = ActionButton("Chọn khách hàng", false);
         var guest = ActionButton("Khách lẻ", false);
         var buyerActions = Toolbar();
@@ -66,36 +65,47 @@ internal sealed class SalesPage : UserControl
         var cartGrid = Grid(("Name", "Bánh"), ("Quantity", "SL"), ("Total", "Tiền (đ)"));
         cartGrid.Columns["Quantity"]!.FillWeight = 40;
         cartGrid.Columns["Total"]!.DefaultCellStyle.Format = "N0";
+        cartGrid.Columns["Total"]!.DefaultCellStyle.ForeColor = Color.FromArgb(51, 118, 91);
         var total = TextLabel("Phải trả   0 đ", 16, true);
-        total.Margin = new Padding(0, 12, 0, 8);
+        total.Margin = new Padding(0, 3, 0, 5);
+        var subtotal = TextLabel("Tạm tính   0 đ", 10);
+        var cash = new NumericUpDown { Minimum = 0, Maximum = decimal.MaxValue, ThousandsSeparator = true,
+            Width = 138, AccessibleName = "Tiền mặt khách đưa" };
+        var cashRow = Toolbar();
+        cashRow.Controls.AddRange([TextLabel("Tiền mặt · Khách đưa", 9, color: Muted), cash]);
+        var change = TextLabel("Tiền thừa   0 đ", 9, color: Color.FromArgb(51, 118, 91));
         var cartActions = Toolbar();
-        var quantity = new NumericUpDown { Minimum = 1, Maximum = int.MaxValue, Width = 68 };
+        var quantity = new NumericUpDown { Minimum = 1, Maximum = int.MaxValue, Width = 68,
+            AccessibleName = "Số lượng" };
         var remove = ActionButton("Xóa dòng", false);
         cartActions.Controls.AddRange([TextLabel("Số lượng", 10), quantity, remove]);
-        var pay = ActionButton("Thanh toán");
+        var pay = ActionButton("Thanh toán & In hóa đơn");
+        pay.UseMnemonic = false;
         pay.Dock = DockStyle.Top;
-        order.Controls.Add(TextLabel("Đơn bán tại quầy", 17, true), 0, 0);
+        Round(pay, 8);
+        order.Controls.Add(TextLabel("Đơn bán tại quầy", 14, true), 0, 0);
         order.Controls.Add(buyerActions, 0, 1);
         order.Controls.Add(cartGrid, 0, 2);
         order.Controls.Add(cartActions, 0, 3);
-        order.Controls.Add(total, 0, 4);
-        order.Controls.Add(pay, 0, 5);
+        order.Controls.Add(subtotal, 0, 4);
+        order.Controls.Add(TextLabel("Giảm giá   0 đ", 10), 0, 5);
+        order.Controls.Add(total, 0, 6);
+        order.Controls.Add(cashRow, 0, 7);
+        order.Controls.Add(change, 0, 8);
+        order.Controls.Add(pay, 0, 9);
         order.RowStyles.Add(new(SizeType.AutoSize));
         order.RowStyles.Add(new(SizeType.AutoSize));
         order.RowStyles.Add(new(SizeType.Percent, 100));
-        for (int row = 3; row < 6; row++) order.RowStyles.Add(new(SizeType.AutoSize));
+        for (int row = 3; row < 10; row++) order.RowStyles.Add(new(SizeType.AutoSize));
         split.Controls.Add(order, 1, 0);
 
         IReadOnlyList<SalesProduct> inventory = [];
         var cart = new Dictionary<int, CartRow>();
         bool syncingQuantity = false;
         int? customerId = null;
-        var reload = ActionButton("Làm mới", false);
-        filters.Controls.AddRange([category, reload]);
-        reload.Click += async (_, _) => await Run(LoadProducts);
         search.TextChanged += (_, _) => FilterProducts();
-        category.SelectedIndexChanged += (_, _) => FilterProducts();
         products.ClientSizeChanged += (_, _) => SizeCards();
+        cash.ValueChanged += (_, _) => RefreshTotal();
 
         customer.Click += (_, _) =>
         {
@@ -123,16 +133,22 @@ internal sealed class SalesPage : UserControl
             // Reading Value validates any text still being edited in the quantity box.
             _ = quantity.Value;
             if (cart.Count == 0) throw new BusinessException("Giỏ hàng đang trống.");
-            if (!Ui.Confirm(this, $"Xác nhận thanh toán {Money(cart.Values.Sum(row => row.Total))}?")) return;
+            decimal amount = cart.Values.Sum(row => row.Total);
+            if (cash.Value > 0 && cash.Value < amount)
+                throw new BusinessException("Tiền khách đưa chưa đủ.");
+            if (!Ui.Confirm(this, $"Xác nhận thanh toán {Money(amount)}?")) return;
             var items = cart.Values.Select(row => new CartItem(row.ProductId, row.Quantity, row.Price)).ToArray();
+            var receipt = cart.Values.Select(row => $"{row.Name} × {row.Quantity}    {Money(row.Total)}").ToArray();
             int? buyer = customerId;
             int id = await Task.Run(() => services.Sales.Sell(session, buyer, items));
             if (IsDisposed) return;
             cart.Clear();
+            cash.Value = 0;
             ClearCustomer();
             RefreshCart();
-            MessageBox.Show(this, $"Đã lập hóa đơn #{id}.");
             await LoadProducts();
+            if (!IsDisposed && Ui.Confirm(this, $"Đã lập hóa đơn {InvoiceCode(id)}. In hóa đơn?"))
+                PrintReceipt(id, receipt, amount);
         });
 
         Load += async (_, _) =>
@@ -155,18 +171,41 @@ internal sealed class SalesPage : UserControl
             foreach (var product in inventory)
                 if (cart.TryGetValue(product.Id, out var row))
                     cart[product.Id] = row with { Name = product.Name, Price = product.Price };
-            string? previous = category.SelectedItem as string;
-            category.Items.Clear();
-            category.Items.Add("Tất cả loại bánh");
-            category.Items.AddRange(inventory.Select(item => item.Category).Where(name => name.Length > 0).Distinct().ToArray());
-            category.SelectedIndex = Math.Max(0, previous is null ? -1 : category.Items.IndexOf(previous));
+            var categories = inventory.Select(item => item.Category).Where(name => name.Length > 0).Distinct().ToArray();
+            if (selectedCategory is not null && !categories.Contains(selectedCategory)) selectedCategory = null;
+            RefreshFilters(categories);
+            FilterProducts();
             RefreshCart();
+        }
+
+        void RefreshFilters(string[] categories)
+        {
+            while (filters.Controls.Count > 0) filters.Controls[0].Dispose();
+            foreach (string? name in categories.Prepend(null))
+            {
+                var link = new LinkLabel { Text = name ?? "Tất cả", AutoSize = true,
+                    LinkColor = Accent, ActiveLinkColor = Ink,
+                    LinkBehavior = name == selectedCategory ? LinkBehavior.AlwaysUnderline : LinkBehavior.NeverUnderline,
+                    Margin = new Padding(0, 6, 10, 5) };
+                link.LinkClicked += (_, _) =>
+                {
+                    selectedCategory = name;
+                    foreach (LinkLabel filter in filters.Controls.OfType<LinkLabel>())
+                        filter.LinkBehavior = filter == link ? LinkBehavior.AlwaysUnderline : LinkBehavior.NeverUnderline;
+                    FilterProducts();
+                };
+                filters.Controls.Add(link);
+            }
+            var refresh = new LinkLabel { Text = "Làm mới", AutoSize = true, LinkColor = Muted,
+                LinkBehavior = LinkBehavior.HoverUnderline, Margin = new Padding(0, 6, 0, 5) };
+            refresh.LinkClicked += async (_, _) => await Run(LoadProducts);
+            filters.Controls.Add(refresh);
         }
 
         void FilterProducts()
         {
             string key = search.Text.Trim();
-            string? selected = category.SelectedIndex > 0 ? category.SelectedItem as string : null;
+            string? selected = selectedCategory;
             var matches = inventory.Where(product => (selected is null || product.Category == selected) &&
                 (Contains(product.Name, key) || product.Id.ToString().Contains(key))).ToList();
             products.SuspendLayout();
@@ -238,7 +277,10 @@ internal sealed class SalesPage : UserControl
 
         void RefreshTotal()
         {
-            total.Text = $"Phải trả   {Money(cart.Values.Sum(row => row.Total))}";
+            decimal amount = cart.Values.Sum(row => row.Total);
+            subtotal.Text = $"Tạm tính   {Money(amount)}";
+            total.Text = $"Phải trả   {Money(amount)}";
+            change.Text = $"Tiền thừa   {Money(Math.Max(0, cash.Value - amount))}";
             pay.Enabled = cart.Count > 0;
         }
     }
@@ -322,17 +364,86 @@ internal sealed class SalesPage : UserControl
             var rows = await Task.Run(() => services.Sales.Invoice(session, selected.Invoice.MaHoaDon));
             if (IsDisposed) return;
             using var dialog = new Form();
-            Ui.Style(dialog, $"Hóa đơn {selected.Code}");
+            Ui.Style(dialog, "Chi tiết hóa đơn");
+            var detailPage = Page("Chi tiết hóa đơn", "Xem mặt hàng đã bán và số tiền thanh toán.");
+            var receipt = CreateLayout(1);
+            receipt.BackColor = Color.White;
+            receipt.Padding = new Padding(18);
+            receipt.RowStyles.Add(new(SizeType.AutoSize));
+            receipt.RowStyles.Add(new(SizeType.AutoSize));
+            receipt.RowStyles.Add(new(SizeType.Percent, 100));
+            receipt.RowStyles.Add(new(SizeType.AutoSize));
+            receipt.Controls.Add(TextLabel($"HÓA ĐƠN {selected.Code}", 18, true), 0, 0);
+            receipt.Controls.Add(TextLabel($"{selected.CustomerName}  ·  {selected.NgayLap:dd/MM/yyyy HH:mm}",
+                10, color: Muted), 0, 1);
             var details = Grid(("LotId", "Mã lô"), ("Product", "Bánh"), ("Quantity", "SL"),
                 ("UnitPrice", "Đơn giá lúc bán"), ("Total", "Thành tiền"));
             foreach (string key in new[] { "UnitPrice", "Total" }) details.Columns[key]!.DefaultCellStyle.Format = "N0";
             details.DataSource = rows.ToList();
-            dialog.Controls.Add(details);
+            receipt.Controls.Add(details, 0, 2);
+            var total = TextLabel($"Tổng tiền   {Money(selected.TongTien)}", 15, true, Accent);
+            total.Anchor = AnchorStyles.Right;
+            receipt.Controls.Add(total, 0, 3);
+            detailPage.Controls.Add(receipt, 0, 1);
+            dialog.Controls.Add(detailPage);
             dialog.ShowDialog(this);
         });
     }
 
     private Task Run(Func<Task> action) => Ui.Run(this, errors, new(), action);
+
+    private void PrintReceipt(int id, IReadOnlyList<string> lines, decimal total)
+    {
+        using var document = new System.Drawing.Printing.PrintDocument { DocumentName = $"Hóa đơn {InvoiceCode(id)}" };
+        int nextLine = 0;
+        document.BeginPrint += (_, _) => nextLine = 0;
+        document.PrintPage += (_, page) =>
+        {
+            if (page.Graphics is not { } graphics) return;
+            using var heading = new Font("Segoe UI", 14, FontStyle.Bold);
+            using var text = new Font("Segoe UI", 10);
+            var bounds = page.MarginBounds;
+            float y = bounds.Top;
+            graphics.DrawString($"MỘC BAKERY · {InvoiceCode(id)}", heading, Brushes.Black, bounds.Left, y);
+            y += 34;
+            while (nextLine < lines.Count && y + 48 <= bounds.Bottom)
+            {
+                graphics.DrawString(lines[nextLine++], text, Brushes.Black,
+                    new RectangleF(bounds.Left, y, bounds.Width, 24));
+                y += 24;
+            }
+            page.HasMorePages = nextLine < lines.Count && y > bounds.Top + 34;
+            if (!page.HasMorePages)
+                graphics.DrawString($"Tổng tiền   {Money(total)}", heading, Brushes.Black, bounds.Left, y + 6);
+        };
+        using var printer = new PrintDialog { Document = document, UseEXDialog = true };
+        if (printer.ShowDialog(this) == DialogResult.OK) document.Print();
+    }
+
+    private static void Round(Control control, int radius)
+    {
+        control.SizeChanged += (_, _) =>
+        {
+            if (control.Width <= 2 * radius || control.Height <= 2 * radius) return;
+            using var path = RoundedPath(0, 0, control.Width, control.Height, radius);
+            var previous = control.Region;
+            control.Region = new Region(path);
+            previous?.Dispose();
+        };
+    }
+
+    private static System.Drawing.Drawing2D.GraphicsPath RoundedPath(int x, int y, int width, int height, int radius)
+    {
+        var path = new System.Drawing.Drawing2D.GraphicsPath();
+        int diameter = radius * 2;
+        path.AddArc(x, y, diameter, diameter, 180, 90);
+        path.AddArc(x + width - diameter, y, diameter, diameter, 270, 90);
+        path.AddArc(x + width - diameter, y + height - diameter, diameter, diameter, 0, 90);
+        path.AddArc(x, y + height - diameter, diameter, diameter, 90, 90);
+        path.CloseFigure();
+        return path;
+    }
+
     private static string Money(decimal value) => $"{value:N0} đ";
     private static string InvoiceCode(int id) => $"HD{id:D3}";
     private static bool Contains(string value, string key) =>
@@ -350,10 +461,11 @@ internal sealed class SalesPage : UserControl
         header.ColumnStyles.Add(new(SizeType.Percent, 100));
         header.ColumnStyles.Add(new(SizeType.AutoSize));
         header.Margin = new Padding(0, 0, 0, 14);
-        header.Controls.Add(TextLabel(title, 24, true), 0, 0);
+        header.Controls.Add(TextLabel($"Cửa hàng Mộc / {title}", 9, color: Muted), 0, 0);
         header.Controls.Add(TextLabel(DateTime.Today.ToString("dd/MM/yyyy"), 10, color: Muted), 1, 0);
+        header.Controls.Add(TextLabel(title, 20, true), 0, 1);
         var caption = TextLabel(description, 10, color: Muted);
-        header.Controls.Add(caption, 0, 1);
+        header.Controls.Add(caption, 0, 2);
         header.SetColumnSpan(caption, 2);
         page.Controls.Add(header, 0, 0);
         return page;
@@ -427,8 +539,9 @@ internal sealed class SalesPage : UserControl
             Enabled = product.Stock > 0;
             BackColor = Color.White;
             FlatStyle = FlatStyle.Flat;
-            FlatAppearance.BorderColor = Line;
+            FlatAppearance.BorderSize = 0;
             FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 249, 241);
+            Round(this, 10);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -438,17 +551,26 @@ internal sealed class SalesPage : UserControl
             using var background = new SolidBrush(Enabled && ClientRectangle.Contains(PointToClient(MousePosition))
                 ? Color.FromArgb(255, 249, 241) : Color.White);
             e.Graphics.FillRectangle(background, 1, 1, Width - 2, Height - 2);
-            using var tag = new SolidBrush(Color.FromArgb(242, 220, 199));
-            using var bold = new Font(Font, FontStyle.Bold);
+            int tint = product.Category.Aggregate(0, (sum, letter) => (sum + letter) % 3);
+            using var tag = new SolidBrush(tint switch
+            {
+                1 => Color.FromArgb(234, 216, 202),
+                2 => Color.FromArgb(247, 216, 213),
+                _ => Color.FromArgb(242, 220, 199)
+            });
+            using var bold = new Font(Font.FontFamily, 9, FontStyle.Bold);
+            using var metadata = new Font(Font.FontFamily, 8);
             int width = Width - 20;
             int banner = Height * 42 / 100;
             int lineHeight = (Height - banner - 20) / 3;
-            e.Graphics.FillRectangle(tag, 10, 10, width, banner);
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using var bannerPath = RoundedPath(10, 10, width, banner, 8);
+            e.Graphics.FillPath(tag, bannerPath);
             TextRenderer.DrawText(e.Graphics, product.Category, bold, new Rectangle(14, 10, width - 8, banner),
                 Accent, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             Draw(product.Name, bold, Ink, 0);
             Draw(Money(product.Price), bold, Accent, 1);
-            Draw(Enabled ? $"Còn {product.Stock:N0} · Nhấn để thêm" : "Hết hàng", Font, Muted, 2);
+            Draw(Enabled ? $"Còn {product.Stock:N0} · Nhấn để thêm" : "Hết hàng", metadata, Muted, 2);
             if (Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(ClientRectangle, -3, -3));
 
             void Draw(string text, Font font, Color color, int row) =>

@@ -7,6 +7,8 @@ namespace MocBakery.DAL.Repositories.Inventory;
 public sealed class LoBanhRepository(DbConnectionFactory db) : ILoBanhRepository
 {
     private const string Columns = "l.MaLo,l.MaSanPham,l.NgayNhap,l.NguonNhap,l.NgaySanXuat,l.HanSuDung,l.SoLuongNhap,l.SoLuongCon,l.TinhTrang";
+    internal const string SellableLotCondition =
+        "l.TinhTrang=N'DangBan' AND l.SoLuongCon>0 AND l.NgaySanXuat<=@day AND l.HanSuDung>=@day";
     public IReadOnlyList<LoBanh> List()
     {
         using var c = db.Open(); using var q = Db.Command(c,$"SELECT {Columns} FROM dbo.LoBanh l ORDER BY l.HanSuDung,l.MaLo");
@@ -52,12 +54,11 @@ public sealed class LoBanhRepository(DbConnectionFactory db) : ILoBanhRepository
         using var q = Db.Command(connection,$"""
             SELECT {Columns} FROM dbo.LoBanh l
             JOIN dbo.SanPham p ON p.MaSanPham=l.MaSanPham
-            WHERE l.MaSanPham=@product AND p.DangKinhDoanh=1 AND l.TinhTrang=N'DangBan'
-              AND l.SoLuongCon>0 AND l.NgaySanXuat<=@date AND l.HanSuDung>=@date
+            WHERE l.MaSanPham=@product AND p.DangKinhDoanh=1 AND {SellableLotCondition}
             ORDER BY l.HanSuDung,l.MaLo
             """,transaction);
         q.Param("@product",productId,DbType.Int32);
-        q.Param("@date",businessDate.ToDateTime(TimeOnly.MinValue),DbType.Date);
+        q.Param("@day",businessDate.ToDateTime(TimeOnly.MinValue),DbType.Date);
         return Read(q);
     }
     private static IReadOnlyList<LoBanh> Read(DbCommand q)
