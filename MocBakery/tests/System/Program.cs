@@ -18,6 +18,10 @@ internal static class Program
         {
             Environment.ExitCode=PasswordVisibilityChecks.Run();return;
         }
+        if(args.Contains("--verify-customer-duplicates"))
+        {
+            Environment.ExitCode=CustomerDuplicateChecks.Run();return;
+        }
         string? config=File.Exists(Path.Combine(AppContext.BaseDirectory,"fixture.local.json"))
             ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"fixture.local.json")) : null;
         using var json=JsonDocument.Parse(config??"{}");

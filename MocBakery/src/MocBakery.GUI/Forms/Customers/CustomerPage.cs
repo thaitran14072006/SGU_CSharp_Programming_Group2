@@ -6,7 +6,7 @@ internal sealed class CustomerPage : BakeryPage, IUnsavedPage
     private readonly AppServices services;private readonly UserSession session;private readonly bool picker;
     private readonly TextBox keyword=Ui.Input(100),name=Ui.Input(100),phone=Ui.Input(15),address=Ui.Input(255),note=Ui.Input(255);
     private readonly DataGridView grid=Design.Grid(("MaKhachHang","Mã"),("HoTen","Họ tên"),("SoDienThoai","Số điện thoại"),("DiaChi","Địa chỉ"),("GhiChu","Ghi chú"));
-    private readonly ErrorProvider errors;private readonly Label count=new(){AutoSize=true};private int id;private string baseline="";private bool binding;
+    private readonly ErrorProvider errors;private int id;private string baseline="";private bool binding;
     // Orders/Sales can open CustomerPickerForm and receive the selected entity.
     internal event Action<KhachHang>? CustomerSelected;
     internal CustomerPage(AppServices services,UserSession session,bool picker=false):base(services,session,"Khách hàng","Lưu thông tin khách hàng và tra cứu lịch sử mua bánh.")
@@ -45,11 +45,22 @@ internal sealed class CustomerPage : BakeryPage, IUnsavedPage
         {
             // UC10: show existing matching customer so the user can reuse the record.
             var existing=await Task.Run(()=>services.Customers.Search(session,input.SoDienThoai.Trim()));
-            grid.DataSource=existing.ToList();count.Text=$"{existing.Count} khách hàng phù hợp";throw;
+            ShowDuplicateCustomers(existing);throw;
         }
         keyword.Clear();var rows=await Task.Run(()=>services.Customers.Search(session,""));
         binding=true;grid.DataSource=rows.ToList();Count(rows.Count);binding=false;New();
     });
+    internal void ShowDuplicateCustomers(IReadOnlyList<KhachHang> existing)
+    {
+        binding=true;
+        try
+        {
+            grid.DataSource=existing.ToList();
+            grid.ClearSelection();
+            Count(existing.Count);
+        }
+        finally{binding=false;}
+    }
     private async Task History()=>await Ui.Run(this,errors,Fields(),async()=>{
         int selected=id;var rows=await Task.Run(()=>services.Customers.History(session,selected));
         using var dialog=new Form();Ui.Style(dialog,"Lịch sử mua hàng");dialog.MinimumSize=new Size(750,400);dialog.ClientSize=new Size(850,450);
