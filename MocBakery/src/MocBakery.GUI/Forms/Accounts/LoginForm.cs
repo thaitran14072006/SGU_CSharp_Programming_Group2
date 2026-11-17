@@ -7,7 +7,7 @@ internal sealed class LoginForm : Form
     private readonly TextBox username = Ui.Input(50), password = Ui.Input(64,true);
     private readonly CheckBox remember = new() { Text = "Ghi nhớ tên đăng nhập", AutoSize = true };
     private readonly ErrorProvider errors;
-    private readonly string rememberedFile = Path.Combine(AppContext.BaseDirectory,"username.local.json");
+    private readonly RememberedUsernameStore rememberedUsername = RememberedUsernameStore.ForCurrentUser();
     internal UserSession? Session { get; private set; }
     internal LoginForm(AppServices services)
     {
@@ -28,7 +28,7 @@ internal sealed class LoginForm : Form
         var exit = Ui.Button("Thoát",(_,_) => Close()); content.Controls.Add(exit);
         content.Controls.Add(Ui.Button("Thiết lập lần đầu",(_,_) => { using var setup = new SetupForm(services); setup.ShowDialog(this); }));
         AcceptButton = login; CancelButton = exit;
-        try { if(File.Exists(rememberedFile)) { username.Text = JsonSerializer.Deserialize<string>(File.ReadAllText(rememberedFile)) ?? ""; remember.Checked = true; } }
+        try { username.Text = rememberedUsername.Load(); remember.Checked = username.Text.Length > 0; }
         catch(Exception ex) when(ex is IOException or JsonException or UnauthorizedAccessException) { ErrorLog.Write(ex); }
         Shown += (_,_) => { if(username.Text.Length == 0) username.Focus(); else password.Focus(); };
     }
@@ -38,8 +38,7 @@ internal sealed class LoginForm : Form
         Session = await Task.Run(() => services.Auth.Login(u,p));
         try
         {
-            if(remember.Checked) File.WriteAllText(rememberedFile,JsonSerializer.Serialize(u.Trim()));
-            else if(File.Exists(rememberedFile)) File.Delete(rememberedFile);
+            rememberedUsername.Save(u, remember.Checked);
         }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException) { ErrorLog.Write(ex); }
         password.Clear(); DialogResult = DialogResult.OK; Close();
