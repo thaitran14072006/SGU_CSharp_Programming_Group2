@@ -19,6 +19,7 @@ void Reject(Action action,string? field=null)
     throw new Exception("Expected BusinessException");
 }
 LoginPreferencesChecks.Run(Check, Assert);
+StaffSearchChecks.Run(Check, Assert);
 var repo=new MemoryAccounts();var customers=new MemoryCustomers();
 var auth=new AuthService(repo);var service=new AccountService(repo,auth);var cs=new CustomerService(customers,auth);
 var owner=auth.Login("admin","Owner@123");
