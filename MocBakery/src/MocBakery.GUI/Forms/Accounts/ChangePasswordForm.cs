@@ -7,7 +7,14 @@ internal sealed class ChangePasswordForm : Form
         Ui.Style(this,"Đổi mật khẩu"); MinimumSize = new Size(540,500); ClientSize = new Size(540,500);
         var panel = Ui.Flow(true); Controls.Add(panel); panel.Controls.Add(Ui.Title("Đổi mật khẩu"));
         var old = Ui.Input(64,true); var pass = Ui.Input(64,true); var confirm = Ui.Input(64,true);
+        old.Name="CurrentPassword";pass.Name="NewPassword";confirm.Name="ConfirmPassword";
         Ui.Field(panel,"Mật khẩu hiện tại *",old); Ui.Field(panel,"Mật khẩu mới * (8–64 ký tự)",pass); Ui.Field(panel,"Xác nhận mật khẩu *",confirm);
+        var show=new CheckBox {Name="ShowPasswords",Text="Hiện mật khẩu",AccessibleName="Hiện hoặc ẩn cả ba mật khẩu",AutoSize=true,Margin=new Padding(0,5,0,10)};
+        show.CheckedChanged+=(_,_)=>
+        {
+            foreach(var input in new[]{old,pass,confirm})input.UseSystemPasswordChar=!show.Checked;
+        };
+        panel.Controls.Add(show);
         var errors=new ErrorProvider { ContainerControl=this }; Disposed += (_,_) => errors.Dispose();
         var save=Ui.Button("Lưu thay đổi",async (_,_) => await Ui.Run(this,errors,new() {["OldPassword"]=old,["Password"]=pass,["Confirmation"]=confirm},async () =>
         {

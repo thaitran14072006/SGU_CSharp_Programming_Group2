@@ -14,6 +14,10 @@ internal static class Program
         Application.SetHighDpiMode(HighDpiMode.SystemAware);
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+        if(args.Contains("--verify-password-visibility"))
+        {
+            Environment.ExitCode=PasswordVisibilityChecks.Run();return;
+        }
         string? config=File.Exists(Path.Combine(AppContext.BaseDirectory,"fixture.local.json"))
             ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"fixture.local.json")) : null;
         using var json=JsonDocument.Parse(config??"{}");
