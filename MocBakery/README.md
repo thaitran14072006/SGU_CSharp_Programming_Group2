@@ -2,10 +2,10 @@
 
 ## Tài khoản khách hàng Web đang phát triển
 
-Đã có ASP.NET Core MVC cho đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản.
+Đã có ASP.NET Core MVC cho đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản, đổi mật khẩu.
 Hướng dẫn cấu hình CSDL chung, migration 04 và chạy tại localhost:5080:
 [Tài khoản khách hàng Web](docs/deployment/CustomerWebAccounts.md).
-Trang đổi mật khẩu Web chưa có; chưa xác nhận tích hợp SQL thật.
+Đổi mật khẩu yêu cầu mật khẩu hiện tại và đăng nhập lại; chưa xác nhận tích hợp SQL thật.
 Các kết quả bản chốt bên dưới mô tả desktop và lịch sử kiểm thử trước phần Web.
 
 ## Bản chốt tích hợp ngày 15 tháng 11 năm 2026

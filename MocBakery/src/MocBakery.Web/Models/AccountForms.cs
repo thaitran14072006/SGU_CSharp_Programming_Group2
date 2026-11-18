@@ -31,3 +31,13 @@ public sealed class ProfileForm
     [StringLength(255, ErrorMessage = "Địa chỉ tối đa 255 ký tự.")]
     public string? Address { get; set; }
 }
+
+public sealed class PasswordForm
+{
+    [Required(ErrorMessage = "Nhập mật khẩu hiện tại."), StringLength(64, ErrorMessage = "Mật khẩu hiện tại tối đa 64 ký tự.")]
+    public string OldPassword { get; set; } = "";
+    [Required(ErrorMessage = "Nhập mật khẩu mới."), StringLength(64, MinimumLength = 8, ErrorMessage = "Mật khẩu mới phải có 8–64 ký tự.")]
+    public string Password { get; set; } = "";
+    [Required(ErrorMessage = "Nhập xác nhận mật khẩu."), StringLength(64, ErrorMessage = "Xác nhận mật khẩu tối đa 64 ký tự."), Compare(nameof(Password), ErrorMessage = "Xác nhận mật khẩu không khớp.")]
+    public string Confirmation { get; set; } = "";
+}

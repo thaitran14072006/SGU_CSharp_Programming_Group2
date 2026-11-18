@@ -97,7 +97,9 @@ try
     await Check("Wrong password does not issue a login cookie or echo password", async () =>
     {
         using var response = await Post(login, Login("IncorrectPassword!"));
-        Assert(response.StatusCode == HttpStatusCode.OK && !response.Headers.TryGetValues("Set-Cookie", out _)
+        Assert(response.StatusCode == HttpStatusCode.OK
+            && (!response.Headers.TryGetValues("Set-Cookie", out var cookies)
+                || !cookies.Any(cookie => cookie.StartsWith("MocBakery.Customer=", StringComparison.Ordinal)))
             && !(await response.Content.ReadAsStringAsync()).Contains("IncorrectPassword!"));
     });
     await Check("Valid login issues HttpOnly SameSite cookie and rejects external return URL", async () =>
@@ -305,6 +307,9 @@ try
     });
 }
 finally { await app.StopAsync(); }
+var passwordResults = await PasswordChangeChecks.Run(root);
+passed += passwordResults.Passed;
+failed += passwordResults.Failed;
 Console.WriteLine($"WEB ACCOUNT RESULT: {passed} passed, {failed} failed; real HTTP with memory repository, no SQL operations.");
 Environment.ExitCode = failed == 0 ? 0 : 1;
 
@@ -342,6 +347,7 @@ sealed class WebFixtureRepository : ICustomerAccountRepository
     }
     public bool ChangePassword(CustomerIdentity identity, string expectedHash, string nextHash)
     {
+        if (Unavailable) throw new FixtureDbException();
         var current = Accounts[identity.AccountId];
         if (current.PasswordHash != expectedHash || current.SecurityStamp != identity.SecurityStamp) return false;
         Accounts[current.Id] = current with { PasswordHash = nextHash, SecurityStamp = Guid.NewGuid() }; return true;

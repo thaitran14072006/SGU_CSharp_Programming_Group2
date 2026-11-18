@@ -4,6 +4,10 @@
     <p class="eyebrow">TÀI KHOẢN KHÁCH HÀNG</p>
     <h1 id="title">Chào bạn trở lại</h1>
     <p class="intro">Đăng nhập để xem thông tin tài khoản của bạn.</p>
+    @if (TempData["PasswordChanged"] is true)
+    {
+        <p class="success" role="status">Đổi mật khẩu thành công. Vui lòng đăng nhập lại bằng mật khẩu mới.</p>
+    }
     @if (ViewData["Registered"] is true)
     {
         <p class="success" role="status">Tài khoản đã được tạo. Bạn có thể đăng nhập.</p>

@@ -1,8 +1,8 @@
 # Tài khoản khách hàng Web
 
 Đã có Models, BLL, DAL, migration và Web host ASP.NET Core MVC cho tài khoản khách.
-Web có đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản hiện tại.
-Đổi mật khẩu mới có BLL, chưa có trang Web tương ứng.
+Web có đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản hiện tại, đổi mật khẩu.
+Đổi mật khẩu yêu cầu mật khẩu hiện tại; thành công phải đăng nhập lại.
 Kiểm thử HTTP dùng repository bộ nhớ; chưa thay thế kiểm thử SQL thật và desktop–Web.
 
 ## Dữ liệu và quyền
@@ -73,6 +73,13 @@ và hiện thông báo một lần; tải lại trang không gửi lại thao t�
 không ghi dữ liệu. Lỗi dữ liệu hoặc lỗi ghi CSDL giữ lại bản nháp để sửa hoặc thử lại.
 Nếu phiên không còn hợp lệ lúc lưu, Web yêu cầu đăng nhập lại và không lưu thay đổi.
 
+Chọn **Đổi mật khẩu** hoặc mở `/tai-khoan/doi-mat-khau` sau khi đăng nhập.
+Nhập mật khẩu hiện tại, mật khẩu mới 8–64 ký tự khác mật khẩu hiện tại và xác nhận khớp.
+Các ô mật khẩu luôn được che và không điền lại sau lỗi. Lưu thành công sẽ đăng xuất,
+chuyển về đăng nhập và hiển thị thông báo một lần. Cookie của các trình duyệt khác
+bị từ chối ở request tiếp theo do đổi `SecurityStamp`. Lỗi nhập liệu hoặc lỗi ghi
+không thay đổi mật khẩu đã lưu. Nút hủy quay lại tài khoản mà không gửi thay đổi.
+
 Biến `MOCBAKERY_CONNECTION_STRING` nếu đã có sẽ được ưu tiên hơn `ConnectionStrings__MocBakery`.
 Dùng đúng server của nhóm, không mặc định rằng `.\SQLEXPRESS` tồn tại. Không đưa
 connection string thật vào repo. Web sử dụng Microsoft.Data.SqlClient từ DAL;
@@ -88,12 +95,12 @@ Bộ kiểm tra khởi động Kestrel trên loopback ở cổng tạm, dùng co
 thay repository bằng fixture chỉ trong test host. Production host luôn dùng repository SQL;
 không có cờ bật tài khoản mẫu hoặc dữ liệu bộ nhớ. Test host dừng khi chạy xong.
 
-Ngày 18/11/2026, sau khi thêm cập nhật hồ sơ: 35/35 kiểm tra Web đạt (34 ca HTTP và 1 ca cấu hình production); project Web build Release không cảnh báo,
+Ngày 18/11/2026, sau khi thêm đổi mật khẩu: 50/50 kiểm tra Web đạt (49 ca HTTP và 1 ca cấu hình production); project Web build Release không cảnh báo,
 không lỗi với `RestoreSqlClient=false`. Đây không phải kết quả SQL hoặc kiểm tra giao diện
-trực quan trên điện thoại. Hai bộ kiểm tra có 36 ca BLL và 35 ca Web, không cộng vào
+trực quan trên điện thoại. Hai bộ kiểm tra có 36 ca BLL và 50 ca Web, không cộng vào
 các kết quả lịch sử ngày 15/11.
 
-Hồi quy cùng lượt: UnitChecks 45/45, CatalogInventoryChecks 43/43, CustomerAccountChecks
+Hồi quy ở lượt cập nhật hồ sơ trước đó: UnitChecks 45/45, CatalogInventoryChecks 43/43, CustomerAccountChecks
 36/36 đều đạt. Build toàn solution thành công với output tách riêng qua
 `--artifacts-path` và `RestoreSqlClient=false`, không lỗi/cảnh báo. Build vào thư mục
 desktop mặc định ban đầu bị khóa DLL do ứng dụng đang mở; không đóng hay dừng ứng dụng.
@@ -103,7 +110,7 @@ desktop mặc định ban đầu bị khóa DLL do ứng dụng đang mở; khô
 - Cookie khách có HttpOnly, SameSite=Lax, hết hạn sau 30 phút và không lưu bền qua phiên.
   Cookie bắt buộc Secure ngoài Development; triển khai thật cần HTTPS.
 - Mọi POST MVC kiểm tra antiforgery. Trang tài khoản không được cache và không cho nhúng iframe.
-- Đăng nhập và đăng ký giới hạn 10 POST mỗi phút theo IP, mỗi chính sách riêng;
+- Đăng nhập, đăng ký và đổi mật khẩu giới hạn 10 POST mỗi phút theo IP, mỗi chính sách riêng;
   không bật tin cậy X-Forwarded-For từ mọi nguồn. Khi đặt sau proxy cần cấu hình nguồn tin cậy.
 - Khóa tài khoản hoặc thay mật khẩu làm cookie cũ bị từ chối ở request tiếp theo.
   Đăng xuất xóa cookie của trình duyệt hiện tại, không tự đăng xuất mọi thiết bị khác.
@@ -125,6 +132,7 @@ ngoài phạm vi tài khoản khách hàng.
 
 ## Bước tiếp theo
 
-Làm trang đổi mật khẩu sau commit cập nhật hồ sơ. Kiểm thử SQL
-thật trước khi ghi nhận chức năng hoạt động qua hai ứng dụng. Phần Catalog, Sales,
+Kiểm thử SQL thật và luồng dữ liệu dùng chung desktop–Web trước khi ghi nhận
+chức năng hoạt động qua hai ứng dụng; kiểm tra kết quả GitHub Actions sau khi push
+và bổ sung minh chứng vào báo cáo. Phần Catalog, Sales,
 Orders, Reports và Docker không nằm trong đợt tài khoản này.

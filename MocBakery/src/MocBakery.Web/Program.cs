@@ -51,7 +51,7 @@ public static class Program
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            foreach (var name in new[] { "customer-register", "customer-login" })
+            foreach (var name in new[] { "customer-register", "customer-login", "customer-password" })
                 options.AddPolicy(name, context => RateLimitPartition.GetFixedWindowLimiter(
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions
                     { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));

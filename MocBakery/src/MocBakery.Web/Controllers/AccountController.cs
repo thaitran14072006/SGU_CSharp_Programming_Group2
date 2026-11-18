@@ -92,6 +92,33 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
         return View(input);
     }
 
+    [Authorize, HttpGet("doi-mat-khau")]
+    public IActionResult ChangePassword() => View(new PasswordForm());
+
+    [Authorize, HttpPost("doi-mat-khau"), EnableRateLimiting("customer-password")]
+    public async Task<IActionResult> ChangePassword(PasswordForm input)
+    {
+        if (!ModelState.IsValid) return View(input);
+        try
+        {
+            accounts.ChangePassword(CustomerCookie.Identity(User)!, input.OldPassword, input.Password, input.Confirmation);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData.Remove("ProfileSaved");
+            TempData["PasswordChanged"] = true;
+            return RedirectToAction(nameof(Login));
+        }
+        catch (BusinessException ex) when (ex.Field is not null)
+        { ModelState.AddModelError(ex.Field, ex.Message); }
+        catch (BusinessException)
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction(nameof(Login));
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        { Unavailable(ex); }
+        return View(input);
+    }
+
     [Authorize, HttpPost("dang-xuat")]
     public async Task<IActionResult> Logout()
     {
