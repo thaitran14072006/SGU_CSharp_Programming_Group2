@@ -1,0 +1,21 @@
+@model RegisterForm
+@{ ViewData["Title"] = "Tạo tài khoản"; }
+<section class="card wide" aria-labelledby="title">
+    <p class="eyebrow">CHÀO MỪNG ĐẾN VỚI MỘC</p>
+    <h1 id="title">Tạo tài khoản</h1>
+    <p class="intro">Lưu thông tin của bạn tại Mộc Bakery. Các trường có dấu * là bắt buộc.</p>
+    <form asp-action="Register" method="post">
+        <div asp-validation-summary="All" class="validation" role="alert"></div>
+        <div class="fields">
+            <div><label asp-for="FullName">Họ tên *</label><input asp-for="FullName" autocomplete="name" maxlength="100" required /><span asp-validation-for="FullName"></span></div>
+            <div><label asp-for="Phone">Số điện thoại *</label><input asp-for="Phone" type="tel" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required /><span asp-validation-for="Phone"></span></div>
+            <div class="full"><label asp-for="Address">Địa chỉ</label><input asp-for="Address" autocomplete="street-address" maxlength="255" /><span asp-validation-for="Address"></span></div>
+            <div class="full"><label asp-for="Username">Tên đăng nhập *</label><input asp-for="Username" autocomplete="username" minlength="3" maxlength="50" required aria-describedby="username-help" /><small id="username-help">3–50 ký tự: chữ không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang; bắt đầu bằng chữ hoặc số.</small><span asp-validation-for="Username"></span></div>
+            <div><label for="Password">Mật khẩu *</label><input id="Password" name="Password" type="password" autocomplete="new-password" minlength="8" maxlength="64" required /><small>8–64 ký tự.</small><span asp-validation-for="Password"></span></div>
+            <div><label for="Confirmation">Xác nhận mật khẩu *</label><input id="Confirmation" name="Confirmation" type="password" autocomplete="new-password" minlength="8" maxlength="64" required /><span asp-validation-for="Confirmation"></span></div>
+        </div>
+        <p class="hint">Nếu số điện thoại đã có hồ sơ tại cửa hàng, vui lòng liên hệ để được xác minh trước khi liên kết.</p>
+        <button class="primary" type="submit">Tạo tài khoản</button>
+    </form>
+    <p class="switch">Đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+</section>

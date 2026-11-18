@@ -1,7 +1,9 @@
 # Tài khoản khách hàng Web
 
-Đợt đầu xây dựng Models, BLL, DAL và migration tài khoản khách hàng. Chưa có giao diện
-Web, cookie, đăng xuất hoặc trang hồ sơ HTTP. Không coi bộ test bộ nhớ là kiểm thử SQL hay Web.
+Đã có Models, BLL, DAL, migration và Web host ASP.NET Core MVC cho tài khoản khách.
+Web có đăng ký, đăng nhập, đăng xuất và trang đọc thông tin tài khoản hiện tại.
+Chỉnh sửa hồ sơ và đổi mật khẩu mới có BLL, chưa có trang Web tương ứng.
+Kiểm thử HTTP dùng repository bộ nhớ; chưa thay thế kiểm thử SQL thật và desktop–Web.
 
 ## Dữ liệu và quyền
 
@@ -11,7 +13,7 @@ Web, cookie, đăng xuất hoặc trang hồ sơ HTTP. Không coi bộ test bộ
 - Đăng ký tạo tài khoản và khách hàng trong một transaction. Không tự nhận hồ sơ cũ
   chỉ dựa vào số điện thoại. Luồng xác minh và liên kết hồ sơ cũ chưa triển khai.
 - Đổi mật khẩu thay `SecurityStamp`, làm danh tính cũ hết hiệu lực. Web host phải lưu
-  danh tính trong cookie đã được bảo vệ, xác minh ở mỗi request; chưa có host ở đợt này.
+  danh tính trong cookie đã được bảo vệ, xác minh ở mỗi request qua `CustomerCookie.Validate`.
 - Chưa có xác minh số điện thoại, khôi phục mật khẩu hoặc chức năng khóa khách trên UI.
 
 ## Migration dùng chung
@@ -39,18 +41,83 @@ Từ gốc repo:
 dotnet run --project MocBakery/tests/CustomerAccounts/MocBakery.CustomerAccountChecks.csproj -c Release
 ```
 
-Project này độc lập với các test desktop. Chưa thêm vào solution hoặc workflow chung;
-sẽ tích hợp cùng project Web sau khi commit phần nền tảng.
+Project này độc lập với các test desktop. Đã đưa project Web và hai bộ kiểm tra
+tài khoản khách vào solution; workflow chạy kiểm tra nghiệp vụ và HTTP sau khi build.
+Chưa xác nhận kết quả chạy trên GitHub Actions trước khi push.
 
-Kết quả chạy cục bộ ngày 18/11/2026: bộ CustomerAccountChecks đạt 36/36;
+Kết quả ở commit nền tảng ngày 18/11/2026: bộ CustomerAccountChecks đạt 36/36;
 bộ UnitChecks trên main hiện tại đạt 45/45. BLL và DAL build Release không cảnh báo,
 không lỗi; DAL được biên dịch với `RestoreSqlClient=false` để kiểm tra mã độc lập
-driver. Chưa chạy migration, kiểm thử SQL, HTTP hoặc xác nhận trên GitHub Actions.
+driver. Tại commit nền tảng chưa chạy migration, kiểm thử SQL, HTTP hoặc xác nhận trên GitHub Actions.
 Các kết quả này không thay thế minh chứng tích hợp với CSDL thật.
+
+## Chạy Web tại máy phát triển
+
+1. Cấu hình cùng SQL Server và database mà desktop sử dụng, ưu tiên database thử.
+2. Chạy migration 04 trên database đó trước khi đăng ký khách. Web không tự chạy SQL migration.
+3. Từ gốc repo, cấu hình kết nối trong phiên PowerShell và chạy:
+
+```powershell
+$env:ConnectionStrings__MocBakery = 'Server=.\SQLEXPRESS;Database=<ten_database_thu>;Integrated Security=True;Encrypt=True;TrustServerCertificate=True'
+dotnet run --project MocBakery/src/MocBakery.Web/MocBakery.Web.csproj
+```
+
+Mở `http://localhost:5080/tai-khoan/dang-ky`. Nếu đã có tài khoản, mở
+`http://localhost:5080/tai-khoan/dang-nhap`. Đăng nhập thành công chuyển tới
+`/tai-khoan`, chỉ đọc hồ sơ của danh tính từ cookie; đăng xuất là POST có antiforgery.
+
+Biến `MOCBAKERY_CONNECTION_STRING` nếu đã có sẽ được ưu tiên hơn `ConnectionStrings__MocBakery`.
+Dùng đúng server của nhóm, không mặc định rằng `.\SQLEXPRESS` tồn tại. Không đưa
+connection string thật vào repo. Web sử dụng Microsoft.Data.SqlClient từ DAL;
+chạy bình thường cần restore driver, không đặt `RestoreSqlClient=false` khi dùng SQL thật.
+
+## Kiểm thử HTTP
+
+```powershell
+dotnet run --project MocBakery/tests/WebAccounts/MocBakery.WebAccountChecks.csproj -c Release
+```
+
+Bộ kiểm tra khởi động Kestrel trên loopback ở cổng tạm, dùng cookie và antiforgery thật,
+thay repository bằng fixture chỉ trong test host. Production host luôn dùng repository SQL;
+không có cờ bật tài khoản mẫu hoặc dữ liệu bộ nhớ. Test host dừng khi chạy xong.
+
+Ngày 18/11/2026: 23/23 kiểm tra Web đạt (22 ca HTTP và 1 ca cấu hình production); project Web build Release không cảnh báo,
+không lỗi với `RestoreSqlClient=false`. Đây không phải kết quả SQL hoặc kiểm tra giao diện
+trực quan trên điện thoại. Hai bộ kiểm tra có 36 ca BLL và 23 ca Web, không cộng vào
+các kết quả lịch sử ngày 15/11.
+
+Hồi quy cùng lượt: UnitChecks 45/45, CatalogInventoryChecks 43/43, CustomerAccountChecks
+36/36 đều đạt. Build toàn solution thành công với output tách riêng qua
+`--artifacts-path` và `RestoreSqlClient=false`, không lỗi/cảnh báo. Build vào thư mục
+desktop mặc định ban đầu bị khóa DLL do ứng dụng đang mở; không đóng hay dừng ứng dụng.
+
+## Cấu hình phiên và giới hạn
+
+- Cookie khách có HttpOnly, SameSite=Lax, hết hạn sau 30 phút và không lưu bền qua phiên.
+  Cookie bắt buộc Secure ngoài Development; triển khai thật cần HTTPS.
+- Mọi POST MVC kiểm tra antiforgery. Trang tài khoản không được cache và không cho nhúng iframe.
+- Đăng nhập và đăng ký giới hạn 10 POST mỗi phút theo IP, mỗi chính sách riêng;
+  không bật tin cậy X-Forwarded-For từ mọi nguồn. Khi đặt sau proxy cần cấu hình nguồn tin cậy.
+- Khóa tài khoản hoặc thay mật khẩu làm cookie cũ bị từ chối ở request tiếp theo.
+  Đăng xuất xóa cookie của trình duyệt hiện tại, không tự đăng xuất mọi thiết bị khác.
+- Triển khai nhiều instance hoặc container cần cấu hình lưu và chia sẻ Data Protection keys;
+  Docker, trang chủ bán bánh và các module khác chưa được tích hợp ở đợt xác thực này.
+
+## Nguồn kỹ thuật
+
+- Microsoft Learn, Tag Helpers in forms in ASP.NET Core:
+  https://learn.microsoft.com/aspnet/core/mvc/views/working-with-forms?view=aspnetcore-10.0
+- Microsoft Learn, Prevent Cross-Site Request Forgery:
+  https://learn.microsoft.com/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0
+- Microsoft Learn, Rate limiting middleware:
+  https://learn.microsoft.com/aspnet/core/performance/rate-limit?view=aspnetcore-10.0
+
+Mã triển khai trong repo áp dụng MVC Form Tag Helper, AutoValidateAntiforgeryToken
+và fixed window limiter từ nền tảng ASP.NET Core; không chép ví dụ thành chức năng
+ngoài phạm vi tài khoản khách hàng.
 
 ## Bước tiếp theo
 
-Tạo Web host và trang đăng ký, đăng nhập; bổ sung cookie, antiforgery, giới hạn thử
-đăng nhập, trang hồ sơ, đổi mật khẩu và đăng xuất. Kiểm thử HTTP và SQL thật trước
-khi ghi nhận chức năng hoạt động qua hai ứng dụng. Phần Catalog, Sales, Orders,
-Reports và Docker không nằm trong đợt tài khoản này.
+Làm trang cập nhật hồ sơ và đổi mật khẩu sau commit giao diện xác thực. Kiểm thử SQL
+thật trước khi ghi nhận chức năng hoạt động qua hai ứng dụng. Phần Catalog, Sales,
+Orders, Reports và Docker không nằm trong đợt tài khoản này.

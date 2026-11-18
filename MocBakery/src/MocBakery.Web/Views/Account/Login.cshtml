@@ -1,0 +1,20 @@
+@model LoginForm
+@{ ViewData["Title"] = "Đăng nhập"; }
+<section class="card" aria-labelledby="title">
+    <p class="eyebrow">TÀI KHOẢN KHÁCH HÀNG</p>
+    <h1 id="title">Chào bạn trở lại</h1>
+    <p class="intro">Đăng nhập để xem thông tin tài khoản của bạn.</p>
+    @if (ViewData["Registered"] is true)
+    {
+        <p class="success" role="status">Tài khoản đã được tạo. Bạn có thể đăng nhập.</p>
+    }
+    <form asp-action="Login" method="post">
+        <div asp-validation-summary="All" class="validation" role="alert"></div>
+        <label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" maxlength="50" required />
+        <span asp-validation-for="Username"></span>
+        <label for="Password">Mật khẩu</label><input id="Password" name="Password" type="password" autocomplete="current-password" maxlength="64" required />
+        <span asp-validation-for="Password"></span>
+        <button class="primary" type="submit">Đăng nhập</button>
+    </form>
+    <p class="switch">Chưa có tài khoản? <a asp-action="Register">Tạo tài khoản</a></p>
+</section>

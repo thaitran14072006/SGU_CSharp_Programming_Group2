@@ -1,0 +1,11 @@
+@model CustomerProfile
+@{ ViewData["Title"] = "Tài khoản của bạn"; }
+<section class="card" aria-labelledby="title">
+    <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p>
+    <h1 id="title">Xin chào, @Model.FullName</h1>
+    <dl>
+        <dt>Số điện thoại</dt><dd>@Model.Phone</dd>
+        <dt>Địa chỉ</dt><dd>@(Model.Address ?? "Chưa cập nhật")</dd>
+    </dl>
+    <form asp-action="Logout" method="post"><button class="primary" type="submit">Đăng xuất</button></form>
+</section>

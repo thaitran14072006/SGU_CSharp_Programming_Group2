@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Mộc Bakery</title>
+    <link rel="stylesheet" href="~/css/accounts.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip" href="#content">Đến nội dung chính</a>
+    <header class="header">
+        <a class="brand" href="/">MỘC <span>BAKERY</span></a>
+        <nav aria-label="Tài khoản khách hàng">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Account" asp-action="Index">Tài khoản</a>
+                <form asp-controller="Account" asp-action="Logout" method="post"><button class="nav-button" type="submit">Đăng xuất</button></form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                <a asp-controller="Account" asp-action="Register">Đăng ký</a>
+            }
+        </nav>
+    </header>
+    <main id="content">@RenderBody()</main>
+    <footer>Mộc Bakery · Tài khoản khách hàng</footer>
+</body>
+</html>

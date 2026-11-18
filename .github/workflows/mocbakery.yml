@@ -48,6 +48,16 @@ jobs:
           dotnet
           MocBakery/tests/Unit/CatalogInventory/bin/Release/net10.0/MocBakery.CatalogInventoryChecks.dll
 
+      - name: Test customer account business rules
+        run: >
+          dotnet
+          MocBakery/tests/CustomerAccounts/bin/Release/net10.0/MocBakery.CustomerAccountChecks.dll
+
+      - name: Test customer Web authentication over HTTP
+        run: >
+          dotnet
+          MocBakery/tests/WebAccounts/bin/Release/net10.0/MocBakery.WebAccountChecks.dll
+
   release:
     name: Publish Windows release
     needs: verify

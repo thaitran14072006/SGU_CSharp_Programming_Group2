@@ -1,5 +1,13 @@
 ﻿# Mộc Bakery
 
+## Tài khoản khách hàng Web đang phát triển
+
+Đã có ASP.NET Core MVC cho đăng ký, đăng nhập, đăng xuất và xem thông tin tài khoản.
+Hướng dẫn cấu hình CSDL chung, migration 04 và chạy tại localhost:5080:
+[Tài khoản khách hàng Web](docs/deployment/CustomerWebAccounts.md).
+Trang sửa hồ sơ và đổi mật khẩu Web chưa có; chưa xác nhận tích hợp SQL thật.
+Các kết quả bản chốt bên dưới mô tả desktop và lịch sử kiểm thử trước phần Web.
+
 ## Bản chốt tích hợp ngày 15 tháng 11 năm 2026
 
 Đã tích hợp phần Thái/Như/Mai/Nam trên main; bổ sung Nhân viên liên kết Tài khoản,
