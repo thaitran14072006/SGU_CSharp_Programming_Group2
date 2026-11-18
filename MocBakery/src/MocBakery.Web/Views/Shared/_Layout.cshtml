@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] · Mộc Bakery</title>
     <link rel="stylesheet" href="~/css/accounts.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <a class="skip" href="#content">Đến nội dung chính</a>
     <header class="header">
         <a class="brand" href="/">MỘC <span>BAKERY</span></a>
-        <nav aria-label="Tài khoản khách hàng">
+        <nav aria-label="Điều hướng chính">
+            <a href="/banh">Thực đơn bánh</a>
+            <a href="/danh-muc">Danh mục</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <a asp-controller="Account" asp-action="Index">Tài khoản</a>
@@ -24,6 +27,6 @@
         </nav>
     </header>
     <main id="content">@RenderBody()</main>
-    <footer>Mộc Bakery · Tài khoản khách hàng</footer>
+    <footer>MỘC BAKERY <span>·</span> Chọn bánh theo cách của bạn.</footer>
 </body>
 </html>

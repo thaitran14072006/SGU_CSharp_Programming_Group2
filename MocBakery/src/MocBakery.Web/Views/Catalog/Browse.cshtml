@@ -1,0 +1,42 @@
+@model CatalogViewModel
+@{
+    ViewData["Title"] = Model.IsHome ? "Trang chủ" : "Thực đơn bánh";
+    string PageLink(int page) => Url.Action("Browse", "Catalog", new { q = Model.Query.Search, categoryId = Model.Query.CategoryId, availability = Model.Query.Availability, sort = Model.Query.Sort, page })!;
+}
+<div class="store">
+@if (Model.IsHome)
+{
+    <section class="hero">
+        <div><p class="eyebrow">MỘC BAKERY / THỰC ĐƠN</p><h1>Một chút ngọt,<br />một ngày vui.</h1><p>Khám phá các loại bánh, chọn hương vị bạn yêu thích và xem giá trước khi ghé tiệm.</p><a class="store-button" href="/banh">Khám phá thực đơn <span aria-hidden="true">↗</span></a></div>
+        <div class="hero-note"><span aria-hidden="true">m.</span><p>Bánh bạn thích,<br />dễ dàng tìm thấy.</p><a href="/danh-muc">Xem theo danh mục →</a></div>
+    </section>
+}
+    <section aria-labelledby="menu-title">
+        <div class="section-heading"><div><p class="eyebrow">CHỌN MÓN BẠN THÍCH</p>@if(Model.IsHome){<h2 id="menu-title">Ghé xem thực đơn</h2>}else{<h1 id="menu-title">Thực đơn bánh</h1>}</div><p>@Model.Products.Total loại bánh đang mở bán</p></div>
+        <form class="catalog-filters" action="/banh" method="get" role="search">
+            <div class="search-field"><label for="q">Tên hoặc mã bánh</label><input id="q" name="q" type="search" maxlength="100" value="@Model.Query.Search" placeholder="Ví dụ: Croissant, B001" /></div>
+            <div><label for="categoryId">Danh mục</label><select id="categoryId" name="categoryId"><option value="">Tất cả danh mục</option>@foreach(var c in Model.Categories){<option value="@c.Id" selected="@(c.Id == Model.Query.CategoryId)">@c.Name (@c.ProductCount)</option>}</select></div>
+            <div><label for="availability">Tình trạng</label><select id="availability" name="availability"><option value="all" selected="@(Model.Query.Availability == "all")">Tất cả tình trạng</option><option value="in-stock" selected="@(Model.Query.Availability == "in-stock")">Còn bánh</option><option value="out-of-stock" selected="@(Model.Query.Availability == "out-of-stock")">Tạm hết bánh</option></select></div>
+            <div><label for="sort">Sắp xếp</label><select id="sort" name="sort"><option value="name" selected="@(Model.Query.Sort == "name")">Theo tên</option><option value="price-asc" selected="@(Model.Query.Sort == "price-asc")">Giá tăng dần</option><option value="price-desc" selected="@(Model.Query.Sort == "price-desc")">Giá giảm dần</option></select></div>
+            <button class="store-button" type="submit">Tìm bánh</button>
+        </form>
+        @if(!Model.IsHome){<p class="result-note" role="status">Tìm thấy @Model.Products.Total loại bánh.@if(!string.IsNullOrWhiteSpace(Model.Query.Search)){<span> Từ khóa: “@Model.Query.Search”.</span>} <a href="/banh">Bỏ bộ lọc</a></p>}
+        @if(Model.Products.Items.Count == 0)
+        {
+            <div class="empty-state"><h2>Chưa tìm thấy bánh phù hợp</h2><p>Thử tên bánh khác hoặc bỏ bớt bộ lọc để xem thêm lựa chọn.</p><a href="/banh">Xem tất cả bánh →</a></div>
+        }
+        else
+        {
+            <div class="product-grid">@foreach(var p in Model.Products.Items){<partial name="_Product" model="p" />}</div>
+        }
+        @if(Model.IsHome && Model.Products.Total > Model.Products.Items.Count){<p class="browse-more"><a href="/banh">Xem toàn bộ thực đơn →</a></p>}
+        @if(!Model.IsHome && Model.Products.PageCount > 1)
+        {
+            <nav class="pagination" aria-label="Phân trang thực đơn">
+            @if(Model.Products.Page > 1){<a href="@PageLink(Model.Products.Page - 1)">← Trang trước</a>}
+            <span>Trang @Model.Products.Page / @Model.Products.PageCount</span>
+            @if(Model.Products.Page < Model.Products.PageCount){<a href="@PageLink(Model.Products.Page + 1)">Trang sau →</a>}
+            </nav>
+        }
+    </section>
+</div>

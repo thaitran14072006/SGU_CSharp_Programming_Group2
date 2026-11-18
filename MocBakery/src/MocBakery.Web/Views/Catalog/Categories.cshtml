@@ -1,0 +1,6 @@
+@model IReadOnlyList<MocBakery.Models.PublicCatalog.PublicCategory>
+@{ ViewData["Title"] = "Danh mục bánh"; }
+<div class="store"><p class="eyebrow">THỰC ĐƠN / DANH MỤC</p><h1>Bắt đầu từ món bạn thích</h1><p class="intro">Chọn một danh mục để khám phá các loại bánh đang mở bán.</p>
+@if(Model.Count == 0){<div class="empty-state"><h2>Thực đơn đang được cập nhật</h2><p>Bạn quay lại sau nhé.</p></div>}
+<div class="category-list">@foreach(var c in Model){<a href="/danh-muc/@c.Id"><h2>@c.Name</h2><span>@c.ProductCount loại bánh <span aria-hidden="true">↗</span></span></a>}</div>
+<p><a href="/banh">Xem tất cả bánh →</a></p></div>
