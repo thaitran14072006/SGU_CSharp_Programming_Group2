@@ -1,0 +1,37 @@
+PASS Only active products in active categories are public
+PASS Empty categories remain discoverable; inactive categories hidden
+PASS Sellable SQL stock excludes expired stopped future lots; includes expiry day
+PASS Desktop and Web agree on eligible stock
+PASS Out of stock product remains visible without available flag
+PASS Trimmed name and product code searches
+PASS LIKE wildcards are literal and parameterized
+PASS Category, stock filters and stable price sorting combine
+PASS Pagination keeps totals and supports beyond last page
+PASS Invalid filters and excessive page sizes fail validation
+PASS Selection validation rejects invalid quantities and missing IDs
+PASS Vietnamese price formatting preserves fractional currency
+PASS Home is public and shares account navigation
+PASS Public categories and empty category render
+PASS Search GET renders results and preserves filters
+PASS Zero-match search is a helpful 200 result
+PASS XSS input is encoded by Razor
+PASS Invalid numeric query returns 400 instead of silently ignoring
+PASS Invalid filter values return 400 on HTML and API
+PASS Missing invalid discontinued and hidden category IDs return 404
+PASS Out of stock detail explains availability
+PASS API exposes approved fields only without internal stock or credentials
+PASS Public API supports listing and category contract
+PASS Catalog routes cannot write via POST
+PASS Account login still renders with shared layout
+PASS Catalog response disables caching and keeps security headers
+PASS Desktop owner price edit is visible after HTTP reload and selection recheck
+PASS Desktop image edit is visible on uncached image endpoint
+PASS Removing desktop image removes public image and renders placeholder
+PASS Corrupt or executable image payload is never served
+PASS Desktop deactivation removes product from HTML API image and cart contract
+PASS Category stop hides products but preserves desktop history
+PASS Staff cannot bypass desktop product management permission
+PASS Desktop stock stop is reflected on Web reload
+PASS HTML pagination retains search category availability and sort
+PASS Database outage returns helpful 503 without internal details
+RESULT 36 passed, 0 failed
