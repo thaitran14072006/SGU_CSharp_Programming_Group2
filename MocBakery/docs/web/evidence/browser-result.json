@@ -1,17 +1,19 @@
 {
-  "date": "2026-11-18T15:39:57.095Z",
+  "date": "2026-11-18T16:05:54.813Z",
   "widths": [
     320,
     375,
     768,
     1440
   ],
-  "pagesChecked": 24,
+  "pagesChecked": 36,
   "interactions": [
     "mobile GET search and sorting",
     "product detail navigation",
     "XSS encoding",
-    "keyboard skip link"
+    "keyboard skip link",
+    "home category navigation",
+    "SQL login, profile update and return to catalog"
   ],
   "horizontalOverflow": false,
   "pageErrors": []
