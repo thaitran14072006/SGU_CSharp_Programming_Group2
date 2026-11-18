@@ -21,3 +21,13 @@ public sealed class RegisterForm : LoginForm
     [StringLength(255, ErrorMessage = "Địa chỉ tối đa 255 ký tự.")]
     public string? Address { get; set; }
 }
+
+public sealed class ProfileForm
+{
+    [Required(ErrorMessage = "Nhập họ tên."), StringLength(100, ErrorMessage = "Họ tên tối đa 100 ký tự.")]
+    public string FullName { get; set; } = "";
+    [Required(ErrorMessage = "Nhập số điện thoại."), RegularExpression(@"[0-9]{10}", ErrorMessage = "Số điện thoại phải có đúng 10 chữ số.")]
+    public string Phone { get; set; } = "";
+    [StringLength(255, ErrorMessage = "Địa chỉ tối đa 255 ký tự.")]
+    public string? Address { get; set; }
+}

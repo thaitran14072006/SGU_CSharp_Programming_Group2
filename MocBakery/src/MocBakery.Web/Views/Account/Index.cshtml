@@ -3,9 +3,14 @@
 <section class="card" aria-labelledby="title">
     <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p>
     <h1 id="title">Xin chào, @Model.FullName</h1>
+    @if (TempData["ProfileSaved"] is true)
+    {
+        <p class="success" role="status">Thông tin hồ sơ đã được cập nhật.</p>
+    }
     <dl>
         <dt>Số điện thoại</dt><dd>@Model.Phone</dd>
         <dt>Địa chỉ</dt><dd>@(Model.Address ?? "Chưa cập nhật")</dd>
     </dl>
+    <a class="secondary" asp-action="EditProfile">Cập nhật hồ sơ</a>
     <form asp-action="Logout" method="post"><button class="primary" type="submit">Đăng xuất</button></form>
 </section>

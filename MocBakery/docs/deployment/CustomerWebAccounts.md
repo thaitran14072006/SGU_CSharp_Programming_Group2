@@ -1,8 +1,8 @@
 # Tài khoản khách hàng Web
 
 Đã có Models, BLL, DAL, migration và Web host ASP.NET Core MVC cho tài khoản khách.
-Web có đăng ký, đăng nhập, đăng xuất và trang đọc thông tin tài khoản hiện tại.
-Chỉnh sửa hồ sơ và đổi mật khẩu mới có BLL, chưa có trang Web tương ứng.
+Web có đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản hiện tại.
+Đổi mật khẩu mới có BLL, chưa có trang Web tương ứng.
 Kiểm thử HTTP dùng repository bộ nhớ; chưa thay thế kiểm thử SQL thật và desktop–Web.
 
 ## Dữ liệu và quyền
@@ -66,6 +66,13 @@ Mở `http://localhost:5080/tai-khoan/dang-ky`. Nếu đã có tài khoản, m�
 `http://localhost:5080/tai-khoan/dang-nhap`. Đăng nhập thành công chuyển tới
 `/tai-khoan`, chỉ đọc hồ sơ của danh tính từ cookie; đăng xuất là POST có antiforgery.
 
+Tại trang tài khoản, chọn **Cập nhật hồ sơ** hoặc mở `/tai-khoan/ho-so` sau khi đăng nhập.
+Chỉ sửa họ tên, số điện thoại và địa chỉ của danh tính trong cookie; không nhận mã khách,
+quyền nhân viên hoặc ghi chú nội bộ từ biểu mẫu. Lưu thành công quay về trang tài khoản
+và hiện thông báo một lần; tải lại trang không gửi lại thao tác lưu. Bấm **Hủy và quay lại**
+không ghi dữ liệu. Lỗi dữ liệu hoặc lỗi ghi CSDL giữ lại bản nháp để sửa hoặc thử lại.
+Nếu phiên không còn hợp lệ lúc lưu, Web yêu cầu đăng nhập lại và không lưu thay đổi.
+
 Biến `MOCBAKERY_CONNECTION_STRING` nếu đã có sẽ được ưu tiên hơn `ConnectionStrings__MocBakery`.
 Dùng đúng server của nhóm, không mặc định rằng `.\SQLEXPRESS` tồn tại. Không đưa
 connection string thật vào repo. Web sử dụng Microsoft.Data.SqlClient từ DAL;
@@ -81,9 +88,9 @@ Bộ kiểm tra khởi động Kestrel trên loopback ở cổng tạm, dùng co
 thay repository bằng fixture chỉ trong test host. Production host luôn dùng repository SQL;
 không có cờ bật tài khoản mẫu hoặc dữ liệu bộ nhớ. Test host dừng khi chạy xong.
 
-Ngày 18/11/2026: 23/23 kiểm tra Web đạt (22 ca HTTP và 1 ca cấu hình production); project Web build Release không cảnh báo,
+Ngày 18/11/2026, sau khi thêm cập nhật hồ sơ: 35/35 kiểm tra Web đạt (34 ca HTTP và 1 ca cấu hình production); project Web build Release không cảnh báo,
 không lỗi với `RestoreSqlClient=false`. Đây không phải kết quả SQL hoặc kiểm tra giao diện
-trực quan trên điện thoại. Hai bộ kiểm tra có 36 ca BLL và 23 ca Web, không cộng vào
+trực quan trên điện thoại. Hai bộ kiểm tra có 36 ca BLL và 35 ca Web, không cộng vào
 các kết quả lịch sử ngày 15/11.
 
 Hồi quy cùng lượt: UnitChecks 45/45, CatalogInventoryChecks 43/43, CustomerAccountChecks
@@ -118,6 +125,6 @@ ngoài phạm vi tài khoản khách hàng.
 
 ## Bước tiếp theo
 
-Làm trang cập nhật hồ sơ và đổi mật khẩu sau commit giao diện xác thực. Kiểm thử SQL
+Làm trang đổi mật khẩu sau commit cập nhật hồ sơ. Kiểm thử SQL
 thật trước khi ghi nhận chức năng hoạt động qua hai ứng dụng. Phần Catalog, Sales,
 Orders, Reports và Docker không nằm trong đợt tài khoản này.
