@@ -62,6 +62,36 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
     [Authorize, HttpGet("")]
     public IActionResult Index() => View(accounts.Profile(CustomerCookie.Identity(User)!));
 
+    [Authorize, HttpGet("ho-so")]
+    public IActionResult EditProfile()
+    {
+        var profile = accounts.Profile(CustomerCookie.Identity(User)!);
+        return View(new ProfileForm { FullName = profile.FullName, Phone = profile.Phone, Address = profile.Address });
+    }
+
+    [Authorize, HttpPost("ho-so")]
+    public async Task<IActionResult> EditProfile(ProfileForm input)
+    {
+        if (!ModelState.IsValid) return View(input);
+        try
+        {
+            // No customer id or employee fields are accepted from the submitted form.
+            accounts.UpdateProfile(CustomerCookie.Identity(User)!, new(input.FullName, input.Phone, input.Address));
+            TempData["ProfileSaved"] = true;
+            return RedirectToAction(nameof(Index));
+        }
+        catch (BusinessException ex) when (ex.Field is not null)
+        { ModelState.AddModelError(ex.Field, ex.Message); }
+        catch (BusinessException)
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction(nameof(Login));
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        { Unavailable(ex); }
+        return View(input);
+    }
+
     [Authorize, HttpPost("dang-xuat")]
     public async Task<IActionResult> Logout()
     {

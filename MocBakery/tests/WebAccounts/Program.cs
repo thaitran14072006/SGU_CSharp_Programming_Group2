@@ -124,6 +124,106 @@ try
         using var response = await client.GetAsync(profile);
         Assert(response.Headers.CacheControl!.NoStore && response.Headers.GetValues("X-Frame-Options").Single() == "DENY");
     });
+    const string edit = profile + "/ho-so";
+    await Check("Anonymous browsers cannot read or post profile edits", async () =>
+    {
+        using var anonymous = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { BaseAddress = client.BaseAddress };
+        using var get = await anonymous.GetAsync(edit);
+        using var post = await anonymous.PostAsync(edit, new FormUrlEncodedContent(new Dictionary<string, string>()));
+        Assert(get.StatusCode == HttpStatusCode.Redirect && post.StatusCode == HttpStatusCode.Redirect);
+    });
+    await Check("Edit form reads only the cookie owner's profile", async () =>
+    {
+        repository.Profiles[99] = new("Other customer", "0909999999", "Private other address");
+        string html = await Page(edit + "?CustomerId=99");
+        Assert(html.Contains("0901234567") && !html.Contains("0909999999") && Token(html).Length > 20
+            && !html.Contains("name=\"CustomerId\"") && !html.Contains("name=\"Role\"") && !html.Contains("name=\"GhiChu\""));
+    });
+    await Check("Profile POST without antiforgery token leaves data intact", async () =>
+    {
+        var before = repository.Profiles[1];
+        using var response = await client.PostAsync(edit, new FormUrlEncodedContent(new Dictionary<string, string>
+            { ["FullName"] = "Unwanted", ["Phone"] = "0900000005" }));
+        Assert(response.StatusCode == HttpStatusCode.BadRequest && repository.Profiles[1] == before);
+    });
+    await Check("Profile validation rejects blank name and malformed phone", async () =>
+    {
+        var before = repository.Profiles[1];
+        using var response = await Post(edit, new() { ["FullName"] = " ", ["Phone"] = "123" });
+        string html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert(response.StatusCode == HttpStatusCode.OK && repository.Profiles[1] == before
+            && html.Contains("Nhập họ tên") && html.Contains("10 chữ số"));
+    });
+    await Check("Profile server validation enforces name and address limits", async () =>
+    {
+        var before = repository.Profiles[1];
+        using var response = await Post(edit, new() { ["FullName"] = new('n', 101), ["Phone"] = "0901234567", ["Address"] = new('a', 256) });
+        string html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert(response.StatusCode == HttpStatusCode.OK && repository.Profiles[1] == before && html.Contains("100 ký tự") && html.Contains("255 ký tự"));
+    });
+    await Check("Duplicate profile phone shows field error and retains draft", async () =>
+    {
+        var before = repository.Profiles[1];
+        using var response = await Post(edit, new() { ["FullName"] = "Draft customer", ["Phone"] = "0909999999", ["Address"] = "Draft address" });
+        string html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert(response.StatusCode == HttpStatusCode.OK && repository.Profiles[1] == before && html.Contains("Số điện thoại đã có hồ sơ")
+            && html.Contains("Draft customer") && html.Contains("Draft address"));
+    });
+    await Check("Profile update ignores forged ids and employee fields", async () =>
+    {
+        var other = repository.Profiles[99];
+        var account = repository.Accounts[1];
+        using var response = await Post(edit, new()
+        {
+            ["FullName"] = "  Nguyễn   Bình ", ["Phone"] = "0900000004", ["Address"] = "  Hồ Chí Minh  ",
+            ["CustomerId"] = "99", ["AccountId"] = "99", ["Role"] = "ChuTiem", ["GhiChu"] = "Alter internal note"
+        });
+        Assert(response.StatusCode == HttpStatusCode.Redirect && response.Headers.Location!.ToString() == profile
+            && repository.Profiles[1] == new CustomerProfile("Nguyễn Bình", "0900000004", "Hồ Chí Minh")
+            && repository.Profiles[99] == other && repository.Accounts[1] == account);
+    });
+    await Check("Profile success redirects to GET and refresh does not resubmit", async () =>
+    {
+        int writes = repository.ProfileWrites;
+        string first = WebUtility.HtmlDecode(await Page(profile));
+        string refresh = WebUtility.HtmlDecode(await Page(profile));
+        Assert(first.Contains("Thông tin hồ sơ đã được cập nhật") && !refresh.Contains("Thông tin hồ sơ đã được cập nhật")
+            && refresh.Contains("Nguyễn Bình") && repository.ProfileWrites == writes);
+    });
+    await Check("Profile accepts a 100-character name and 255-character address", async () =>
+    {
+        using var response = await Post(edit, new() { ["FullName"] = new('n', 100), ["Phone"] = "0900000004", ["Address"] = new('a', 255) });
+        Assert(response.StatusCode == HttpStatusCode.Redirect && repository.Profiles[1].FullName.Length == 100 && repository.Profiles[1].Address!.Length == 255);
+    });
+    await Check("Profile optional address can be cleared", async () =>
+    {
+        using var response = await Post(edit, new() { ["FullName"] = "Nguyễn Bình", ["Phone"] = "0900000004", ["Address"] = " " });
+        Assert(response.StatusCode == HttpStatusCode.Redirect && repository.Profiles[1].Address is null);
+    });
+    await Check("Profile database failure preserves saved data and entered draft", async () =>
+    {
+        var before = repository.Profiles[1];
+        repository.Unavailable = true;
+        try
+        {
+            using var response = await Post(edit, new() { ["FullName"] = "Draft after outage", ["Phone"] = "0900000004", ["Address"] = "Draft address" });
+            string html = await response.Content.ReadAsStringAsync();
+            Assert(response.StatusCode == HttpStatusCode.ServiceUnavailable && repository.Profiles[1] == before
+                && html.Contains("Draft after outage") && !html.Contains("FixtureSecret"));
+        }
+        finally { repository.Unavailable = false; }
+    });
+    await Check("Session revoked during profile save cannot write and requires login", async () =>
+    {
+        var before = repository.Profiles[1];
+        repository.RevokeOnNextProfileWrite = true;
+        using var response = await Post(edit, new() { ["FullName"] = "Stale edit", ["Phone"] = "0900000004" });
+        using var after = await client.GetAsync(profile);
+        Assert(response.StatusCode == HttpStatusCode.Redirect && response.Headers.Location!.ToString() == login
+            && after.StatusCode == HttpStatusCode.Redirect && repository.Profiles[1] == before);
+        using var signedInAgain = await Post(login, Login());
+        Assert(signedInAgain.StatusCode == HttpStatusCode.Redirect);
+    });
     await Check("Tampered cookie cannot authenticate", async () =>
     {
         using var badHandler = new HttpClientHandler { AllowAutoRedirect = false };
@@ -213,6 +313,8 @@ sealed class WebFixtureRepository : ICustomerAccountRepository
     public Dictionary<int, CustomerAccount> Accounts { get; } = [];
     public Dictionary<int, CustomerProfile> Profiles { get; } = [];
     public bool Unavailable { get; set; }
+    public bool RevokeOnNextProfileWrite { get; set; }
+    public int ProfileWrites { get; private set; }
     public CustomerAccount? FindByUsername(string username) => Accounts.Values.SingleOrDefault(a => a.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
     public CustomerAccount? FindById(int id) => Accounts.GetValueOrDefault(id);
     public int Register(string username, string hash, CustomerProfile profile)
@@ -224,7 +326,20 @@ sealed class WebFixtureRepository : ICustomerAccountRepository
         Accounts.Add(id, new(id, id, username, hash, true, Guid.NewGuid())); Profiles.Add(id, profile); return id;
     }
     public CustomerProfile? ReadProfile(CustomerIdentity identity) => Profiles.GetValueOrDefault(identity.CustomerId);
-    public bool UpdateProfile(CustomerIdentity identity, CustomerProfile profile) => throw new NotSupportedException();
+    public bool UpdateProfile(CustomerIdentity identity, CustomerProfile profile)
+    {
+        if (Unavailable) throw new FixtureDbException();
+        if (RevokeOnNextProfileWrite)
+        {
+            RevokeOnNextProfileWrite = false;
+            Accounts[identity.AccountId] = Accounts[identity.AccountId] with { SecurityStamp = Guid.NewGuid() };
+        }
+        var current = Accounts[identity.AccountId];
+        if (!current.Active || current.CustomerId != identity.CustomerId || current.SecurityStamp != identity.SecurityStamp) return false;
+        if (Profiles.Any(p => p.Key != identity.CustomerId && p.Value.Phone == profile.Phone))
+            throw new BusinessException("Số điện thoại đã có hồ sơ khác.", "Phone");
+        Profiles[identity.CustomerId] = profile; ProfileWrites++; return true;
+    }
     public bool ChangePassword(CustomerIdentity identity, string expectedHash, string nextHash)
     {
         var current = Accounts[identity.AccountId];

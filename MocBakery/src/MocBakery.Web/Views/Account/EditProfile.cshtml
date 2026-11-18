@@ -1,0 +1,17 @@
+@model ProfileForm
+@{ ViewData["Title"] = "Cập nhật hồ sơ"; }
+<section class="card wide" aria-labelledby="title">
+    <p class="eyebrow">THÔNG TIN CỦA BẠN</p>
+    <h1 id="title">Cập nhật hồ sơ</h1>
+    <p class="intro">Thông tin này được dùng chung với hồ sơ khách hàng tại cửa hàng. Các trường có dấu * là bắt buộc.</p>
+    <form asp-action="EditProfile" method="post">
+        <div asp-validation-summary="All" class="validation" role="alert"></div>
+        <div class="fields">
+            <div><label asp-for="FullName">Họ tên *</label><input asp-for="FullName" autocomplete="name" maxlength="100" required /><span asp-validation-for="FullName"></span></div>
+            <div><label asp-for="Phone">Số điện thoại *</label><input asp-for="Phone" type="tel" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required /><span asp-validation-for="Phone"></span></div>
+            <div class="full"><label asp-for="Address">Địa chỉ</label><input asp-for="Address" autocomplete="street-address" maxlength="255" /><span asp-validation-for="Address"></span></div>
+        </div>
+        <button class="primary" type="submit">Lưu thay đổi</button>
+        <a class="secondary" asp-action="Index">Hủy và quay lại</a>
+    </form>
+</section>
