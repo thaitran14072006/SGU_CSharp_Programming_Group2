@@ -23,6 +23,7 @@ const fs = require('fs');
       if (overflow) throw new Error('Horizontal overflow: ' + width + ' ' + route);
       const heading = await page.locator('h1').count();
       if (heading !== 1) throw new Error('Expected one h1: ' + route);
+      if (await page.locator('.validation-summary-valid').isVisible()) throw new Error('Empty validation summary is visible: ' + route);
       checked++;
       if ((width === 375 || width === 1440) && (route === '/' || route === '/banh/' + id)) {
         await page.screenshot({ path: path.join(out, `${route === '/' ? 'home' : 'detail'}-${width}.png`), fullPage: true });
@@ -45,8 +46,34 @@ const fs = require('fs');
   if ((await page.evaluate(() => document.activeElement.textContent)).trim() !== 'Đến nội dung chính') throw new Error('Skip link not first focus');
   await page.keyboard.press('Enter');
   if (await page.evaluate(() => location.hash) !== '#content') throw new Error('Skip link failed');
+  await page.goto(base + '/');
+  await page.getByRole('navigation', { name: 'Chọn danh mục bánh' }).getByRole('link').filter({ hasText: 'Bánh mì' }).click();
+  if (await page.locator('.product').count() !== 1) throw new Error('Home category filter failed');
+  // This account exists only in the isolated --serve fixture, never in production.
+  await page.goto(base + '/tai-khoan/dang-nhap');
+  await page.getByLabel('Tên đăng nhập').fill('catalog.customer');
+  await page.getByLabel('Mật khẩu', { exact: true }).fill('CatalogTest123!');
+  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+  await page.waitForURL(base + '/tai-khoan');
+  for (const width of [320,375,768,1440]) {
+    await page.setViewportSize({ width, height: 960 });
+    for (const route of ['/tai-khoan', '/tai-khoan/ho-so', '/banh']) {
+      await page.goto(base + route);
+      if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Authenticated overflow: ' + width + ' ' + route);
+      if (await page.locator('.validation-summary-valid').isVisible()) throw new Error('Empty profile validation summary is visible');
+      checked++;
+      if (route === '/tai-khoan/ho-so' && (width === 375 || width === 1440)) await page.screenshot({ path: path.join(out, `profile-${width}.png`), fullPage: true });
+    }
+  }
+  await page.goto(base + '/tai-khoan/ho-so');
+  await page.getByLabel('Họ tên').fill('Khách xem bánh đã sửa');
+  await page.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await page.waitForURL(base + '/tai-khoan');
+  if (!(await page.locator('h1').innerText()).includes('Khách xem bánh đã sửa')) throw new Error('Profile update not reflected');
+  await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Thực đơn bánh' }).click();
+  if (!await page.getByRole('button', { name: 'Đăng xuất' }).isVisible()) throw new Error('Lost customer session');
   if (errors.length) throw new Error(errors.join('\n'));
-  const report = { date: new Date().toISOString(), widths: [320,375,768,1440], pagesChecked: checked, interactions: ['mobile GET search and sorting', 'product detail navigation', 'XSS encoding', 'keyboard skip link'], horizontalOverflow: false, pageErrors: errors };
+  const report = { date: new Date().toISOString(), widths: [320,375,768,1440], pagesChecked: checked, interactions: ['mobile GET search and sorting', 'product detail navigation', 'XSS encoding', 'keyboard skip link', 'home category navigation', 'SQL login, profile update and return to catalog'], horizontalOverflow: false, pageErrors: errors };
   fs.writeFileSync(path.join(out, 'browser-result.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report));
   await browser.close();

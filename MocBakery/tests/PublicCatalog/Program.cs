@@ -94,6 +94,7 @@ try
     await Check("Selection validation rejects invalid quantities and missing IDs",()=>{Reject(()=>service.CheckSelection(cake,0));Reject(()=>service.CheckSelection(cake,1001));Assert(service.CheckSelection(-1,1)==null&&service.CheckSelection(stoppedProduct,1)==null);return Task.CompletedTask;});
     await Check("Vietnamese price formatting preserves fractional currency",()=>{Assert(BakeryDisplay.Money(25000.50m)=="25.000,50 ₫"&&BakeryDisplay.Money(28000)=="28.000 ₫");return Task.CompletedTask;});
     await Check("Home is public and shares account navigation",async()=>{string html=await Page("/");Assert(html.Contains("Một chút ngọt")&&html.Contains("/tai-khoan/dang-nhap")&&html.Contains("/danh-muc")&&html.Contains("/css/site.css"));});
+    await Check("Home category navigation includes active and empty categories only",async()=>{string html=await Page("/");Assert(html.Contains("aria-label=\"Chọn danh mục bánh\"")&&html.Contains($"href=\"/danh-muc/{sweet}\"")&&html.Contains($"href=\"/danh-muc/{empty}\"")&&!html.Contains($"href=\"/danh-muc/{hidden}\""));});
     await Check("Public categories and empty category render",async()=>{Assert((await Page("/danh-muc")).Contains("Bánh theo mùa"));Assert((await Page($"/danh-muc/{empty}")).Contains("Chưa tìm thấy bánh phù hợp"));});
     await Check("Search GET renders results and preserves filters",async()=>{string html=await Page("/banh?q=Tiramisu&sort=price-desc&availability=in-stock");Assert(html.Contains("Tiramisu")&&!html.Contains("href=\"/banh/"+croissant+"\"")&&html.Contains("value=\"Tiramisu\""));});
     await Check("Zero-match search is a helpful 200 result",async()=>Assert((await Page("/banh?q=khong-tim-thay")).Contains("Chưa tìm thấy bánh phù hợp")));
@@ -144,8 +145,38 @@ try
         {using var response=await http.GetAsync(route);string body=await response.Content.ReadAsStringAsync();Assert(response.StatusCode==HttpStatusCode.ServiceUnavailable&&body.Contains("Vui lòng thử lại")&&!body.Contains("SECRET")&&!body.Contains("SqlException"));}
         await offline.StopAsync();
     });
+    // Apply Thái's existing account migration only to this isolated test database.
+    Sql(File.ReadAllText(Path.Combine(root,"database/schema/04_CustomerWebAccounts.sql")));
+    using var customer=new HttpClient(new HttpClientHandler{AllowAutoRedirect=false,CookieContainer=new CookieContainer()}){BaseAddress=new Uri(address)};
+    async Task<HttpResponseMessage> CustomerPost(string route,Dictionary<string,string> data)
+    {
+        string form=await customer.GetStringAsync(route);
+        data["__RequestVerificationToken"]=WebUtility.HtmlDecode(Regex.Match(form,"name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value);
+        return await customer.PostAsync(route,new FormUrlEncodedContent(data));
+    }
+    await Check("SQL customer login works across shared storefront navigation",async()=>
+    {
+        using var register=await CustomerPost("/tai-khoan/dang-ky",new(){["Username"]="catalog.customer",["Password"]="CatalogTest123!",["Confirmation"]="CatalogTest123!",["FullName"]="Khách thử Catalog",["Phone"]="0900001122"});
+        Assert(register.StatusCode==HttpStatusCode.Redirect);
+        using var login=await CustomerPost("/tai-khoan/dang-nhap",new(){["Username"]="catalog.customer",["Password"]="CatalogTest123!"});
+        Assert(login.StatusCode==HttpStatusCode.Redirect);
+        string html=WebUtility.HtmlDecode(await customer.GetStringAsync("/banh"));
+        Assert(html.Contains("Tài khoản")&&html.Contains("Đăng xuất")&&!html.Contains(">Đăng nhập</a>")&&html.Contains("Croissant"));
+    });
+    await Check("SQL profile edit keeps customer session and storefront prices",async()=>
+    {
+        using var save=await CustomerPost("/tai-khoan/ho-so",new(){["FullName"]="Khách đã cập nhật",["Phone"]="0900001122",["Address"]="Địa chỉ kiểm thử"});
+        Assert(save.StatusCode==HttpStatusCode.Redirect);
+        string profile=WebUtility.HtmlDecode(await customer.GetStringAsync("/tai-khoan"));
+        string detail=WebUtility.HtmlDecode(await customer.GetStringAsync($"/banh/{cake}"));
+        Assert(profile.Contains("Khách đã cập nhật")&&profile.Contains("Thông tin hồ sơ đã được cập nhật")&&detail.Contains("49.000")&&detail.Contains("Đăng xuất"));
+    });
     Console.WriteLine($"RESULT {passed} passed, {failed} failed");
-    if(args.Contains("--serve")&&failed==0){Console.WriteLine("PREVIEW "+address+" (isolated fixture; stop with Ctrl+C)");await app.WaitForShutdownAsync();}
+    if(args.Contains("--serve")&&failed==0)
+    {
+        Console.WriteLine("PREVIEW "+address+" (isolated fixture; press Enter to stop and clean up)");
+        await Task.WhenAny(app.WaitForShutdownAsync(),Task.Run(()=>Console.ReadLine()));
+    }
     await app.StopAsync();Environment.ExitCode=failed==0?0:1;
 }
 
