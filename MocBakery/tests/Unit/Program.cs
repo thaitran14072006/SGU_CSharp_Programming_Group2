@@ -18,6 +18,8 @@ void Reject(Action action,string? field=null)
     try{action();}catch(BusinessException e){if(field!=null)Assert(e.Field==field);return;}
     throw new Exception("Expected BusinessException");
 }
+LoginPreferencesChecks.Run(Check, Assert);
+StaffSearchChecks.Run(Check, Assert);
 var repo=new MemoryAccounts();var customers=new MemoryCustomers();
 var auth=new AuthService(repo);var service=new AccountService(repo,auth);var cs=new CustomerService(customers,auth);
 var owner=auth.Login("admin","Owner@123");

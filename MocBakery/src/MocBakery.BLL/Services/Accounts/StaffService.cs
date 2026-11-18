@@ -10,7 +10,7 @@ public sealed class StaffService(IStaffRepository repository, AuthService auth)
     {
         auth.Require(session, owner: true);
         keyword = keyword.Trim();
-        return repository.List().Where(n => n.MaHienThi.Equals(keyword,StringComparison.OrdinalIgnoreCase) ||
+        return repository.List().Where(n => n.MaHienThi.StartsWith(keyword,StringComparison.OrdinalIgnoreCase) ||
             n.HoTen.Contains(keyword,StringComparison.OrdinalIgnoreCase) ||
             (n.SoDienThoai?.Contains(keyword) ?? false)).ToList();
     }
