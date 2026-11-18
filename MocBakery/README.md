@@ -1,5 +1,12 @@
 ﻿# Mộc Bakery
 
+## Web Catalog của Như
+
+ASP.NET Core MVC có trang chủ, danh mục, tìm/lọc, chi tiết và ảnh bánh, đọc cùng CSDL
+desktop. [Bàn giao và cách chạy](docs/web/Nhu_BanGiao_Web.md),
+[kết quả kiểm thử mới](docs/web/Nhu_KetQuaKiemThu_2026_11_18.md).
+Giỏ hàng và ghi đơn Web chờ module của Mai/Nam; Catalog không cần migration mới.
+
 ## Tài khoản khách hàng Web đang phát triển
 
 Đã có ASP.NET Core MVC cho đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản, đổi mật khẩu.

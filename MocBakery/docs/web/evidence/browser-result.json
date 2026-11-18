@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-18T15:39:57.095Z",
+  "widths": [
+    320,
+    375,
+    768,
+    1440
+  ],
+  "pagesChecked": 24,
+  "interactions": [
+    "mobile GET search and sorting",
+    "product detail navigation",
+    "XSS encoding",
+    "keyboard skip link"
+  ],
+  "horizontalOverflow": false,
+  "pageErrors": []
+}

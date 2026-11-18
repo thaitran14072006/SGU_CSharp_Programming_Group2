@@ -7,6 +7,9 @@ using MocBakery.DAL;
 using MocBakery.DAL.Repositories.CustomerAccounts;
 using MocBakery.Models.CustomerAccounts;
 using MocBakery.Web.Security;
+using MocBakery.BLL.Services.Catalog;
+using MocBakery.DAL.Repositories.Catalog;
+using MocBakery.Models.PublicCatalog;
 
 namespace MocBakery.Web;
 
@@ -28,6 +31,8 @@ public static class Program
             throw new InvalidOperationException("Configure the shared test database connection before using customer accounts.")));
         builder.Services.AddScoped<ICustomerAccountRepository, CustomerAccountRepository>();
         builder.Services.AddScoped<CustomerAccountService>();
+        builder.Services.AddScoped<IPublicCatalogRepository, PublicCatalogRepository>();
+        builder.Services.AddScoped<PublicCatalogService>();
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
         {
             options.Cookie.Name = "MocBakery.Customer";
@@ -67,7 +72,7 @@ public static class Program
         {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             context.Response.ContentType = "text/plain; charset=utf-8";
-            await context.Response.WriteAsync("Dịch vụ tài khoản tạm thời chưa sẵn sàng. Vui lòng thử lại sau.");
+            await context.Response.WriteAsync("Dịch vụ Mộc Bakery tạm thời chưa sẵn sàng. Vui lòng thử lại sau.");
         }));
         if (!app.Environment.IsDevelopment()) { app.UseHsts(); app.UseHttpsRedirection(); }
         app.Use(async (context, next) =>
@@ -85,7 +90,6 @@ public static class Program
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-        app.MapGet("/", () => Results.LocalRedirect("/tai-khoan/dang-nhap"));
         return app;
     }
 }
