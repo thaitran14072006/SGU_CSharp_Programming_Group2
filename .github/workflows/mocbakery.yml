@@ -58,9 +58,48 @@ jobs:
           dotnet
           MocBakery/tests/WebAccounts/bin/Release/net10.0/MocBakery.WebAccountChecks.dll
 
+  customer-sql:
+    name: Customer Web and desktop SQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_PID: Developer
+          # Disposable CI service only. This is not a shared or deployment credential.
+          MSSQL_SA_PASSWORD: "CI_Only_SQL_2026!Test"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'CI_Only_SQL_2026!Test' -C -b -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+          --health-start-period 20s
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build customer Web checks with SQL driver
+        run: dotnet build MocBakery/tests/WebAccounts/MocBakery.WebAccountChecks.csproj --configuration Release
+
+      - name: Test customer Web and desktop shared SQL data
+        env:
+          MOCBAKERY_SQL_TEST_CONNECTION: "Server=localhost,1433;User ID=sa;Password=CI_Only_SQL_2026!Test;Encrypt=True;TrustServerCertificate=True;Connect Timeout=10"
+        run: >
+          dotnet
+          MocBakery/tests/WebAccounts/bin/Release/net10.0/MocBakery.WebAccountChecks.dll
+          --sql
+
   release:
     name: Publish Windows release
-    needs: verify
+    needs: [verify, customer-sql]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
     timeout-minutes: 25

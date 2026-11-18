@@ -15,6 +15,12 @@ using MocBakery.Models;
 using MocBakery.Models.CustomerAccounts;
 using WebHost = MocBakery.Web.Program;
 
+if (args.Contains("--sql"))
+{
+    Environment.ExitCode = await SqlAccountChecks.Run();
+    return;
+}
+
 int passed = 0, failed = 0;
 void Assert(bool condition) { if (!condition) throw new Exception("Assertion failed"); }
 async Task Check(string title, Func<Task> test)

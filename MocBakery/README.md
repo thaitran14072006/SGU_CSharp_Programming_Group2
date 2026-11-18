@@ -6,6 +6,8 @@
 Hướng dẫn cấu hình CSDL chung, migration 04 và chạy tại localhost:5080:
 [Tài khoản khách hàng Web](docs/deployment/CustomerWebAccounts.md).
 Đổi mật khẩu yêu cầu mật khẩu hiện tại và đăng nhập lại; chưa xác nhận tích hợp SQL thật.
+Đã thêm 16 ca SQL qua chế độ `--sql` và job CI `customer-sql` dùng CSDL tạm riêng;
+chưa xác nhận kết quả chạy SQL. Hướng dẫn và giới hạn nằm trong tài liệu tài khoản Web ở trên.
 Các kết quả bản chốt bên dưới mô tả desktop và lịch sử kiểm thử trước phần Web.
 
 ## Bản chốt tích hợp ngày 15 tháng 11 năm 2026

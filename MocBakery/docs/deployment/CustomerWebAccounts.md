@@ -3,7 +3,8 @@
 Đã có Models, BLL, DAL, migration và Web host ASP.NET Core MVC cho tài khoản khách.
 Web có đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản hiện tại, đổi mật khẩu.
 Đổi mật khẩu yêu cầu mật khẩu hiện tại; thành công phải đăng nhập lại.
-Kiểm thử HTTP dùng repository bộ nhớ; chưa thay thế kiểm thử SQL thật và desktop–Web.
+Kiểm thử HTTP mặc định dùng repository bộ nhớ. Đã bổ sung chế độ `--sql` dùng SQL thật
+và DAL desktop; chưa xác nhận kết quả SQL trên máy này hoặc trên GitHub Actions.
 
 ## Dữ liệu và quyền
 
@@ -105,6 +106,48 @@ Hồi quy ở lượt cập nhật hồ sơ trước đó: UnitChecks 45/45, Cat
 `--artifacts-path` và `RestoreSqlClient=false`, không lỗi/cảnh báo. Build vào thư mục
 desktop mặc định ban đầu bị khóa DLL do ứng dụng đang mở; không đóng hay dừng ứng dụng.
 
+## Kiểm thử SQL và dữ liệu dùng chung
+
+Bộ WebAccountChecks có thêm chế độ `--sql`, tách khỏi 50 ca mặc định. Có 16 ca
+SQL kiểm tra migration chạy lại, đăng ký qua HTTP, hash mật khẩu, trùng tài khoản,
+không tự nhận hồ sơ desktop, rollback khi ghi tài khoản lỗi, đăng nhập, cập nhật
+hồ sơ hai chiều qua Web HTTP và DAL desktop, giữ ghi chú nội bộ, trùng số điện thoại,
+danh tính giả, ghi mật khẩu với hash cũ, đổi mật khẩu và phiên hết hiệu lực, khóa
+tài khoản, không tạo tài khoản nhân viên.
+
+Chế độ này bắt buộc biến kết nối riêng `MOCBAKERY_SQL_TEST_CONNECTION`; không lấy
+kết nối ứng dụng làm mặc định. Tài khoản SQL cần quyền tạo/xóa CSDL trên server thử.
+Mỗi lượt luôn tạo tên mới `MocBakery_CustomerTest_<GUID>`, áp dụng schema 01–04 của
+repo vào CSDL mới, và chỉ xóa CSDL vừa tạo trong `finally`. Không chạy migration
+hay xóa dữ liệu trong CSDL có sẵn. Nếu dọn thất bại, tên CSDL tạm được in để xử lý;
+lệnh trả mã lỗi. Không in chuỗi kết nối hoặc mật khẩu SQL.
+
+Ví dụ Windows Authentication trên **server thử**, thay server trước khi chạy:
+
+```powershell
+$env:MOCBAKERY_SQL_TEST_CONNECTION = 'Server=.\SQLEXPRESS;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
+try {
+    dotnet run --project MocBakery/tests/WebAccounts/MocBakery.WebAccountChecks.csproj -c Release -- --sql
+    if ($LASTEXITCODE -ne 0) { throw 'Kiem thu SQL that bai; xem cac dong FAIL hoac SETUP ERROR.' }
+} finally {
+    Remove-Item Env:MOCBAKERY_SQL_TEST_CONNECTION -ErrorAction SilentlyContinue
+}
+```
+
+Không dùng `RestoreSqlClient=false` khi chạy chế độ SQL. Thiếu biến kết nối, thiếu
+driver, không kết nối được hoặc không có quyền tạo CSDL đều trả lỗi; không bỏ qua
+rồi báo đạt. Test kiểm tra lớp DAL desktop, chưa thao tác giao diện WinForms thật.
+
+Workflow `mocbakery.yml` có job `customer-sql` chạy trên Ubuntu với SQL Server 2022
+Developer trong service container riêng, chờ health check trước khi chạy `--sql`.
+Mật khẩu trong YAML chỉ thuộc service CI tạm, không dùng cho triển khai hay CSDL chung.
+Job release chờ cả `verify` và `customer-sql`. Không đổi quyền ghi của workflow.
+
+Tại lượt bổ sung ngày 18/11/2026 chưa chạy được SQL thật: `SQLEXPRESS` và LocalDB
+không kết nối được, Docker Engine chưa khả dụng. **16 ca SQL chưa có kết quả đạt**;
+cần xem job CI sau khi push. Kết quả 50/50 ở trên thuộc bộ kiểm tra dùng repository
+bộ nhớ, không phải kết quả của chế độ SQL.
+
 ## Cấu hình phiên và giới hạn
 
 - Cookie khách có HttpOnly, SameSite=Lax, hết hạn sau 30 phút và không lưu bền qua phiên.
@@ -125,6 +168,8 @@ desktop mặc định ban đầu bị khóa DLL do ứng dụng đang mở; khô
   https://learn.microsoft.com/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0
 - Microsoft Learn, Rate limiting middleware:
   https://learn.microsoft.com/aspnet/core/performance/rate-limit?view=aspnetcore-10.0
+- Microsoft Learn, SQL Server Linux containers (image và công cụ sqlcmd cho job SQL):
+  https://learn.microsoft.com/sql/linux/quickstart-install-connect-docker
 
 Mã triển khai trong repo áp dụng MVC Form Tag Helper, AutoValidateAntiforgeryToken
 và fixed window limiter từ nền tảng ASP.NET Core; không chép ví dụ thành chức năng
