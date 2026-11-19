@@ -56,7 +56,7 @@ try
     int hidden=desktop.SaveCategory(owner,new(0,"Danh mục nội bộ",null,false));
     int cake=desktop.SaveProduct(owner,new(0,sweet,"Tiramisu","Cái",45000,true,"Vị cà phê và kem phô mai."));
     int croissant=desktop.SaveProduct(owner,new(0,bread,"Croissant","Cái",28000,true,"Bánh sừng bò."));
-    int cookie=desktop.SaveProduct(owner,new(0,sweet,"Cookie 100% _ [Mộc] ~","Hộp",18000,true,"Bánh quy."));
+    int cookie=desktop.SaveProduct(owner,new(0,sweet,"Cookie","Hộp",18000,true,"Bánh quy."));
     int unavailable=desktop.SaveProduct(owner,new(0,sweet,"Muffin","Cái",35000,true,null));
     int stoppedProduct=desktop.SaveProduct(owner,new(0,sweet,"Bánh ngừng bán","Cái",10000,false,null));
     // Historical product may remain assigned to a stopped category on desktop.
@@ -87,7 +87,14 @@ try
     await Check("Desktop and Web agree on eligible stock",()=>{Assert(inventory.Stock(owner).Single(p=>p.MaSanPham==cake).TonCoTheBan==7&&service.Find(cake)!.InStock);return Task.CompletedTask;});
     await Check("Out of stock product remains visible without available flag",()=>{Assert(!service.Find(unavailable)!.InStock&&service.Browse(new(Availability:"out-of-stock")).Total==2);return Task.CompletedTask;});
     await Check("Trimmed name and product code searches",()=>{Assert(service.Browse(new("  Tiramisu  ")).Items.Single().Id==cake&&service.Browse(new($"B{cake:000}")).Items.Single().Id==cake);return Task.CompletedTask;});
-    await Check("LIKE wildcards are literal and parameterized",()=>{foreach(var key in new[]{"%","_","[","~"})Assert(service.Browse(new(key)).Items.Single().Id==cookie);Assert(service.Browse(new("' OR 1=1 --")).Total==0);return Task.CompletedTask;});
+    await Check("LIKE wildcards are literal and parameterized",()=>
+    {
+        var original=products.List().Single(p=>p.MaSanPham==cookie);
+        desktop.SaveProduct(owner,original with{TenSanPham="Cookie 100% _ [Mộc] ~"});
+        try{foreach(var key in new[]{"%","_","[","~"})Assert(service.Browse(new(key)).Items.Single().Id==cookie);Assert(service.Browse(new("' OR 1=1 --")).Total==0);}
+        finally{desktop.SaveProduct(owner,original);}
+        return Task.CompletedTask;
+    });
     await Check("Category, stock filters and stable price sorting combine",()=>{var result=service.Browse(new(CategoryId:sweet,Availability:"in-stock",Sort:"price-desc"));Assert(result.Items.Single().Id==cake);Assert(service.Browse(new(Sort:"price-asc")).Items.First().Id==cookie);return Task.CompletedTask;});
     await Check("Pagination keeps totals and supports beyond last page",()=>{var r=service.Browse(new(Page:2,PageSize:2));Assert(r.Total==4&&r.PageCount==2&&r.Items.Count==2&&service.Browse(new(Page:9)).Items.Count==0);return Task.CompletedTask;});
     await Check("Invalid filters and excessive page sizes fail validation",()=>{foreach(var q in new[]{new PublicCatalogQuery(new string('x',101)),new(CategoryId:0),new(Availability:"hack"),new(Sort:"DROP TABLE"),new(Page:0),new(PageSize:0),new(PageSize:25)})Reject(()=>service.Browse(q));return Task.CompletedTask;});
@@ -111,7 +118,7 @@ try
     await Check("Desktop owner price edit is visible after HTTP reload and selection recheck",async()=>{var p=products.List().Single(p=>p.MaSanPham==cake);desktop.SaveProduct(owner,p with{GiaBan=49000});using var json=await Json($"/api/banh/{cake}");Assert(json.RootElement.GetProperty("price").GetDecimal()==49000&&service.CheckSelection(cake,1)!.CurrentUnitPrice==49000&&(await Page($"/banh/{cake}")).Contains("49.000"));});
     byte[] png=Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jM1sAAAAASUVORK5CYII=");
     await Check("Desktop image edit is visible on uncached image endpoint",async()=>{desktop.SaveProduct(owner,products.List().Single(p=>p.MaSanPham==cake) with{AnhBanh=png});using var r=await client.GetAsync($"/banh/{cake}/anh");Assert(r.Content.Headers.ContentType?.MediaType=="image/png"&&(await r.Content.ReadAsByteArrayAsync()).SequenceEqual(png)&&r.Headers.CacheControl?.NoStore==true&&(await Page($"/banh/{cake}")).Contains($"src=\"/banh/{cake}/anh\""));});
-    await Check("Removing desktop image removes public image and renders placeholder",async()=>{desktop.SaveProduct(owner,products.List().Single(p=>p.MaSanPham==cake) with{AnhBanh=null});await Status($"/banh/{cake}/anh",HttpStatusCode.NotFound);Assert((await Page($"/banh/{cake}")).Contains("Ảnh bánh đang cập nhật"));});
+    await Check("Removing desktop image restores the matching supplied product photo",async()=>{desktop.SaveProduct(owner,products.List().Single(p=>p.MaSanPham==cake) with{AnhBanh=null});await Status($"/banh/{cake}/anh",HttpStatusCode.NotFound);Assert((await Page($"/banh/{cake}")).Contains("src=\"/images/bakery/tiramisu.jpg\""));});
     await Check("Corrupt or executable image payload is never served",async()=>{Sql($"UPDATE dbo.SanPham SET AnhBanh=0x3C7363726970743E WHERE MaSanPham={cake}");await Status($"/banh/{cake}/anh",HttpStatusCode.NotFound);desktop.SaveProduct(owner,products.List().Single(p=>p.MaSanPham==cake) with{AnhBanh=null});});
     await Check("Desktop deactivation removes product from HTML API image and cart contract",async()=>{desktop.SaveProduct(owner,products.List().Single(p=>p.MaSanPham==cake) with{DangKinhDoanh=false});await Status($"/banh/{cake}",HttpStatusCode.NotFound);await Status($"/api/banh/{cake}",HttpStatusCode.NotFound);Assert(service.CheckSelection(cake,1)==null&&service.Browse(new("Tiramisu")).Total==0);desktop.SaveProduct(owner,products.List().Single(p=>p.MaSanPham==cake) with{DangKinhDoanh=true});});
     await Check("Category stop hides products but preserves desktop history",async()=>{desktop.SaveCategory(owner,categories.List().Single(c=>c.MaLoai==bread) with{DangSuDung=false});await Status($"/banh/{croissant}",HttpStatusCode.NotFound);Assert(desktop.Products(owner).Any(p=>p.MaSanPham==croissant));desktop.SaveCategory(owner,categories.List().Single(c=>c.MaLoai==bread) with{DangSuDung=true});});

@@ -1,9 +1,9 @@
 @model MocBakery.Models.PublicCatalog.PublicProduct
-@{ ViewData["Title"] = Model.Name; }
+@{ ViewData["Title"] = Model.Name; string? photo = BakeryDisplay.Photo(Model); }
 <div class="store">
     <nav class="breadcrumbs" aria-label="Đường dẫn"><a href="/banh">Thực đơn</a><span>/</span><a href="/danh-muc/@Model.CategoryId">@Model.Category</a><span>/</span><span>@Model.Name</span></nav>
     <article class="product-detail">
-        <div class="detail-image">@if(Model.HasImage){<img src="@Model.ImageUrl" alt="@Model.Name" width="800" height="600" />}else{<div class="image-placeholder"><span aria-hidden="true">m.</span><small>Ảnh bánh đang cập nhật</small></div>}</div>
+        <div class="detail-image">@if(photo is not null){<img src="@photo" alt="@Model.Name" width="800" height="1000" />}else{<div class="image-placeholder"><span aria-hidden="true">m.</span><small>Ảnh bánh đang cập nhật</small></div>}</div>
         <div class="detail-copy"><p class="eyebrow">@Model.Category · @Model.Code</p><h1>@Model.Name</h1><p class="detail-price">@BakeryDisplay.Money(Model.Price) <small>/ @Model.Unit</small></p><p class="stock-label @(Model.InStock ? "available" : "sold-out")">@(Model.InStock ? "Còn bánh" : "Tạm hết bánh")</p><form asp-controller="Cart" asp-action="Add" method="post" class="cart-add"><input type="hidden" name="productId" value="@Model.Id" /><label>Số lượng<input type="number" name="quantity" min="1" max="1000" value="1" required /></label>@if(Model.InStock){<button class="store-button" type="submit">Thêm vào giỏ</button>}else{<button class="store-button" type="button" disabled>Tạm hết bánh</button>}</form><h2>Về chiếc bánh</h2><p class="description">@(string.IsNullOrWhiteSpace(Model.Description) ? "Mô tả bánh đang được cập nhật." : Model.Description)</p><p class="detail-note">Giá và tình trạng được cập nhật theo thực đơn của tiệm. Xem lại trang để nhận thông tin mới nhất.</p><a href="/banh">← Tiếp tục chọn bánh</a></div>
     </article>
 </div>

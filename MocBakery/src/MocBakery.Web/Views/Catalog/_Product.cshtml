@@ -1,7 +1,8 @@
 @model MocBakery.Models.PublicCatalog.PublicProduct
+@{ string? photo = BakeryDisplay.Photo(Model); }
 <article class="product">
     <a class="product-visual" href="/banh/@Model.Id" aria-label="Xem @Model.Name">
-    @if(Model.HasImage){<img src="@Model.ImageUrl" alt="@Model.Name" loading="lazy" width="600" height="450" />}
+    @if(photo is not null){<img src="@photo" alt="@Model.Name" loading="lazy" width="600" height="450" />}
     else{<div class="image-placeholder"><span aria-hidden="true">m.</span><small>Ảnh bánh đang cập nhật</small></div>}
     </a>
     <div class="product-meta"><span>@Model.Category</span><span class="@(Model.InStock ? "available" : "sold-out")">@(Model.InStock ? "Còn bánh" : "Tạm hết bánh")</span></div>
