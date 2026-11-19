@@ -57,6 +57,7 @@ try
     async Task<HttpResponseMessage> Post(string path, string html, params (string, string)[] fields)
     {
         var values = fields.ToDictionary(x => x.Item1, x => x.Item2);
+        if(path=="/gio-hang/xac-nhan"&&!values.ContainsKey("pickup"))values["pickup"]=DateTime.Now.AddDays(1).ToString("s");
         values["__RequestVerificationToken"] = Token(html, "__RequestVerificationToken");
         return await client.PostAsync(path, new FormUrlEncodedContent(values));
     }
@@ -81,6 +82,11 @@ try
     await Post("/gio-hang/xac-nhan", page, ("requestKey", key));
     Check((await Page("/gio-hang")).Contains("32.000"), "submission failure preserves cart");
     orders.Fail = false;
+    orders.FailDb = true;
+    await Post("/gio-hang/xac-nhan", page, ("requestKey", key));
+    string failure=await Page("/gio-hang/xac-nhan");
+    Check((await Page("/gio-hang")).Contains("32.000")&&!failure.Contains("private database"),"database failure preserves cart without exposing details");
+    orders.FailDb = false;
     await Post("/gio-hang/xac-nhan", page, ("requestKey", key), ("customerId","999"), ("total","1"));
     Check(orders.Count == 1 && orders.Last?.CustomerId == 7 && orders.Last.ConfirmedTotal == 32000, "submission uses authenticated customer and server total");
     await Post("/gio-hang/xac-nhan", page, ("requestKey", key));
@@ -105,9 +111,11 @@ sealed class Orders : IWebOrderSubmission
     public int Count => ids.Count;
     public WebPurchaseRequest? Last;
     public bool Fail;
+    public bool FailDb;
     public int Submit(WebPurchaseRequest request)
     {
         if(Fail) throw new BusinessException("Thử lỗi tạo đơn.");
+        if(FailDb) throw new InvalidOperationException("private database connection");
         Last = request;
         if(!ids.TryGetValue(request.RequestKey,out int id)) ids[request.RequestKey] = id = ids.Count + 1;
         return id;

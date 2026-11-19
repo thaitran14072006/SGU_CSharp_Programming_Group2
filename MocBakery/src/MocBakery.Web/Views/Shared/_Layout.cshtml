@@ -17,6 +17,7 @@
             <a href="/gio-hang">Giỏ hàng</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
+                <a href="/don-hang">Đơn hàng</a>
                 <a asp-controller="Account" asp-action="Index">Tài khoản</a>
                 <form asp-controller="Account" asp-action="Logout" method="post"><button class="nav-button" type="submit">Đăng xuất</button></form>
             }

@@ -7,7 +7,7 @@ const fs = require('fs');
   const out = path.resolve(__dirname, '../../docs/web/evidence');
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ headless: true, channel: 'msedge' });
-  const context = await browser.newContext();
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -72,8 +72,37 @@ const fs = require('fs');
   if (!(await page.locator('h1').innerText()).includes('Khách xem bánh đã sửa')) throw new Error('Profile update not reflected');
   await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Thực đơn bánh' }).click();
   if (!await page.getByRole('button', { name: 'Đăng xuất' }).isVisible()) throw new Error('Lost customer session');
+  await page.getByRole('link', { name: 'Croissant', exact: true }).click();
+  await page.locator('input[name="quantity"]').fill('1');
+  await page.getByRole('button', { name: 'Thêm vào giỏ' }).click();
+  for (const width of [320,375,768,1440]) {
+    await page.setViewportSize({ width, height: 960 });
+    await page.goto(base + '/gio-hang');
+    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Cart overflow: ' + width);
+    checked++;
+    await page.goto(base + '/gio-hang/xac-nhan');
+    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Checkout overflow: ' + width);
+    if ((await page.locator('.cart-summary h2').innerText()).normalize('NFC') !== 'Tổng yêu cầu') throw new Error('Vietnamese heading changed');
+    if (!(await page.locator('.cart-summary h2').evaluate(el => getComputedStyle(el).fontFamily)).includes('Times New Roman')) throw new Error('Vietnamese font override missing');
+    checked++;
+    if (width === 375 || width === 1440) await page.screenshot({ path: path.join(out, `checkout-${width}.png`), fullPage: true });
+  }
+  await page.getByLabel('Yêu cầu thêm').fill('Nhận tại tiệm, đóng hộp riêng.');
+  await page.getByRole('button', { name: 'Gửi yêu cầu mua', exact: true }).click();
+  await page.waitForURL(/\/don-hang\/\d+$/);
+  const receipt = new URL(page.url()).pathname;
+  if (!(await page.locator('.cart-summary').innerText()).includes('Mới tiếp nhận')) throw new Error('Order was not received');
+  for (const width of [320,375,768,1440]) {
+    await page.setViewportSize({ width, height: 960 });
+    for (const route of [receipt, '/don-hang']) {
+      await page.goto(base + route);
+      if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Order overflow: ' + width + ' ' + route);
+      checked++;
+      if (route === receipt && (width === 375 || width === 1440)) await page.screenshot({ path: path.join(out, `receipt-${width}.png`), fullPage: true });
+    }
+  }
   if (errors.length) throw new Error(errors.join('\n'));
-  const report = { date: new Date().toISOString(), widths: [320,375,768,1440], pagesChecked: checked, interactions: ['mobile GET search and sorting', 'product detail navigation', 'XSS encoding', 'keyboard skip link', 'home category navigation', 'SQL login, profile update and return to catalog'], horizontalOverflow: false, pageErrors: errors };
+  const report = { date: new Date().toISOString(), widths: [320,375,768,1440], pagesChecked: checked, interactions: ['mobile GET search and sorting', 'product detail navigation', 'XSS encoding', 'keyboard skip link', 'home category navigation', 'SQL login, profile update and return to catalog', 'Vietnamese checkout heading, submit SQL order and read own receipt'], horizontalOverflow: false, pageErrors: errors };
   fs.writeFileSync(path.join(out, 'browser-result.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report));
   await browser.close();

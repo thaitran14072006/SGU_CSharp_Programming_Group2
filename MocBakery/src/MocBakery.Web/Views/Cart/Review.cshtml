@@ -1,5 +1,5 @@
 @model CartViewModel
-@{ ViewData["Title"] = "Xác nhận yêu cầu mua"; }
+@{ ViewData["Title"] = "Xác nhận yêu cầu mua"; var draft=ViewData["CheckoutDraft"] as CheckoutDraft; }
 <div class="store">
     <p class="eyebrow">Mộc Bakery · Bước xác nhận</p><h1>Xác nhận yêu cầu mua</h1>
     @if (TempData["CartError"] is string error) { <p class="cart-message" role="alert">@error</p> }
@@ -13,7 +13,14 @@
     <aside class="cart-summary"><h2>Tổng yêu cầu</h2><p>Tổng tiền <strong>@BakeryDisplay.Money(Model.Quote.Total)</strong></p><p class="detail-note">Gửi yêu cầu chưa phải thanh toán, chưa tạo hóa đơn và chưa trừ tồn kho. Tiệm sẽ tiếp nhận và xử lý đơn.</p>
     @if (Model.OrderServiceReady)
     {
-        <form asp-controller="Cart" asp-action="Confirm" method="post"><input type="hidden" name="requestKey" value="@Model.RequestKey" /><button class="store-button" type="submit">Gửi yêu cầu mua</button></form>
+        <form asp-controller="Cart" asp-action="Confirm" method="post">
+            <input type="hidden" name="requestKey" value="@Model.RequestKey" />
+            <label for="pickup">Ngày giờ nhận tại tiệm *</label>
+            <input id="pickup" name="pickup" type="datetime-local" value="@((draft?.Pickup??DateTime.Now.AddDays(1)).ToString("yyyy-MM-ddTHH:mm"))" required />
+            <label for="order-note">Yêu cầu thêm</label>
+            <textarea id="order-note" name="note" maxlength="500" rows="3" placeholder="Ví dụ: đóng hộp riêng từng phần">@draft?.Note</textarea>
+            <button class="store-button" type="submit">Gửi yêu cầu mua</button>
+        </form>
     }
     else
     {

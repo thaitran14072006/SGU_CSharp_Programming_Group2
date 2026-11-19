@@ -178,6 +178,7 @@ try
         string detail=WebUtility.HtmlDecode(await customer.GetStringAsync($"/banh/{cake}"));
         Assert(profile.Contains("Khách đã cập nhật")&&profile.Contains("Thông tin hồ sơ đã được cập nhật")&&detail.Contains("49.000")&&detail.Contains("Đăng xuất"));
     });
+    await WebOrderChecks.Run(db,customer,croissant,auth,owner,root,Check);
     Console.WriteLine($"RESULT {passed} passed, {failed} failed");
     if(args.Contains("--serve")&&failed==0)
     {

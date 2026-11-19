@@ -51,6 +51,9 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 CustomerCookie.Principal(identity, input.Username.Trim().ToLowerInvariant()),
                 new AuthenticationProperties { IsPersistent = false, AllowRefresh = false });
+            HttpContext.Session.Remove("Mai.Cart.Review");
+            HttpContext.Session.Remove("Mai.Cart.Draft");
+            HttpContext.Session.Remove("Mai.Cart.LastOrder");
             return RedirectToAction(nameof(Index));
         }
         catch (BusinessException ex) { ModelState.AddModelError("", ex.Message); }
