@@ -1,19 +1,20 @@
 {
-  "date": "2026-11-18T16:05:54.813Z",
+  "date": "2026-11-19T09:06:19.841Z",
   "widths": [
     320,
     375,
     768,
     1440
   ],
-  "pagesChecked": 36,
+  "pagesChecked": 52,
   "interactions": [
     "mobile GET search and sorting",
     "product detail navigation",
     "XSS encoding",
     "keyboard skip link",
     "home category navigation",
-    "SQL login, profile update and return to catalog"
+    "SQL login, profile update and return to catalog",
+    "Vietnamese checkout heading, submit SQL order and read own receipt"
   ],
   "horizontalOverflow": false,
   "pageErrors": []
