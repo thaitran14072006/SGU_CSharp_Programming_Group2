@@ -1,0 +1,23 @@
+@model CartViewModel
+@{ ViewData["Title"] = "Xác nhận yêu cầu mua"; }
+<div class="store">
+    <p class="eyebrow">Mộc Bakery · Bước xác nhận</p><h1>Xác nhận yêu cầu mua</h1>
+    @if (TempData["CartError"] is string error) { <p class="cart-message" role="alert">@error</p> }
+    <p>Đang đăng nhập: <strong>@User.Identity?.Name</strong>. Yêu cầu được gửi bằng hồ sơ khách hàng của bạn.</p>
+    <div class="cart-layout"><section aria-label="Chi tiết yêu cầu">
+    @foreach (var line in Model.Quote.Lines)
+    {
+        <article class="cart-row"><div><h2>@line.Name</h2><p>@line.Quantity × @BakeryDisplay.Money(line.UnitPrice)</p></div><strong>@BakeryDisplay.Money(line.Total)</strong></article>
+    }
+    <a href="/gio-hang">← Sửa giỏ hàng</a></section>
+    <aside class="cart-summary"><h2>Tổng yêu cầu</h2><p>Tổng tiền <strong>@BakeryDisplay.Money(Model.Quote.Total)</strong></p><p class="detail-note">Gửi yêu cầu chưa phải thanh toán, chưa tạo hóa đơn và chưa trừ tồn kho. Tiệm sẽ tiếp nhận và xử lý đơn.</p>
+    @if (Model.OrderServiceReady)
+    {
+        <form asp-controller="Cart" asp-action="Confirm" method="post"><input type="hidden" name="requestKey" value="@Model.RequestKey" /><button class="store-button" type="submit">Gửi yêu cầu mua</button></form>
+    }
+    else
+    {
+        <p role="status">Tiệm đang hoàn thiện chức năng tiếp nhận đơn. Bạn có thể tiếp tục chọn bánh và giữ giỏ trong phiên này.</p><button class="store-button" disabled>Chưa thể gửi yêu cầu</button>
+    }
+    </aside></div>
+</div>

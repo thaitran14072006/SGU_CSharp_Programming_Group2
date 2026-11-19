@@ -123,6 +123,7 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        HttpContext.Session.Clear();
         return RedirectToAction(nameof(Login));
     }
 

@@ -33,6 +33,17 @@ public static class Program
         builder.Services.AddScoped<CustomerAccountService>();
         builder.Services.AddScoped<IPublicCatalogRepository, PublicCatalogRepository>();
         builder.Services.AddScoped<PublicCatalogService>();
+        builder.Services.AddScoped<MocBakery.BLL.Services.Sales.CartService>();
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options =>
+        {
+            options.Cookie.Name = "MocBakery.Cart";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+        });
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
         {
             options.Cookie.Name = "MocBakery.Customer";
@@ -88,6 +99,7 @@ public static class Program
         app.UseRouting();
         app.UseRateLimiter();
         app.UseAuthentication();
+        app.UseSession();
         app.UseAuthorization();
         app.MapControllers();
         return app;

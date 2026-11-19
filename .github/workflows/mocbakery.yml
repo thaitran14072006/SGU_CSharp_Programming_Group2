@@ -57,6 +57,9 @@ jobs:
           dotnet
           MocBakery/tests/WebAccounts/bin/Release/net10.0/MocBakery.WebAccountChecks.dll
 
+      - name: Test Web cart and confirmation over HTTP
+        run: dotnet MocBakery/tests/WebCart/bin/Release/net10.0/MocBakery.WebCartChecks.dll
+
   customer-sql:
     name: Customer Web and desktop SQL integration
     runs-on: ubuntu-latest

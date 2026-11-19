@@ -1,0 +1,35 @@
+@model CartViewModel
+@{ ViewData["Title"] = "Giỏ hàng"; }
+<div class="store">
+    <p class="eyebrow">Mộc Bakery · Chọn bánh của bạn</p><h1>Giỏ hàng</h1>
+    @if (TempData["CartError"] is string error) { <p class="cart-message" role="alert">@error</p> }
+    @if (TempData["CartSuccess"] is string success) { <p class="cart-message available" role="status">@success</p> }
+    @if (Model.Quote.Lines.Count == 0)
+    {
+        <div class="empty-state"><h2>Giỏ hàng đang trống</h2><p>Chọn những chiếc bánh bạn yêu thích từ thực đơn.</p><a class="store-button" href="/banh">Chọn bánh</a></div>
+    }
+    else
+    {
+        <div class="cart-layout"><section aria-label="Bánh trong giỏ">
+        @foreach (var line in Model.Quote.Lines)
+        {
+            <article class="cart-row">
+                <div><h2><a href="/banh/@line.ProductId">@line.Name</a></h2><p>@BakeryDisplay.Money(line.UnitPrice) / bánh</p>
+                @if (!line.Available) { <p class="sold-out">Bánh ngừng bán hoặc không đủ số lượng. Hãy sửa số lượng hoặc bỏ bánh.</p> }</div>
+                <form asp-controller="Cart" asp-action="Update" method="post" class="cart-quantity">
+                    <input type="hidden" name="productId" value="@line.ProductId" />
+                    <label>Số lượng<input type="number" name="quantity" min="1" max="1000" value="@line.Quantity" required /></label>
+                    <button type="submit">Cập nhật</button>
+                </form>
+                <div class="cart-line-total"><strong>@BakeryDisplay.Money(line.Total)</strong>
+                    <form asp-controller="Cart" asp-action="Remove" method="post"><input type="hidden" name="productId" value="@line.ProductId" /><button type="submit">Xóa</button></form>
+                </div>
+            </article>
+        }
+        <a href="/banh">← Tiếp tục chọn bánh</a></section>
+        <aside class="cart-summary"><h2>Yêu cầu mua</h2><p>Tạm tính <strong>@BakeryDisplay.Money(Model.Quote.Total)</strong></p><p class="detail-note">Giá và khả năng đáp ứng sẽ được kiểm tra lại trước khi gửi. Thêm vào giỏ chưa giữ bánh.</p>
+        @if (Model.Quote.CanSubmit) { <a class="store-button" href="/gio-hang/xac-nhan">Tiếp tục xác nhận</a> }
+        else { <p class="sold-out">Vui lòng cập nhật các bánh không còn hợp lệ.</p> }
+        </aside></div>
+    }
+</div>
