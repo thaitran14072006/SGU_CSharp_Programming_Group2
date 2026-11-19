@@ -11,7 +11,7 @@ public sealed class OrderRepository(DbConnectionFactory db):IOrderRepository
  public IReadOnlyList<OrderSummary> List()
  {
   using var c=db.Open();using var cmd=Db.Command(c,"SELECT d.MaDon,d.MaKhachHang,k.HoTen,d.MaTaiKhoan,d.NgayDat,d.NgayNhan,d.TongTien,d.TienCoc,d.TrangThai,d.YeuCau,d.LyDoHuy FROM dbo.DonDatBanh d JOIN dbo.KhachHang k ON k.MaKhachHang=d.MaKhachHang ORDER BY d.NgayNhan,d.MaDon");using var r=cmd.ExecuteReader();var result=new List<OrderSummary>();
-  while(r.Read())result.Add(new(r.GetInt32(0),r.GetInt32(1),r.GetString(2),r.GetInt32(3),r.GetDateTime(4),r.GetDateTime(5),r.GetDecimal(6),r.GetDecimal(7),r.GetString(8),r.IsDBNull(9)?null:r.GetString(9),r.IsDBNull(10)?null:r.GetString(10)));return result;
+  while(r.Read())result.Add(new(r.GetInt32(0),r.GetInt32(1),r.GetString(2),r.IsDBNull(3)?null:r.GetInt32(3),r.GetDateTime(4),r.GetDateTime(5),r.GetDecimal(6),r.GetDecimal(7),r.GetString(8),r.IsDBNull(9)?null:r.GetString(9),r.IsDBNull(10)?null:r.GetString(10)));return result;
  }
  public IReadOnlyList<OrderLine> Lines(int id)
  {
@@ -39,7 +39,7 @@ public sealed class OrderRepository(DbConnectionFactory db):IOrderRepository
   using(var cmd=Db.Command(c,"DELETE dbo.ChiTietDonDat WHERE MaDon=@id",tx)){cmd.Param("@id",id,DbType.Int32);cmd.ExecuteNonQuery();}
   InsertLines(c,tx,id,lines);tx.Commit();
  }
- public void Prepare(int id){using var c=db.Open();using var cmd=Db.Command(c,"UPDATE dbo.DonDatBanh SET TrangThai=N'DangChuanBi' WHERE MaDon=@id AND TrangThai=N'MoiTiepNhan'");cmd.Param("@id",id,DbType.Int32);if(cmd.ExecuteNonQuery()!=1)throw new BusinessException("Chỉ đơn mới tiếp nhận được chuyển sang chuẩn bị.");}
+ public void Prepare(int id,int accountId){using var c=db.Open();using var cmd=Db.Command(c,"UPDATE dbo.DonDatBanh SET TrangThai=N'DangChuanBi',MaTaiKhoan=COALESCE(MaTaiKhoan,@actor) WHERE MaDon=@id AND TrangThai=N'MoiTiepNhan'");cmd.Param("@id",id,DbType.Int32);cmd.Param("@actor",accountId,DbType.Int32);if(cmd.ExecuteNonQuery()!=1)throw new BusinessException("Chỉ đơn mới tiếp nhận được chuyển sang chuẩn bị.");}
  public void Cancel(int id,string reason)
  {
   using var c=db.Open();using var cmd=Db.Command(c,"UPDATE dbo.DonDatBanh SET TrangThai=N'DaHuy',LyDoHuy=@reason WHERE MaDon=@id AND TrangThai IN(N'MoiTiepNhan',N'DangChuanBi')");cmd.Param("@reason",reason,DbType.String,255);cmd.Param("@id",id,DbType.Int32);if(cmd.ExecuteNonQuery()!=1)throw new BusinessException("Đơn không thể hủy ở trạng thái hiện tại.");

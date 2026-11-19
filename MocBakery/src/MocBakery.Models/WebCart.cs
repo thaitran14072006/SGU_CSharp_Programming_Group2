@@ -13,7 +13,8 @@ public sealed record CartQuote(IReadOnlyList<CartLine> Lines)
 
 // Nam implements this boundary. Creating a request must not invoice or deduct stock.
 // RequestKey must be unique per customer in SQL; replay returns the same order id.
-public sealed record WebPurchaseRequest(int CustomerId, Guid RequestKey, IReadOnlyList<CartItem> Items, decimal ConfirmedTotal);
+public sealed record WebPurchaseRequest(int CustomerId, Guid RequestKey, IReadOnlyList<CartItem> Items, decimal ConfirmedTotal,
+    DateTime? Pickup = null, string? Note = null, IReadOnlyList<CartLine>? ConfirmedLines = null);
 public interface IWebOrderSubmission
 {
     int Submit(WebPurchaseRequest request);
