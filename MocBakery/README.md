@@ -5,7 +5,9 @@
 ASP.NET Core MVC có trang chủ, danh mục, tìm/lọc, chi tiết và ảnh bánh, đọc cùng CSDL
 desktop. [Bàn giao và cách chạy](docs/web/Nhu_BanGiao_Web.md),
 [kết quả kiểm thử mới](docs/web/Nhu_KetQuaKiemThu_2026_11_18.md).
-Giỏ hàng và ghi đơn Web chờ module của Mai/Nam; Catalog không cần migration mới.
+Đã nối giỏ hàng với tiếp nhận đơn, theo dõi trạng thái và xử lý đơn ở desktop.
+Xem [tiếp nhận đơn Web và nâng cấp CSDL 05](docs/web/TiepNhanDon_Web.md).
+Catalog không cần migration; chức năng gửi đơn cần schema 04 rồi 05 và desktop mới.
 
 ## Tài khoản khách hàng Web đang phát triển
 
