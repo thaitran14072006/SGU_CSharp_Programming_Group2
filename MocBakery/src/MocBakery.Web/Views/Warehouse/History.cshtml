@@ -1,0 +1,4 @@
+@model WarehouseHistoryPage
+@{ViewData["Title"]="Nhật ký kho";}
+<div class="page-heading"><div><h1>Nhật ký kho</h1><p>@Model.Lot.Name · @Model.Lot.Code · Còn @Model.Lot.Remaining.ToString("0.###") @Model.Lot.Unit</p></div><a class="btn" href="/admin/ton-kho?kind=@Model.Lot.Kind">← Tồn kho</a></div>
+<section class="panel"><div class="table-scroll"><table><thead><tr><th>Thời điểm</th><th>Thao tác</th><th>Số cũ</th><th>Số mới</th><th>Người thực hiện</th><th>Lý do</th></tr></thead><tbody>@foreach(var h in Model.History){<tr><td>@h.Time.ToString("dd/MM/yyyy HH:mm:ss")</td><td>@(h.Operation=="Nhap"?"Nhập kho":h.Operation=="Xuat"?"Xuất kho":h.Operation=="KiemKe"?"Kiểm kê":h.Operation)</td><td>@h.Before.ToString("0.###")</td><td>@h.After.ToString("0.###")</td><td>@h.Actor</td><td>@h.Reason</td></tr>}</tbody></table></div>@if(Model.History.Count==0){<p class="empty">Lô chưa có nhật ký nhập, xuất hoặc kiểm kê qua phiếu.</p>}</section>

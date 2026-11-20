@@ -1,0 +1,6 @@
+@model SupplierForm
+@{ViewData["Title"]=Model.Id==0?"Thêm nhà cung cấp":"Sửa nhà cung cấp";}
+<div class="page-heading"><h1>@ViewData["Title"]</h1><a class="btn" href="/admin/nha-cung-cap">← Nhà cung cấp</a></div>
+<form asp-action="SaveSupplier" method="post" class="panel edit-panel"><div asp-validation-summary="All" class="validation" role="alert"></div><input asp-for="Id" type="hidden"/>
+<div class="form-grid"><div class="full-row"><label asp-for="Name">Tên nhà cung cấp *</label><input asp-for="Name" maxlength="150" required/></div><div><label asp-for="Phone">Điện thoại *</label><input asp-for="Phone" type="tel" pattern="[0-9]{10,11}" maxlength="11" required/></div><div><label asp-for="Email">Email</label><input asp-for="Email" type="email" maxlength="255"/></div><div class="full-row"><label asp-for="Address">Địa chỉ</label><input asp-for="Address" maxlength="255"/></div></div><label class="check"><input asp-for="Active"/> Đang hợp tác</label>
+<div class="form-actions"><button class="btn primary" type="submit">Lưu nhà cung cấp</button><a class="btn" href="/admin/nha-cung-cap">Hủy</a></div></form>

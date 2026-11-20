@@ -180,6 +180,7 @@ try
     });
     await WebOrderChecks.Run(db,customer,croissant,auth,owner,root,Check);
     await AdminChecks.Run(db,customer,Check);
+    await WarehouseChecks.Run(db,connection,root,Check);
     Console.WriteLine($"RESULT {passed} passed, {failed} failed");
     if(args.Contains("--serve")&&failed==0)
     {

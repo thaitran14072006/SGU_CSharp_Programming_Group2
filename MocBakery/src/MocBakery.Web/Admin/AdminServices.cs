@@ -26,6 +26,7 @@ public sealed class AdminServices
     public AuthService Auth {get;}
     public CatalogService Catalog {get;}
     public InventoryService Inventory {get;}
+    public WarehouseService Warehouse {get;}
     public OrderService Orders {get;}
     public CustomerService Customers {get;}
     public StaffService Staff {get;}
@@ -38,6 +39,7 @@ public sealed class AdminServices
         Auth=new(accounts);Accounts=new(accounts,Auth,staff);Staff=new(staff,Auth);
         Catalog=new(new LoaiBanhRepository(db),new SanPhamRepository(db),Auth);
         Inventory=new(new LoBanhRepository(db),new SanPhamRepository(db),Auth);
+        Warehouse=new(new WarehouseRepository(db),Auth);
         Orders=new(new OrderRepository(db),Auth);Customers=new(new KhachHangRepository(db),Auth);
         Reports=new(new ReportRepository(db),Auth);Sales=new(new SalesRepository(db),Auth);
     }
