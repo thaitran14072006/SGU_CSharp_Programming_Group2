@@ -25,6 +25,15 @@ const {chromium}=require('playwright');const path=require('path'),fs=require('fs
    if((width===375||width===1440)&&route==='/admin')await page.screenshot({path:path.join(out,`dashboard-${width}.png`),fullPage:true});
   }
  }
+ await page.goto(base+'/admin/bao-cao');
+ await page.getByLabel('Từ ngày',{exact:true}).fill('1800-01-01');await page.getByLabel('Đến ngày',{exact:true}).fill('1800-01-01');
+ for(const [label,extension,magic] of [['Tải Excel','xlsx','PK'],['Tải PDF','pdf','%PDF']]){
+  const [download]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:label,exact:true}).click()]);
+  if(download.suggestedFilename()!==`moc-bakery-doanh-thu-18000101-18000101.${extension}`)throw Error('export ignored edited date inputs');
+  const file=await download.path();if(!fs.readFileSync(file).subarray(0,magic.length).equals(Buffer.from(magic)))throw Error('invalid '+extension+' download');
+ }
+ await page.getByRole('button',{name:'Xem báo cáo',exact:true}).click();await page.waitForURL(/from=1800-01-01&to=1800-01-01/);
+ if(!await page.getByText('Không có hóa đơn trong kỳ.',{exact:true}).isVisible())throw Error('empty report not shown');
  const employee=(await context.cookies()).find(c=>c.name==='MocBakery.Employee');if(!employee||employee.path!=='/admin'||!employee.httpOnly)throw Error('employee cookie not isolated');
  const profile=await context.request.get(base+'/tai-khoan',{maxRedirects:0});if(profile.status()!==302||!profile.headers().location.includes('/tai-khoan/dang-nhap'))throw Error('employee authenticated customer route');
  const customer=await browser.newContext();const store=await customer.newPage();await store.goto(base+'/tai-khoan/dang-nhap');await store.getByLabel('Tên đăng nhập').fill('catalog.customer');await store.getByLabel('Mật khẩu',{exact:true}).fill('CatalogTest123!');await store.getByRole('button',{name:'Đăng nhập',exact:true}).click();await store.waitForURL(base+'/tai-khoan');
