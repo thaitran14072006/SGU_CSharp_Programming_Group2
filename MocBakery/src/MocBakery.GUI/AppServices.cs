@@ -48,14 +48,37 @@ internal sealed class AppServices
     }
     private static string ResolveConnection()
     {
-        string? connection = Environment.GetEnvironmentVariable("MOCBAKERY_CONNECTION_STRING");
-        string config = Path.Combine(AppContext.BaseDirectory,"appsettings.local.json");
-        if(string.IsNullOrWhiteSpace(connection) && File.Exists(config))
+        string? connection = Environment.GetEnvironmentVariable(
+            "MOCBAKERY_CONNECTION_STRING");
+
+        string config = Path.Combine(
+            AppContext.BaseDirectory,
+            "appsettings.local.json");
+
+        if (string.IsNullOrWhiteSpace(connection) && File.Exists(config))
         {
             using var json = JsonDocument.Parse(File.ReadAllText(config));
-            connection = json.RootElement.GetProperty("ConnectionString").GetString();
+            connection = json.RootElement
+                .GetProperty("ConnectionString")
+                .GetString();
         }
-        connection ??= @"Server=.\SQLEXPRESS;Database=QuanLyTiemBanh;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=5";
+
+        connection ??=
+            @"Server=.\SQLEXPRESS;Database=QuanLyTiemBanh;" +
+            "Integrated Security=True;Encrypt=True;" +
+            "TrustServerCertificate=True;Connect Timeout=5";
+
+        // CHAN DOAN TAM THOI
+        var info = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connection);
+
+        MessageBox.Show(
+            $"Server: {info.DataSource}\n" +
+            $"Database: {info.InitialCatalog}\n" +
+            $"User: {info.UserID}\n" +
+            $"Integrated Security: {info.IntegratedSecurity}\n" +
+            $"Has password: {!string.IsNullOrEmpty(info.Password)}",
+            "Chẩn đoán kết nối SQL");
+
         return connection;
     }
     internal void Bootstrap(string username,string name,string password)

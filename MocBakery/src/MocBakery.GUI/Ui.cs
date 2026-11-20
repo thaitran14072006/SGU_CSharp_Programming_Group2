@@ -80,9 +80,18 @@ internal static class ErrorLog
             string folder = Path.Combine(AppContext.BaseDirectory,"logs"); Directory.CreateDirectory(folder);
             // Do not log SQL text, parameters, connection strings, passwords or exception messages.
             File.AppendAllText(Path.Combine(folder,"errors.log"),$"{DateTimeOffset.Now:O} {code} {ex.GetType().FullName} HResult={ex.HResult}\n");
+            if (ex is Microsoft.Data.SqlClient.SqlException sqlEx)
+            {
+                File.AppendAllText(
+                Path.Combine(folder, "errors.log"),
+                $"SQL Number={sqlEx.Number}; State={sqlEx.State}; Class={sqlEx.Class}\n");
+            }
         }
         catch(IOException) { }
         catch(UnauthorizedAccessException) { }
+        
         return code;
+
+        
     }
 }
