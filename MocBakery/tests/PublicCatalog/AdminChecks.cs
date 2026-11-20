@@ -59,6 +59,25 @@ internal static class AdminChecks
         {using var r=await Post(owner,"/admin/kho/nhap","/admin/kho/nhap",new(){["ProductId"]=product.ToString(),["Quantity"]="5",["Produced"]=DateTime.Today.ToString("yyyy-MM-dd"),["Expiry"]=DateTime.Today.AddDays(2).ToString("yyyy-MM-dd"),["Source"]="Kiểm thử admin"});lot=Value($"SELECT MaLo FROM dbo.LoBanh WHERE MaSanPham={product}");Assert(r.StatusCode==HttpStatusCode.Redirect&&Value($"SELECT SoLuongCon FROM dbo.LoBanh WHERE MaLo={lot}")==5);using var stop=await Post(owner,$"/admin/kho/{lot}/trang-thai","/admin/kho",new(){["status"]="NgungBan"});using var stopped=JsonDocument.Parse(await customer.GetStringAsync($"/api/banh/{product}"));Assert(!stopped.RootElement.GetProperty("inStock").GetBoolean());using var resume=await Post(owner,$"/admin/kho/{lot}/trang-thai","/admin/kho",new(){["status"]="DangBan"});});
         await check("Admin creates customer and keeps internal notes off public pages",async()=>
         {using var r=await Post(owner,"/admin/khach-hang/luu","/admin/khach-hang/them",new(){["FullName"]="Khách quản trị thử",["Phone"]="0907788111",["Note"]="INTERNAL_ONLY_ADMIN_NOTE"});buyer=(int)Value("SELECT MaKhachHang FROM dbo.KhachHang WHERE SoDienThoai='0907788111'");Assert(r.StatusCode==HttpStatusCode.Redirect&&buyer>0&&!(await Page(customer,"/banh")).Contains("INTERNAL_ONLY_ADMIN_NOTE"));});
+        await check("Admin customer edits preserve identity and duplicate phones are rejected",async()=>
+        {
+            using var edit=await Post(owner,"/admin/khach-hang/luu",$"/admin/khach-hang/{buyer}/sua",new(){["Id"]=buyer.ToString(),["FullName"]="Khách quản trị đã sửa",["Phone"]="0907788111",["Address"]="Địa chỉ đã sửa",["Note"]="INTERNAL_ONLY_ADMIN_NOTE"});
+            using var duplicate=await Post(staff,"/admin/khach-hang/luu","/admin/khach-hang/them",new(){["FullName"]="Khách trùng số",["Phone"]="0907788111"});
+            Assert(edit.StatusCode==HttpStatusCode.Redirect&&duplicate.StatusCode==HttpStatusCode.OK&&Value($"SELECT COUNT(*) FROM dbo.KhachHang WHERE MaKhachHang={buyer} AND HoTen=N'Khách quản trị đã sửa' AND DiaChi=N'Địa chỉ đã sửa'")==1&&Value("SELECT COUNT(*) FROM dbo.KhachHang WHERE SoDienThoai='0907788111'")==1);
+        });
+        await check("Categories edit and delete unused rows; used categories cannot be deleted",async()=>
+        {
+            using var edit=await Post(owner,"/admin/danh-muc/luu",$"/admin/danh-muc/{category}/sua",new(){["Id"]=category.ToString(),["Name"]="Danh mục quản trị đã sửa",["Active"]="true"});
+            using var used=await Post(owner,$"/admin/danh-muc/{category}/xoa","/admin/danh-muc",new());
+            using var create=await Post(owner,"/admin/danh-muc/luu","/admin/danh-muc/them",new(){["Name"]="Danh mục dùng để xóa",["Active"]="true"});
+            int unused=(int)Value("SELECT MaLoai FROM dbo.LoaiBanh WHERE TenLoai=N'Danh mục dùng để xóa'");
+            using var delete=await Post(owner,$"/admin/danh-muc/{unused}/xoa","/admin/danh-muc",new());
+            Assert(edit.StatusCode==HttpStatusCode.Redirect&&used.StatusCode==HttpStatusCode.Redirect&&delete.StatusCode==HttpStatusCode.Redirect&&Value($"SELECT COUNT(*) FROM dbo.LoaiBanh WHERE MaLoai={category}")==1&&Value($"SELECT COUNT(*) FROM dbo.LoaiBanh WHERE MaLoai={unused}")==0);
+        });
+        await check("Admin product validation rejects zero negative and malformed prices without writes",async()=>
+        {
+            foreach(string price in new[]{"0","-1","abc","1.001"}){using var response=await Post(owner,"/admin/banh/luu",$"/admin/banh/{product}/sua",Product(price));Assert(response.StatusCode==HttpStatusCode.OK&&Value($"SELECT GiaBan FROM dbo.SanPham WHERE MaSanPham={product}")==29000);}
+        });
         await check("Admin creates employee profile before granting account",async()=>
         {using var r=await Post(owner,"/admin/nhan-vien/luu","/admin/nhan-vien/them",new(){["FullName"]="Nhân viên quản trị thử",["Phone"]="0907788222",["Role"]="NhanVien",["StartDate"]=DateTime.Today.ToString("yyyy-MM-dd"),["Active"]="true"});employee=(int)Value("SELECT MaNhanVien FROM dbo.NhanVien WHERE SoDienThoai='0907788222'");Assert(r.StatusCode==HttpStatusCode.Redirect&&employee>0);});
         await check("Admin account creation links employee and requires password change",async()=>

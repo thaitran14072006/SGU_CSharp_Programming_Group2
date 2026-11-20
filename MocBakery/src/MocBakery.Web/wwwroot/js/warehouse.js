@@ -8,7 +8,7 @@
   const money = value => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 2 }).format(value);
   const rows = () => Array.from(lines.querySelectorAll('[data-line]'));
   function update() {
-    let sum = 0;
+    let sum = 0, validTotal = true;
     rows().forEach((row, index) => {
       row.querySelector('[data-line-number]').textContent = index + 1;
       row.querySelectorAll('[data-field]').forEach(input => {
@@ -19,13 +19,15 @@
         const label = Array.from(row.querySelectorAll('label')).find(label => label.htmlFor === oldId);
         if (label) label.htmlFor = input.id;
       });
-      const quantity = Number(row.querySelector('[data-field=Quantity]').value);
-      const cost = Number(row.querySelector('[data-field=Cost]').value);
-      const amount = Number.isFinite(quantity * cost) ? Math.round((quantity * cost + Number.EPSILON) * 100) / 100 : 0;
-      sum += amount;
-      row.querySelector('[data-line-amount]').textContent = money(amount);
+      const quantityInput = row.querySelector('[data-field=Quantity]');
+      const costInput = row.querySelector('[data-field=Cost]');
+      const quantity = Number(quantityInput.value), cost = Number(costInput.value);
+      const amount = Math.round((quantity * cost + Number.EPSILON) * 100) / 100;
+      const valid = quantityInput.validity.valid && costInput.validity.valid && quantity > 0 && quantity <= 1e9 && cost >= 0 && cost <= 1e9 && Number.isFinite(amount) && amount <= 9999999999999999.99;
+      if (valid) sum += amount; else validTotal = false;
+      row.querySelector('[data-line-amount]').textContent = valid ? money(amount) : '—';
     });
-    total.textContent = money(sum);
+    total.textContent = validTotal && sum <= 9999999999999999.99 ? money(sum) : '—';
   }
   function dirty() {
     if (post) post.disabled = true;

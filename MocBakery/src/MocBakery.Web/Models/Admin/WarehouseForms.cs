@@ -26,8 +26,18 @@ public sealed class ReceiptLineForm
     [Required,StringLength(50)] public string LotCode {get;set;}="";
     public DateOnly Produced {get;set;}=DateOnly.FromDateTime(DateTime.Today);
     public DateOnly Expiry {get;set;}=DateOnly.FromDateTime(DateTime.Today.AddDays(1));
-    [ModelBinder(BinderType=typeof(HtmlDecimalBinder))] public decimal Quantity {get;set;}=1;
-    [ModelBinder(BinderType=typeof(HtmlDecimalBinder))] public decimal Cost {get;set;}
+    [ModelBinder(BinderType=typeof(HtmlDecimalBinder)),Range(typeof(decimal),"0.001","1000000000",ParseLimitsInInvariantCulture=true,ConvertValueInInvariantCulture=true,ErrorMessage="Số lượng phải từ 0,001 đến 1.000.000.000.")] public decimal Quantity {get;set;}=1;
+    [ModelBinder(BinderType=typeof(HtmlDecimalBinder)),Range(typeof(decimal),"0","1000000000",ParseLimitsInInvariantCulture=true,ConvertValueInInvariantCulture=true,ErrorMessage="Đơn giá phải từ 0 đến 1.000.000.000.")] public decimal Cost {get;set;}
+    // Invalid posted values must never overflow while redisplaying the validation form.
+    public decimal? DisplayAmount
+    {
+        get
+        {
+            if(Quantity<=0||Quantity>1000000000||Cost<0||Cost>1000000000)return null;
+            decimal amount=decimal.Round(Quantity*Cost,2,MidpointRounding.AwayFromZero);
+            return amount<=9999999999999999.99m?amount:null;
+        }
+    }
 }
 public sealed class ReceiptForm
 {
@@ -37,6 +47,15 @@ public sealed class ReceiptForm
     public string? Version {get;set;}
     public string State {get;set;}="Nhap";
     [MaxLength(200)] public List<ReceiptLineForm> Lines {get;set;}=[new()];
+    public decimal? DisplayTotal
+    {
+        get
+        {
+            if(Lines.Any(l=>l.DisplayAmount is null))return null;
+            decimal total=Lines.Sum(l=>l.DisplayAmount!.Value);
+            return total<=9999999999999999.99m?total:null;
+        }
+    }
     public static ReceiptForm From(Receipt r)=>new(){Id=r.Id,SupplierId=r.SupplierId,Date=r.Date,Version=r.Version is null?"":Convert.ToBase64String(r.Version),State=r.State,
         Lines=r.Lines.Select(l=>new ReceiptLineForm{Item=l.Kind+":"+l.ItemId,LotCode=l.LotCode,Produced=l.Produced,Expiry=l.Expiry,Quantity=l.Quantity,Cost=l.Cost}).ToList()};
 }
