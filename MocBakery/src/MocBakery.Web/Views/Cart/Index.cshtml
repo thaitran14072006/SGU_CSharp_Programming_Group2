@@ -13,16 +13,19 @@
         <div class="cart-layout"><section aria-label="Bánh trong giỏ">
         @foreach (var line in Model.Quote.Lines)
         {
-            <article class="cart-row">
-                <div><h2><a href="/banh/@line.ProductId">@line.Name</a></h2><p>@BakeryDisplay.Money(line.UnitPrice) / bánh</p>
+            <article class="cart-row cart-item">
+                <div class="cart-item-info"><h2><a href="/banh/@line.ProductId">@line.Name</a></h2><p>Đơn giá <strong>@BakeryDisplay.Money(line.UnitPrice)</strong></p>
                 @if (!line.Available) { <p class="sold-out">Bánh ngừng bán hoặc không đủ số lượng. Hãy sửa số lượng hoặc bỏ bánh.</p> }</div>
                 <form asp-controller="Cart" asp-action="Update" method="post" class="cart-quantity">
                     <input type="hidden" name="productId" value="@line.ProductId" />
                     <label>Số lượng<input type="number" name="quantity" min="1" max="1000" value="@line.Quantity" required /></label>
-                    <button type="submit">Cập nhật</button>
+                    <button class="store-button cart-update" type="submit" aria-label="Cập nhật số lượng @line.Name">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
+                        <span>Cập nhật</span>
+                    </button>
                 </form>
-                <div class="cart-line-total"><strong>@BakeryDisplay.Money(line.Total)</strong>
-                    <form asp-controller="Cart" asp-action="Remove" method="post"><input type="hidden" name="productId" value="@line.ProductId" /><button type="submit">Xóa</button></form>
+                <div class="cart-line-total"><div class="cart-amount"><span>Thành tiền</span><strong>@BakeryDisplay.Money(line.Total)</strong></div>
+                    <form asp-controller="Cart" asp-action="Remove" method="post"><input type="hidden" name="productId" value="@line.ProductId" /><button class="cart-remove" type="submit" aria-label="Xóa @line.Name khỏi giỏ"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5" /></svg><span>Xóa</span></button></form>
                 </div>
             </article>
         }
