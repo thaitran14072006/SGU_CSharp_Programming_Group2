@@ -56,13 +56,14 @@ internal sealed class SalesPage : UserControl
         var order = CreateLayout(1);
         order.BackColor = Color.White;
         order.Padding = new Padding(16);
-        order.Margin = new Padding(0, 10, 0, 10);
+        order.Margin = new Padding(0, 0, 0, 0);
         Round(order, 13);
         var customer = ActionButton("Chọn khách hàng", false);
         var guest = ActionButton("Khách lẻ", false);
         var buyerActions = Toolbar();
         buyerActions.Controls.AddRange([customer, guest]);
         var cartGrid = Grid(("Name", "Bánh"), ("Quantity", "SL"), ("Total", "Tiền (đ)"));
+        cartGrid.MinimumSize = new Size(0, 180);
         cartGrid.Columns["Quantity"]!.FillWeight = 40;
         cartGrid.Columns["Total"]!.DefaultCellStyle.Format = "N0";
         cartGrid.Columns["Total"]!.DefaultCellStyle.ForeColor = Color.FromArgb(51, 118, 91);
@@ -157,7 +158,15 @@ internal sealed class SalesPage : UserControl
             else if (!UiSmoke.Active) await Run(LoadProducts);
         };
         RefreshCart();
-        return page;
+        // Keep usable cart rows at small window heights; scroll the page instead of
+        // compressing the grid into just its column header.
+        var viewport = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Surface };
+        page.Dock = DockStyle.Top;
+        viewport.Controls.Add(page);
+        void ResizePage() => page.Height = Math.Max(viewport.ClientSize.Height, 740);
+        viewport.ClientSizeChanged += (_, _) => ResizePage();
+        ResizePage();
+        return viewport;
 
         async Task LoadProducts()
         {
