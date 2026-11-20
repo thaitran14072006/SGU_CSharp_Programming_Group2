@@ -58,6 +58,7 @@ try
     {
         var values = fields.ToDictionary(x => x.Item1, x => x.Item2);
         if(path=="/gio-hang/xac-nhan"&&!values.ContainsKey("pickup"))values["pickup"]=DateTime.Now.AddDays(1).ToString("s");
+        if(path=="/gio-hang/xac-nhan"){values.TryAdd("FullName","Khách thử");values.TryAdd("Phone","0901234567");values.TryAdd("Email","test@example.com");}
         values["__RequestVerificationToken"] = Token(html, "__RequestVerificationToken");
         return await client.PostAsync(path, new FormUrlEncodedContent(values));
     }

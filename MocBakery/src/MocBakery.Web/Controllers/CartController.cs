@@ -49,37 +49,44 @@ public sealed class CartController(CartService cart, IWebOrderSubmission orders,
         var review = old is not null && old.CustomerId == identity.CustomerId && Same(old.Quote, quote)
             ? old : new CartReview(identity.CustomerId, Guid.NewGuid(), quote);
         Write(ReviewKey, review);
-        ViewData["CheckoutDraft"]=Read<CheckoutDraft>("Mai.Cart.Draft");
-        return View(new CartViewModel(quote, true, review.RequestKey));
+        var draft=Read<CheckoutDraft>("Mai.Cart.Draft");
+        return View(CheckoutViewModel.Create(quote,new CheckoutForm
+        {
+            RequestKey=review.RequestKey,FullName=draft?.FullName??"",Phone=draft?.Phone??"",Email=draft?.Email??"",
+            Pickup=draft?.Pickup??DateTime.Now.AddDays(1),Note=draft?.Note
+        }));
     }
 
     [Authorize, HttpPost("xac-nhan")]
-    public IActionResult Confirm(Guid requestKey, DateTime? pickup, string? note)
+    public IActionResult Confirm(CheckoutForm input)
     {
         var identity = CustomerCookie.Identity(User)!;
-        Write("Mai.Cart.Draft",new CheckoutDraft(pickup,note));
         var last=Read<CompletedOrder>(LastOrderKey);
-        if(requestKey!=Guid.Empty&&last?.CustomerId==identity.CustomerId&&last.RequestKey==requestKey)
+        if(input.RequestKey!=Guid.Empty&&last?.CustomerId==identity.CustomerId&&last.RequestKey==input.RequestKey)
             return RedirectToAction("Detail","CustomerOrders",new{id=last.OrderId});
         var review = Read<CartReview>(ReviewKey);
-        if (!ModelState.IsValid || requestKey == Guid.Empty || review is null || review.CustomerId != identity.CustomerId || review.RequestKey != requestKey)
+        if (input.RequestKey == Guid.Empty || review is null || review.CustomerId != identity.CustomerId || review.RequestKey != input.RequestKey)
         { TempData["CartError"] = "Phiên xác nhận đã thay đổi. Vui lòng kiểm tra lại giỏ."; return RedirectToAction(nameof(Index)); }
+        Write("Mai.Cart.Draft",new CheckoutDraft(input.Pickup,input.Note,input.FullName,input.Phone,input.Email));
         var quote = cart.Quote(Items);
         if (!quote.CanSubmit || !Same(review.Quote, quote))
         { HttpContext.Session.Remove(ReviewKey); TempData["CartError"] = "Giá hoặc tình trạng bánh vừa thay đổi. Vui lòng xem lại và xác nhận mức giá mới."; return RedirectToAction(nameof(Index)); }
-        if(pickup is null||pickup<=DateTime.Now||note?.Length>500)
-        {TempData["CartError"]="Chọn ngày giờ nhận trong tương lai và yêu cầu tối đa 500 ký tự.";return RedirectToAction(nameof(Review));}
+        if(input.Pickup is not null&&input.Pickup<=DateTime.Now)
+            ModelState.AddModelError(nameof(input.Pickup),"Chọn ngày giờ nhận trong tương lai.");
+        if(!ModelState.IsValid)return View("Review",CheckoutViewModel.Create(quote,input));
         try
         {
             // Only server-owned customer identity, quantities and rechecked total cross this boundary.
-            int id = orders.Submit(new(identity.CustomerId, requestKey, Items, quote.Total, pickup, note, quote.Lines));
+            int id = orders.Submit(new(identity.CustomerId, input.RequestKey, Items, quote.Total, input.Pickup, input.Note, quote.Lines,new(input.FullName,input.Phone,input.Email)));
             if (id <= 0) throw new BusinessException("Chưa nhận được mã đơn. Vui lòng thử lại.");
             HttpContext.Session.Remove(ItemsKey); HttpContext.Session.Remove(ReviewKey);
             HttpContext.Session.Remove("Mai.Cart.Draft");
-            Write(LastOrderKey,new CompletedOrder(identity.CustomerId,requestKey,id));
+            Write(LastOrderKey,new CompletedOrder(identity.CustomerId,input.RequestKey,id));
             TempData["CartSuccess"] = $"Đã gửi yêu cầu mua thành công. Mã đơn: {id}. Tiệm sẽ tiếp nhận và xử lý đơn của bạn.";
             return RedirectToAction("Detail","CustomerOrders",new{id});
         }
+        catch (BusinessException ex) when(ex.Field is not null)
+        {ModelState.AddModelError(ex.Field,ex.Message);return View("Review",CheckoutViewModel.Create(quote,input));}
         catch (BusinessException ex) { TempData["CartError"] = ex.Message; return RedirectToAction(nameof(Review)); }
         catch(Exception ex) when(ex is DbException or InvalidOperationException)
         {logger.LogError(ex,"Web order submission failed");TempData["CartError"]="Chưa gửi được yêu cầu. Giỏ hàng vẫn được giữ, bạn vui lòng thử lại.";return RedirectToAction(nameof(Review));}

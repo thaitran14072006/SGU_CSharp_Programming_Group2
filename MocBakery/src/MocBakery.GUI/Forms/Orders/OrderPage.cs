@@ -22,7 +22,7 @@ internal sealed class OrderPage:UserControl
   var phone=Ui.Input(15);phone.ReadOnly=true;phone.PlaceholderText="Chọn khách hàng để lấy SĐT";
   var totalLabel=new Label{AutoSize=true,Font=new Font("Segoe UI",11,FontStyle.Bold)};
   var dueLabel=new Label{AutoSize=true,Font=new Font("Segoe UI",11,FontStyle.Bold)};
-  var statusLabel=new Label{AutoSize=true,Text="Trạng thái: Mới tiếp nhận"};
+  var statusLabel=new Label{AutoSize=true,MaximumSize=new Size(900,0),Text="Trạng thái: Mới tiếp nhận"};
   var cakeText=Ui.Input(100);cakeText.PlaceholderText="Ví dụ: Chúc mừng sinh nhật";
   var top=Ui.Flow();var customer=new Label{Text=customerName,AutoSize=true};var picker=Ui.Button("Chọn khách",(_,_)=>{using var f=new CustomerPickerForm(services,session);if(f.ShowDialog(this)==DialogResult.OK&&f.SelectedCustomer is {} c){customerId=c.MaKhachHang;customerName=c.HoTen;customer.Text=customerName;phone.Text=c.SoDienThoai;}});
   var pickup=new DateTimePicker{Format=DateTimePickerFormat.Custom,CustomFormat="dd/MM/yyyy HH:mm",Width=170,Value=DateTime.Now.AddDays(1)};
@@ -44,7 +44,7 @@ internal sealed class OrderPage:UserControl
   top.Controls.Add(Ui.Button("Làm mới",async(_,_)=>{Reset();await LoadOrders();}));
   deposit.ValueChanged+=(_,_)=>ReloadLines();
   var layout=new TableLayoutPanel{Dock=DockStyle.Fill,RowCount=3,ColumnCount=2,Padding=new Padding(10)};layout.ColumnStyles.Add(new(SizeType.Percent,50));layout.ColumnStyles.Add(new(SizeType.Percent,50));layout.RowStyles.Add(new(SizeType.Absolute,295));layout.RowStyles.Add(new(SizeType.Percent,50));layout.RowStyles.Add(new(SizeType.Percent,50));layout.Controls.Add(top,0,0);layout.SetColumnSpan(top,2);layout.Controls.Add(orders,0,1);layout.SetRowSpan(orders,2);layout.Controls.Add(products,1,1);layout.Controls.Add(lines,1,2);Controls.Add(layout);
-  orders.SelectionChanged+=async(_,_)=>{if(orders.CurrentRow?.DataBoundItem is not OrderSummary o)return;editId=o.Id;customerId=o.CustomerId;customerName=o.Customer;customer.Text=customerName;pickup.Value=o.Pickup;deposit.Value=Math.Clamp(o.Deposit,deposit.Minimum,deposit.Maximum);note.Text=o.Note??"";cakeText.Clear();statusLabel.Text="Trạng thái: "+DisplayStatus(o.Status);if(UiSmoke.Active)return;try{var ls=await Task.Run(()=>services.Orders.Lines(session,o.Id));if(IsDisposed)return;chosen.Clear();foreach(var l in ls)chosen[l.ProductId]=l;ReloadLines();}catch(Exception ex){ErrorLog.Write(ex);}};
+  orders.SelectionChanged+=async(_,_)=>{if(orders.CurrentRow?.DataBoundItem is not OrderSummary o)return;editId=o.Id;customerId=o.CustomerId;customerName=o.Customer;customer.Text=customerName;pickup.Value=o.Pickup;deposit.Value=Math.Clamp(o.Deposit,deposit.Minimum,deposit.Maximum);note.Text=o.Note??"";cakeText.Clear();phone.Text=o.Contact?.Phone??"";statusLabel.Text="Trạng thái: "+DisplayStatus(o.Status)+(o.Contact is {} contact?$"\nNgười nhận: {contact.FullName} | {contact.Phone} | {contact.Email}":"");if(UiSmoke.Active)return;try{var ls=await Task.Run(()=>services.Orders.Lines(session,o.Id));if(IsDisposed)return;chosen.Clear();foreach(var l in ls)chosen[l.ProductId]=l;ReloadLines();}catch(Exception ex){ErrorLog.Write(ex);}};
   ReloadLines();
   Load+=async(_,_)=>{if(UiSmoke.Active)return;await Run(async()=>products.DataSource=(await Task.Run(()=>services.Sales.Products(session))).ToList());await LoadOrders();};
   int Selected()=>orders.CurrentRow?.DataBoundItem is OrderSummary o?o.Id:throw new BusinessException("Chọn đơn trước.");

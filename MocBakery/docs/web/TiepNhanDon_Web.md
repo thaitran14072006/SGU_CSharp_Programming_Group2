@@ -70,3 +70,25 @@ Không tạo tài khoản nhân viên giả cho khách. Script chạy lại đư
 
 Tổng bốn bộ console 164 ca đạt, không cộng lượt chạy lặp. Lượt này kiểm chứng xử lý desktop
 qua chính BLL/DAL mà WinForms dùng; chưa thao tác chuột trực tiếp trên cửa sổ desktop.
+
+## Bổ sung thông tin người nhận ngày 20 tháng 11 năm 2026
+
+Trang xác nhận nay bắt buộc họ tên người nhận, số điện thoại 10 chữ số và email đúng
+định dạng trước khi gửi. Trình duyệt, MVC và BLL đều kiểm tra; người tắt kiểm tra của
+trình duyệt vẫn không thể gửi thông tin thiếu/sai. Lỗi giữ nguyên bản nháp và chỉ rõ ô
+cần sửa. Đã bỏ dòng Bước xác nhận và dòng giới thiệu tài khoản đang đăng nhập.
+
+Thông tin được lưu riêng theo đơn bằng `WebPurchaseRequest.Contact`, không tự thay
+hồ sơ tài khoản. Trang mã đơn và desktop hiển thị thông tin người nhận thực tế, kể cả
+khi người đặt đổi tên trong hồ sơ về sau. Email dùng làm thông tin liên hệ; chưa có
+tính năng xác minh địa chỉ email hoặc tự động gửi thư xác nhận.
+
+Trước khi chạy bản mới trên CSDL nhóm, chạy thêm `database/schema/06_WebOrderContacts.sql`
+sau script 05. Script bổ sung NguoiNhan, DienThoaiNhan và EmailNhan; không điền dữ liệu
+giả cho đơn cũ. Bản thử tự áp dụng lên LocalDB riêng, chưa thay CSDL nhóm.
+Desktop mới vẫn đọc được CSDL cũ thiếu các cột này và đơn cũ không có thông tin nhận.
+
+Đợt kiểm tra này: 61 ca PublicCatalog/đơn Web, 19 ca giỏ và 37 ca hệ thống desktop đạt,
+tổng 117 ca ở các bộ chịu ảnh hưởng. Có kiểm tra thiếu từng trường, sai định dạng,
+giữ bản nháp, lưu snapshot riêng và hiển thị lại đúng thông tin. Kiểm tra trình duyệt
+52 lượt trang ở bốn kích thước màn hình đạt và đã thử gửi đơn với ba trường bắt buộc.

@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 (async () => {
   const base = process.env.MOCBAKERY_PREVIEW_URL || 'http://127.0.0.1:5088';
-  const out = path.resolve(__dirname, '../../docs/web/evidence');
+  const out = process.env.MOCBAKERY_EVIDENCE_DIR ? path.resolve(process.env.MOCBAKERY_EVIDENCE_DIR) : path.resolve(__dirname, '../../docs/web/evidence');
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ headless: true, channel: 'msedge' });
   const context = await browser.newContext({ reducedMotion: 'reduce' });
@@ -87,11 +87,18 @@ const fs = require('fs');
     checked++;
     if (width === 375 || width === 1440) await page.screenshot({ path: path.join(out, `checkout-${width}.png`), fullPage: true });
   }
+  await page.getByRole('button', { name: 'Xác nhận mua hàng', exact: true }).click();
+  if (!(new URL(page.url()).pathname === '/gio-hang/xac-nhan')) throw new Error('Checkout accepted missing contact');
+  for(const name of ['FullName','Phone','Email'])if(!await page.locator('#'+name).evaluate(el=>el.required&&el.validity.valueMissing))throw new Error('Contact is not required: '+name);
+  await page.getByLabel('Họ tên người nhận').fill('Người nhận thử giao diện');
+  await page.getByLabel('Số điện thoại', { exact: false }).fill('0901122334');
+  await page.getByLabel('Email', { exact: false }).fill('recipient@example.com');
   await page.getByLabel('Yêu cầu thêm').fill('Nhận tại tiệm, đóng hộp riêng.');
-  await page.getByRole('button', { name: 'Gửi yêu cầu mua', exact: true }).click();
+  await page.getByRole('button', { name: 'Xác nhận mua hàng', exact: true }).click();
   await page.waitForURL(/\/don-hang\/\d+$/);
   const receipt = new URL(page.url()).pathname;
   if (!(await page.locator('.cart-summary').innerText()).includes('Mới tiếp nhận')) throw new Error('Order was not received');
+  if (!(await page.locator('.order-contact').innerText()).includes('recipient@example.com')) throw new Error('Recipient contact missing on receipt');
   for (const width of [320,375,768,1440]) {
     await page.setViewportSize({ width, height: 960 });
     for (const route of [receipt, '/don-hang']) {
@@ -102,7 +109,7 @@ const fs = require('fs');
     }
   }
   if (errors.length) throw new Error(errors.join('\n'));
-  const report = { date: new Date().toISOString(), widths: [320,375,768,1440], pagesChecked: checked, interactions: ['mobile GET search and sorting', 'product detail navigation', 'XSS encoding', 'keyboard skip link', 'home category navigation', 'SQL login, profile update and return to catalog', 'Vietnamese checkout heading, submit SQL order and read own receipt'], horizontalOverflow: false, pageErrors: errors };
+  const report = { date: new Date().toISOString(), widths: [320,375,768,1440], pagesChecked: checked, interactions: ['mobile GET search and sorting', 'product detail navigation', 'XSS encoding', 'keyboard skip link', 'home category navigation', 'SQL login, profile update and return to catalog', 'required name, phone and email before purchase', 'Vietnamese checkout heading, submit SQL order and read own receipt'], horizontalOverflow: false, pageErrors: errors };
   fs.writeFileSync(path.join(out, 'browser-result.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report));
   await browser.close();

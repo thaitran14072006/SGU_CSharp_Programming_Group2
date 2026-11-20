@@ -3,7 +3,7 @@ using MocBakery.Models.WebCart;
 namespace MocBakery.Models.WebOrders;
 
 public sealed record CustomerOrder(int Id, DateTime Placed, DateTime Pickup, decimal Total,
-    string Status, string? Note, string? CancelReason)
+    string Status, string? Note, string? CancelReason, CheckoutContact? Contact = null)
 {
     public string StatusText => Status switch
     {

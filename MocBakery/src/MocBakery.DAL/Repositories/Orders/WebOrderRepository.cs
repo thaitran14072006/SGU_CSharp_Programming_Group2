@@ -11,6 +11,7 @@ public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderReposi
 {
     public int Submit(WebPurchaseRequest request)
     {
+        var contact=request.Contact??throw new BusinessException("Thiếu thông tin người nhận.");
         using var c=db.Open();using var tx=c.BeginTransaction(IsolationLevel.Serializable);
         // Serialize submissions per customer: a concurrent retry cannot insert a second order.
         using(var account=Db.Command(c,"SELECT MaKhachHang FROM dbo.TaiKhoanKhachHang WITH(UPDLOCK,HOLDLOCK) WHERE MaKhachHang=@customer AND TrangThai=1",tx))
@@ -48,12 +49,13 @@ public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderReposi
         decimal total=lines.Sum(x=>x.Total);
         if(total!=request.ConfirmedTotal)throw new BusinessException("Giá bánh vừa thay đổi. Vui lòng xem lại và xác nhận mức giá mới.");
         using var order=Db.Command(c,"""
-            INSERT dbo.DonDatBanh(MaKhachHang,MaTaiKhoan,NgayDat,NgayNhan,YeuCau,TongTien,TienCoc,WebRequestKey)
-            OUTPUT INSERTED.MaDon VALUES(@customer,NULL,@now,@pickup,@note,@total,0,@key)
+            INSERT dbo.DonDatBanh(MaKhachHang,MaTaiKhoan,NgayDat,NgayNhan,YeuCau,TongTien,TienCoc,WebRequestKey,NguoiNhan,DienThoaiNhan,EmailNhan)
+            OUTPUT INSERTED.MaDon VALUES(@customer,NULL,@now,@pickup,@note,@total,0,@key,@name,@phone,@email)
             """,tx);
         order.Param("@customer",request.CustomerId,DbType.Int32);order.Param("@now",now,DbType.DateTime2);
         order.Param("@pickup",request.Pickup,DbType.DateTime2);order.Param("@note",request.Note,DbType.String,500);
         order.Param("@total",total,DbType.Decimal);order.Param("@key",request.RequestKey,DbType.Guid);
+        order.Param("@name",contact.FullName,DbType.String,100);order.Param("@phone",contact.Phone,DbType.AnsiString,10);order.Param("@email",contact.Email,DbType.String,254);
         int id=Convert.ToInt32(order.ExecuteScalar());
         foreach(var line in lines)
         {
@@ -65,14 +67,14 @@ public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderReposi
 
     public IReadOnlyList<CustomerOrder> List(int customerId)
     {
-        using var c=db.Open();using var q=Db.Command(c,"SELECT MaDon,NgayDat,NgayNhan,TongTien,TrangThai,YeuCau,LyDoHuy FROM dbo.DonDatBanh WHERE MaKhachHang=@customer ORDER BY NgayDat DESC,MaDon DESC");
+        using var c=db.Open();using var q=Db.Command(c,"SELECT MaDon,NgayDat,NgayNhan,TongTien,TrangThai,YeuCau,LyDoHuy,NguoiNhan,DienThoaiNhan,EmailNhan FROM dbo.DonDatBanh WHERE MaKhachHang=@customer ORDER BY NgayDat DESC,MaDon DESC");
         q.Param("@customer",customerId,DbType.Int32);using var r=q.ExecuteReader();var result=new List<CustomerOrder>();while(r.Read())result.Add(Read(r));return result;
     }
 
     public CustomerOrderDetail? Find(int customerId,int orderId)
     {
         using var c=db.Open();using var q=Db.Command(c,"""
-            SELECT MaDon,NgayDat,NgayNhan,TongTien,TrangThai,YeuCau,LyDoHuy FROM dbo.DonDatBanh
+            SELECT MaDon,NgayDat,NgayNhan,TongTien,TrangThai,YeuCau,LyDoHuy,NguoiNhan,DienThoaiNhan,EmailNhan FROM dbo.DonDatBanh
             WHERE MaKhachHang=@customer AND MaDon=@id;
             SELECT d.MaSanPham,p.TenSanPham,d.SoLuong,d.DonGia FROM dbo.ChiTietDonDat d
             JOIN dbo.DonDatBanh o ON o.MaDon=d.MaDon JOIN dbo.SanPham p ON p.MaSanPham=d.MaSanPham
@@ -82,5 +84,6 @@ public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderReposi
         if(!r.Read())return null;var summary=Read(r);r.NextResult();var lines=new List<OrderLine>();
         while(r.Read())lines.Add(new(r.GetInt32(0),r.GetString(1),r.GetInt32(2),r.GetDecimal(3)));return new(summary,lines);
     }
-    private static CustomerOrder Read(DbDataReader r)=>new(r.GetInt32(0),r.GetDateTime(1),r.GetDateTime(2),r.GetDecimal(3),r.GetString(4),r.IsDBNull(5)?null:r.GetString(5),r.IsDBNull(6)?null:r.GetString(6));
+    private static CustomerOrder Read(DbDataReader r)=>new(r.GetInt32(0),r.GetDateTime(1),r.GetDateTime(2),r.GetDecimal(3),r.GetString(4),r.IsDBNull(5)?null:r.GetString(5),r.IsDBNull(6)?null:r.GetString(6),
+        r.IsDBNull(7)||r.IsDBNull(8)||r.IsDBNull(9)?null:new(r.GetString(7),r.GetString(8),r.GetString(9)));
 }

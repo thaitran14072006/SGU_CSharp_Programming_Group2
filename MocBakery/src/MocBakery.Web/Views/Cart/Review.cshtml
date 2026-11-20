@@ -1,30 +1,41 @@
-@model CartViewModel
-@{ ViewData["Title"] = "Xác nhận yêu cầu mua"; var draft=ViewData["CheckoutDraft"] as CheckoutDraft; }
+@model CheckoutViewModel
+@{ ViewData["Title"] = "Xác nhận mua hàng"; }
 <div class="store">
-    <p class="eyebrow">Mộc Bakery · Bước xác nhận</p><h1>Xác nhận yêu cầu mua</h1>
+    <h1>Xác nhận mua hàng</h1>
     @if (TempData["CartError"] is string error) { <p class="cart-message" role="alert">@error</p> }
-    <p>Đang đăng nhập: <strong>@User.Identity?.Name</strong>. Yêu cầu được gửi bằng hồ sơ khách hàng của bạn.</p>
-    <div class="cart-layout"><section aria-label="Chi tiết yêu cầu">
-    @foreach (var line in Model.Quote.Lines)
-    {
-        <article class="cart-row"><div><h2>@line.Name</h2><p>@line.Quantity × @BakeryDisplay.Money(line.UnitPrice)</p></div><strong>@BakeryDisplay.Money(line.Total)</strong></article>
-    }
-    <a href="/gio-hang">← Sửa giỏ hàng</a></section>
-    <aside class="cart-summary"><h2>Tổng yêu cầu</h2><p>Tổng tiền <strong>@BakeryDisplay.Money(Model.Quote.Total)</strong></p><p class="detail-note">Gửi yêu cầu chưa phải thanh toán, chưa tạo hóa đơn và chưa trừ tồn kho. Tiệm sẽ tiếp nhận và xử lý đơn.</p>
-    @if (Model.OrderServiceReady)
-    {
-        <form asp-controller="Cart" asp-action="Confirm" method="post">
-            <input type="hidden" name="requestKey" value="@Model.RequestKey" />
-            <label for="pickup">Ngày giờ nhận tại tiệm *</label>
-            <input id="pickup" name="pickup" type="datetime-local" value="@((draft?.Pickup??DateTime.Now.AddDays(1)).ToString("yyyy-MM-ddTHH:mm"))" required />
-            <label for="order-note">Yêu cầu thêm</label>
-            <textarea id="order-note" name="note" maxlength="500" rows="3" placeholder="Ví dụ: đóng hộp riêng từng phần">@draft?.Note</textarea>
-            <button class="store-button" type="submit">Gửi yêu cầu mua</button>
-        </form>
-    }
-    else
-    {
-        <p role="status">Tiệm đang hoàn thiện chức năng tiếp nhận đơn. Bạn có thể tiếp tục chọn bánh và giữ giỏ trong phiên này.</p><button class="store-button" disabled>Chưa thể gửi yêu cầu</button>
-    }
-    </aside></div>
+    <form asp-controller="Cart" asp-action="Confirm" method="post" class="checkout-form">
+        <input name="requestKey" type="hidden" value="@Model.RequestKey" />
+        <div class="cart-layout">
+            <section class="checkout-details" aria-label="Thông tin nhận bánh và sản phẩm">
+                <section class="checkout-contact" aria-labelledby="contact-title">
+                    <h2 id="contact-title">Thông tin người nhận</h2>
+                    <p class="intro">Kiểm tra đầy đủ thông tin để tiệm liên hệ về đơn bánh của bạn.</p>
+                    <div asp-validation-summary="All" class="validation" role="alert"></div>
+                    <div class="checkout-fields">
+                        <div class="full"><label asp-for="FullName">Họ tên người nhận *</label><input asp-for="FullName" autocomplete="name" maxlength="100" required /><span asp-validation-for="FullName"></span></div>
+                        <div><label asp-for="Phone">Số điện thoại *</label><input asp-for="Phone" type="tel" autocomplete="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required /><span asp-validation-for="Phone"></span></div>
+                        <div><label asp-for="Email">Email *</label><input asp-for="Email" type="email" autocomplete="email" maxlength="254" required /><span asp-validation-for="Email"></span></div>
+                    </div>
+                </section>
+                <h2 class="checkout-products-title">Bánh đã chọn</h2>
+                @foreach (var line in Model.Quote.Lines)
+                {
+                    <article class="cart-row"><div><h3>@line.Name</h3><p>@line.Quantity × @BakeryDisplay.Money(line.UnitPrice)</p></div><strong>@BakeryDisplay.Money(line.Total)</strong></article>
+                }
+                <a href="/gio-hang">← Sửa giỏ hàng</a>
+            </section>
+            <aside class="cart-summary">
+                <h2>Tổng yêu cầu</h2>
+                <p>Tổng tiền <strong>@BakeryDisplay.Money(Model.Quote.Total)</strong></p>
+                <label asp-for="Pickup">Ngày giờ nhận tại tiệm *</label>
+                <input asp-for="Pickup" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" required />
+                <span asp-validation-for="Pickup"></span>
+                <label asp-for="Note">Yêu cầu thêm</label>
+                <textarea asp-for="Note" maxlength="500" rows="3" placeholder="Ví dụ: đóng hộp riêng từng phần"></textarea>
+                <span asp-validation-for="Note"></span>
+                <p class="detail-note">Nhận bánh tại tiệm. Xác nhận đơn chưa thanh toán và chưa giữ bánh.</p>
+                <button class="store-button" type="submit">Xác nhận mua hàng</button>
+            </aside>
+        </div>
+    </form>
 </div>

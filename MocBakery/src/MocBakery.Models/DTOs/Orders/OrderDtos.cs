@@ -7,6 +7,7 @@ public sealed record OrderSummary(int Id,int CustomerId,string Customer,int? Acc
 {
  public decimal Due => Total-Deposit;
  public string Receiver => AccountId is int id ? $"TK{id:000}" : "Chờ tiếp nhận";
+ public MocBakery.Models.WebCart.CheckoutContact? Contact { get; init; }
 }
 public interface IOrderRepository
 {

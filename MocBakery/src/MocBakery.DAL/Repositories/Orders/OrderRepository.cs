@@ -10,8 +10,11 @@ public sealed class OrderRepository(DbConnectionFactory db):IOrderRepository
 {
  public IReadOnlyList<OrderSummary> List()
  {
-  using var c=db.Open();using var cmd=Db.Command(c,"SELECT d.MaDon,d.MaKhachHang,k.HoTen,d.MaTaiKhoan,d.NgayDat,d.NgayNhan,d.TongTien,d.TienCoc,d.TrangThai,d.YeuCau,d.LyDoHuy FROM dbo.DonDatBanh d JOIN dbo.KhachHang k ON k.MaKhachHang=d.MaKhachHang ORDER BY d.NgayNhan,d.MaDon");using var r=cmd.ExecuteReader();var result=new List<OrderSummary>();
-  while(r.Read())result.Add(new(r.GetInt32(0),r.GetInt32(1),r.GetString(2),r.IsDBNull(3)?null:r.GetInt32(3),r.GetDateTime(4),r.GetDateTime(5),r.GetDecimal(6),r.GetDecimal(7),r.GetString(8),r.IsDBNull(9)?null:r.GetString(9),r.IsDBNull(10)?null:r.GetString(10)));return result;
+  using var c=db.Open();using var metadata=Db.Command(c,"SELECT COL_LENGTH('dbo.DonDatBanh','EmailNhan')");
+  string contactColumns=metadata.ExecuteScalar() is not null and not DBNull?"d.NguoiNhan,d.DienThoaiNhan,d.EmailNhan":"CAST(NULL AS NVARCHAR(100)),CAST(NULL AS VARCHAR(10)),CAST(NULL AS NVARCHAR(254))";
+  using var cmd=Db.Command(c,$"SELECT d.MaDon,d.MaKhachHang,k.HoTen,d.MaTaiKhoan,d.NgayDat,d.NgayNhan,d.TongTien,d.TienCoc,d.TrangThai,d.YeuCau,d.LyDoHuy,{contactColumns} FROM dbo.DonDatBanh d JOIN dbo.KhachHang k ON k.MaKhachHang=d.MaKhachHang ORDER BY d.NgayNhan,d.MaDon");using var r=cmd.ExecuteReader();var result=new List<OrderSummary>();
+  while(r.Read())result.Add(new(r.GetInt32(0),r.GetInt32(1),r.GetString(2),r.IsDBNull(3)?null:r.GetInt32(3),r.GetDateTime(4),r.GetDateTime(5),r.GetDecimal(6),r.GetDecimal(7),r.GetString(8),r.IsDBNull(9)?null:r.GetString(9),r.IsDBNull(10)?null:r.GetString(10))
+  {Contact=r.IsDBNull(11)||r.IsDBNull(12)||r.IsDBNull(13)?null:new(r.GetString(11),r.GetString(12),r.GetString(13))});return result;
  }
  public IReadOnlyList<OrderLine> Lines(int id)
  {

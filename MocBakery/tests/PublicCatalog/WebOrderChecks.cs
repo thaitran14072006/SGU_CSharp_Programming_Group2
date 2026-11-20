@@ -25,6 +25,10 @@ internal static class WebOrderChecks
         async Task<string> Page(string path)=>WebUtility.HtmlDecode(await customer.GetStringAsync(path));
         async Task<HttpResponseMessage> Post(string route,string tokenPage,Dictionary<string,string> fields)
         {
+            if(route=="/gio-hang/xac-nhan")
+            {
+                fields.TryAdd("FullName","Người nhận kiểm thử");fields.TryAdd("Phone","0901122334");fields.TryAdd("Email","recipient@example.com");
+            }
             fields["__RequestVerificationToken"]=Token(await customer.GetStringAsync(tokenPage),"__RequestVerificationToken");
             return await customer.PostAsync(route,new FormUrlEncodedContent(fields));
         }
@@ -34,18 +38,27 @@ internal static class WebOrderChecks
         int counter=desktop.Create(owner,customerId,DateTime.Now.AddDays(1),0,"Đơn quầy trước nâng cấp",[new(product,"Croissant",1,28000)]);
         string migration=File.ReadAllText(Path.Combine(root,"database/schema/05_WebOrders.sql"));
         Sql(migration);
+        string contactsMigration=File.ReadAllText(Path.Combine(root,"database/schema/06_WebOrderContacts.sql"));
+        Sql(contactsMigration);
         var service=new WebOrderService(new WebOrderRepository(db));
         long WebCount()=>Value("SELECT COUNT(*) FROM dbo.DonDatBanh WHERE WebRequestKey IS NOT NULL");
         long Stock()=>Value($"SELECT SUM(CONVERT(bigint,SoLuongCon)) FROM dbo.LoBanh WHERE MaSanPham={product}");
-        WebPurchaseRequest Request(Guid? key=null)=>new(customerId,key??Guid.NewGuid(),[new(product,2)],56000,DateTime.Now.AddDays(1),"Đóng hộp riêng",[new(product,"Croissant",2,28000,true)]);
+        WebPurchaseRequest Request(Guid? key=null)=>new(customerId,key??Guid.NewGuid(),[new(product,2)],56000,DateTime.Now.AddDays(1),"Đóng hộp riêng",[new(product,"Croissant",2,28000,true)],new("Người nhận kiểm thử","0901122334","recipient@example.com"));
         int received=0,parallel=0;
         Guid requestKey=Guid.Empty;
         await check("Order migration reruns without changing existing desktop history",()=>
-        {Sql(migration);var old=desktop.List(owner).Single(x=>x.Id==counter);Assert(old.AccountId==owner.MaTaiKhoan&&old.Note=="Đơn quầy trước nâng cấp"&&old.Total==28000);return Task.CompletedTask;});
+        {Sql(migration);Sql(contactsMigration);var old=desktop.List(owner).Single(x=>x.Id==counter);Assert(old.AccountId==owner.MaTaiKhoan&&old.Note=="Đơn quầy trước nâng cấp"&&old.Total==28000&&service.Find(customerId,counter)!.Order.Contact is null);return Task.CompletedTask;});
         await check("Web order BLL rejects invalid identities quantities duplicates and missing pickup",()=>
         {
             var valid=Request();
             foreach(var invalid in new[]{valid with{CustomerId=0},valid with{RequestKey=Guid.Empty},valid with{Items=[]},valid with{Items=[new(product,0)]},valid with{Items=[new(product,1001)]},valid with{Items=[new(product,1),new(product,1)]},valid with{ConfirmedTotal=0},valid with{Pickup=null},valid with{ConfirmedLines=null},valid with{Note=new string('x',501)}})Reject(()=>service.Submit(invalid));
+            Assert(WebCount()==0);return Task.CompletedTask;
+        });
+        await check("Order service requires valid recipient name phone and email",()=>
+        {
+            var valid=Request();
+            foreach(var contact in new CheckoutContact?[]{null,new(" ","0901122334","a@example.com"),new(new string('a',101),"0901122334","a@example.com"),new("Khách","123","a@example.com"),new("Khách","0901122334",""),new("Khách","0901122334","not-an-email"),new("Khách","0901122334",new string('a',250)+"@example.com")})
+                Reject(()=>service.Submit(valid with{Contact=contact}));
             Assert(WebCount()==0);return Task.CompletedTask;
         });
         await check("Checkout requires antiforgery and a future pickup without losing cart",async()=>
@@ -58,6 +71,16 @@ internal static class WebOrderChecks
             using var past=await Post("/gio-hang/xac-nhan","/gio-hang/xac-nhan",new(){["requestKey"]=requestKey.ToString(),["pickup"]=DateTime.Now.AddDays(-1).ToString("s")});
             Assert(WebCount()==0&&(await Page("/gio-hang")).Contains("56.000"));
         });
+        await check("Checkout rejects incomplete contact server-side and keeps entered values",async()=>
+        {
+            string review=await Page("/gio-hang/xac-nhan");Assert(!review.Contains("Bước xác nhận")&&!review.Contains("Đang đăng nhập"));
+            using var missing=await Post("/gio-hang/xac-nhan","/gio-hang/xac-nhan",new(){["requestKey"]=requestKey.ToString(),["pickup"]=DateTime.Now.AddDays(1).ToString("s"),["FullName"]="",["Phone"]="",["Email"]=""});
+            string blank=WebUtility.HtmlDecode(await missing.Content.ReadAsStringAsync());
+            Assert(missing.StatusCode==HttpStatusCode.OK&&blank.Contains("Vui lòng nhập họ tên")&&blank.Contains("Vui lòng nhập số điện thoại")&&blank.Contains("Vui lòng nhập email"));
+            using var invalid=await Post("/gio-hang/xac-nhan","/gio-hang/xac-nhan",new(){["requestKey"]=requestKey.ToString(),["pickup"]=DateTime.Now.AddDays(1).ToString("s"),["FullName"]="Người nhận đang nhập",["Phone"]="123",["Email"]="not-an-email"});
+            string html=WebUtility.HtmlDecode(await invalid.Content.ReadAsStringAsync());
+            Assert(html.Contains("Người nhận đang nhập")&&html.Contains("not-an-email")&&html.Contains("10 chữ số")&&html.Contains("Email chưa đúng định dạng")&&WebCount()==0&&(await Page("/gio-hang")).Contains("56.000"));
+        });
         await check("HTTP checkout writes SQL order using cookie customer and server prices",async()=>
         {
             using var result=await Post("/gio-hang/xac-nhan","/gio-hang/xac-nhan",new(){["requestKey"]=requestKey.ToString(),["pickup"]=DateTime.Now.AddDays(1).ToString("s"),["note"]="Hộp riêng ' <b>không cay</b>",["customerId"]="999",["total"]="1"});
@@ -68,6 +91,16 @@ internal static class WebOrderChecks
         });
         await check("Web reception has no forged employee no invoice and no stock deduction",()=>
         {var order=desktop.List(owner).Single(x=>x.Id==received);Assert(order.AccountId is null&&order.Status=="MoiTiepNhan"&&Value("SELECT COUNT(*) FROM dbo.HoaDon")==0&&Stock()==20);return Task.CompletedTask;});
+        await check("SQL stores recipient contact independently of the account profile",async()=>
+        {
+            var contact=new CheckoutContact("Người nhận kiểm thử","0901122334","recipient@example.com");
+            Assert(service.Find(customerId,received)!.Order.Contact==contact);
+            Assert(desktop.List(owner).Single(order=>order.Id==received).Contact==contact);
+            var identity=customerAccounts.Login("catalog.customer","CatalogTest123!");
+            Assert(customerAccounts.Profile(identity).FullName=="Khách đã cập nhật");
+            customerAccounts.UpdateProfile(identity,new("Khách đổi tên sau đặt","0900001122",null));
+            Assert(service.Find(customerId,received)!.Order.Contact==contact&&(await Page($"/don-hang/{received}")).Contains("recipient@example.com"));
+        });
         await check("Receipt is readable by owner and safely encodes order notes",async()=>
         {string raw=await customer.GetStringAsync($"/don-hang/{received}");Assert(WebUtility.HtmlDecode(raw).Contains("Mới tiếp nhận")&&!raw.Contains("<b>không cay</b>")&&(await Page("/don-hang")).Contains($"/don-hang/{received}")&&(await Page("/gio-hang")).Contains("Giỏ hàng đang trống"));});
         await check("HTTP repeated checkout returns same receipt and creates no duplicate",async()=>

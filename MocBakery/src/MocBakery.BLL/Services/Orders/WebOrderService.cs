@@ -1,6 +1,8 @@
 using MocBakery.Models;
 using MocBakery.Models.WebCart;
 using MocBakery.Models.WebOrders;
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 namespace MocBakery.BLL.Services.Orders;
 
 public sealed class WebOrderService(IWebOrderRepository repository) : IWebOrderSubmission
@@ -21,7 +23,13 @@ public sealed class WebOrderService(IWebOrderRepository repository) : IWebOrderS
         if(request.Pickup is null)throw new BusinessException("Vui lòng chọn ngày giờ nhận bánh.");
         string? note=string.IsNullOrWhiteSpace(request.Note)?null:request.Note.Trim();
         if(note?.Length>500)throw new BusinessException("Yêu cầu tối đa 500 ký tự.");
-        return repository.Submit(request with{Note=note});
+        var contact=request.Contact??throw new BusinessException("Vui lòng nhập đủ họ tên, số điện thoại và email.");
+        string name=Regex.Replace(contact.FullName?.Trim()??"",@"\s+"," ");
+        string phone=contact.Phone?.Trim()??"",email=contact.Email?.Trim()??"";
+        if(name.Length is <1 or >100)throw new BusinessException("Họ tên phải có từ 1 đến 100 ký tự.","FullName");
+        if(!Regex.IsMatch(phone,@"\A[0-9]{10}\z"))throw new BusinessException("Số điện thoại phải gồm đúng 10 chữ số.","Phone");
+        if(email.Length is <3 or >254||!new EmailAddressAttribute().IsValid(email))throw new BusinessException("Email chưa đúng định dạng.","Email");
+        return repository.Submit(request with{Note=note,Contact=new(name,phone,email)});
     }
     public IReadOnlyList<CustomerOrder> List(int customerId)=>customerId>0?repository.List(customerId):[];
     public CustomerOrderDetail? Find(int customerId,int orderId)=>customerId>0&&orderId>0?repository.Find(customerId,orderId):null;
