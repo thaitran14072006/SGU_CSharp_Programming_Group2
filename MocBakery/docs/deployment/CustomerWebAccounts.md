@@ -177,6 +177,26 @@ ngoài phạm vi tài khoản khách hàng.
 
 ## Bước tiếp theo
 
+Cập nhật ngày 20/11/2026: có lệnh kiểm tra riêng phần tài khoản khách, tự build Release,
+chạy nghiệp vụ và HTTP, lưu log kèm commit nền trong `MocBakery/artifacts/customer-accounts-*`:
+
+```powershell
+.\MocBakery\scripts\Validate-CustomerAccounts.ps1
+# Kiểm tra không kèm driver SQL khi không restore được gói:
+.\MocBakery\scripts\Validate-CustomerAccounts.ps1 -Offline
+# Sau khi đặt MOCBAKERY_SQL_TEST_CONNECTION cho server thử:
+.\MocBakery\scripts\Validate-CustomerAccounts.ps1 -IncludeSql
+```
+
+`-NoBuild` dùng lại binary Release đã build; khi chạy SQL phải có driver SQL trong binary đó.
+Không kết hợp `-Offline` và `-IncludeSql`. Không có kết nối thử thì `-IncludeSql` báo lỗi ngay.
+Log `status.txt` ghi kết quả toàn lượt; `customer-sql.txt` ghi rõ chưa chạy nếu chưa gọi SQL.
+Lệnh kiểm tra chung `Validate-Project.ps1` cũng đã chạy thêm 36 ca nghiệp vụ và bộ HTTP;
+thêm `-IncludeCustomerSql` để yêu cầu kiểm tra SQL tài khoản khách cùng lượt.
+
+Kết quả thực tế và giới hạn môi trường ngày 20/11 xem
+[tiến độ phần Thái](../testing/results/2026-11-20-thai-web-accounts.md).
+
 Kiểm thử SQL thật và luồng dữ liệu dùng chung desktop–Web trước khi ghi nhận
 chức năng hoạt động qua hai ứng dụng; kiểm tra kết quả GitHub Actions sau khi push
 và bổ sung minh chứng vào báo cáo. Phần Catalog, Sales,

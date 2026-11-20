@@ -4,4 +4,8 @@ MocBakery/**/obj/
 MocBakery/.vs/
 MocBakery/**/*.local.json
 MocBakery/**/logs/
+<<<<<<< Updated upstream
 MocBakery/src/MocBakery.Web/wwwroot/images/bakery/french-pastries-images.md
+=======
+MocBakery/artifacts/
+>>>>>>> Stashed changes
