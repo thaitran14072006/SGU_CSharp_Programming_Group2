@@ -6,6 +6,7 @@ namespace MocBakery.Models.DTOs.Sales;
 public sealed record SalesProduct(int Id, string Name, decimal Price, long Stock)
 {
     public string Category { get; init; } = "";
+    public byte[]? Photo { get; init; }
 }
 public sealed record CartItem(int ProductId, int Quantity, decimal UnitPrice);
 public sealed record LotAllocation(int LotId, int Quantity);

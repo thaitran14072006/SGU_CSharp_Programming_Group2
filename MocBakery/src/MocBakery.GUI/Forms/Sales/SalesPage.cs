@@ -528,10 +528,12 @@ internal sealed class SalesPage : UserControl
     private sealed class ProductCard : Button
     {
         private readonly SalesProduct product;
+        private readonly Image? photo;
 
         internal ProductCard(SalesProduct product)
         {
             this.product = product;
+            photo = LoadPhoto(product);
             Height = 148;
             Margin = new Padding(0, 0, 10, 10);
             Text = product.Name;
@@ -566,7 +568,16 @@ internal sealed class SalesPage : UserControl
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             using var bannerPath = RoundedPath(10, 10, width, banner, 8);
             e.Graphics.FillPath(tag, bannerPath);
-            TextRenderer.DrawText(e.Graphics, product.Category, bold, new Rectangle(14, 10, width - 8, banner),
+            if (photo is not null)
+            {
+                var state = e.Graphics.Save();
+                e.Graphics.SetClip(bannerPath);
+                float scale = Math.Max((float)width / photo.Width, (float)banner / photo.Height);
+                float imageWidth = photo.Width * scale, imageHeight = photo.Height * scale;
+                e.Graphics.DrawImage(photo, 10 + (width - imageWidth) / 2, 10 + (banner - imageHeight) / 2, imageWidth, imageHeight);
+                e.Graphics.Restore(state);
+            }
+            else TextRenderer.DrawText(e.Graphics, product.Category, bold, new Rectangle(14, 10, width - 8, banner),
                 Accent, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             Draw(product.Name, bold, Ink, 0);
             Draw(Money(product.Price), bold, Accent, 1);
@@ -576,6 +587,35 @@ internal sealed class SalesPage : UserControl
             void Draw(string text, Font font, Color color, int row) =>
                 TextRenderer.DrawText(e.Graphics, text, font, new Rectangle(10, banner + 14 + lineHeight * row, width, lineHeight),
                     color, TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        }
+
+        private static Image? LoadPhoto(SalesProduct product)
+        {
+            try
+            {
+                if (product.Photo is { Length: > 0 })
+                {
+                    using var stream = new MemoryStream(product.Photo);
+                    using var original = Image.FromStream(stream);
+                    return new Bitmap(original);
+                }
+            }
+            catch (ArgumentException) { }
+            string name = product.Name.ToLowerInvariant();
+            string? file = name.Contains("cookie") || name.Contains("bánh quy") ? "cookie"
+                : name.Contains("muffin") ? "muffin"
+                : name.Contains("croissant") || name.Contains("sừng bò") ? "croissant"
+                : name.Contains("tiramisu") ? "tiramisu" : null;
+            string path = Path.Combine(AppContext.BaseDirectory, "Images", "Bakery", file + ".jpg");
+            if (file is null || !File.Exists(path)) return null;
+            using var source = Image.FromFile(path);
+            return new Bitmap(source);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) photo?.Dispose();
+            base.Dispose(disposing);
         }
     }
 

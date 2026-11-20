@@ -16,18 +16,18 @@ public sealed class SalesRepository(DbConnectionFactory db) : ISalesRepository
     {
         using var connection = db.Open();
         using var command = Db.Command(connection, $"""
-            SELECT p.MaSanPham,p.TenSanPham,p.GiaBan,COALESCE(SUM(CONVERT(bigint,l.SoLuongCon)),0),c.TenLoai
+            SELECT p.MaSanPham,p.TenSanPham,p.GiaBan,COALESCE(SUM(CONVERT(bigint,l.SoLuongCon)),0),c.TenLoai,p.AnhBanh
             FROM dbo.SanPham p JOIN dbo.LoaiBanh c ON c.MaLoai=p.MaLoai
             LEFT JOIN dbo.LoBanh l ON l.MaSanPham=p.MaSanPham AND {Sellable}
             WHERE p.DangKinhDoanh=1
-            GROUP BY p.MaSanPham,p.TenSanPham,p.GiaBan,c.TenLoai ORDER BY p.TenSanPham
+            GROUP BY p.MaSanPham,p.TenSanPham,p.GiaBan,c.TenLoai,p.AnhBanh ORDER BY p.TenSanPham
             """);
         command.Param("@day", ReadClock(connection).Date, DbType.Date);
         using var reader = command.ExecuteReader();
         var result = new List<SalesProduct>();
         while (reader.Read())
             result.Add(new(reader.GetInt32(0), reader.GetString(1), reader.GetDecimal(2), reader.GetInt64(3))
-                { Category = reader.GetString(4) });
+                { Category = reader.GetString(4), Photo = reader.IsDBNull(5) ? null : (byte[])reader.GetValue(5) });
         return result;
     }
 
