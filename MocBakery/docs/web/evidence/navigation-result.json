@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-20T07:34:03.707Z",
+  "checks": [
+    "Anonymous checkout returns to checkout after login; registration link retains destination",
+    "Checkout back preserves cart; quantity update and remove behave correctly",
+    "Submit purchase, receipt back and browser Back do not create another order",
+    "Profile and password cancel return to customer account; account returns home",
+    "Customer login rejects external, admin and authentication-loop return URLs",
+    "Admin login resumes requested management page",
+    "All admin lists have working back to dashboard links",
+    "Admin create-form back and cancel return to the correct parent lists",
+    "Admin password back returns to dashboard without signing customer out",
+    "Customer order flows through admin acceptance and delivery; receipt refresh matches",
+    "Admin logout plus browser Back cannot reopen protected content",
+    "Customer logout plus browser Back requires login for account"
+  ],
+  "passed": 12,
+  "pageErrors": []
+}

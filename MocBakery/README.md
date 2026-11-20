@@ -1,5 +1,17 @@
 ﻿# Mộc Bakery
 
+## Hai khu vực Web riêng
+
+Trang khách tại `/`: xem bánh, giỏ hàng, xác nhận người nhận và theo dõi đơn của mình.
+Trang nhân viên tại `/admin/dang-nhap`, dashboard tại `/admin`: doanh thu, tồn bán được,
+đơn chờ xử lý, quản lý bánh/danh mục/kho/khách hàng/nhân viên/tài khoản và hóa đơn/báo cáo.
+Hai khu vực có giao diện và phiên đăng nhập riêng; tài khoản khách không có quyền quản trị.
+
+Chủ tiệm được quản lý đầy đủ. Thu ngân/nhân viên xử lý đơn, khách và hóa đơn; chỉ tra cứu
+bánh và kho. Kho chỉ tra cứu bánh/danh mục/tồn kho. Quyền được kiểm tra ở cả Web và BLL.
+Admin dùng tài khoản nhân viên hiện có của desktop, không có mật khẩu mặc định.
+Chi tiết, cách chạy và kiểm thử: [khu quản trị Web](docs/web/Admin_Web.md).
+
 ## Web Catalog của Như
 
 ASP.NET Core MVC có trang chủ, danh mục, tìm/lọc, chi tiết và ảnh bánh, đọc cùng CSDL
@@ -7,7 +19,7 @@ desktop. [Bàn giao và cách chạy](docs/web/Nhu_BanGiao_Web.md),
 [kết quả kiểm thử mới](docs/web/Nhu_KetQuaKiemThu_2026_11_18.md).
 Đã nối giỏ hàng với tiếp nhận đơn, theo dõi trạng thái và xử lý đơn ở desktop.
 Xem [tiếp nhận đơn Web và nâng cấp CSDL 05](docs/web/TiepNhanDon_Web.md).
-Catalog không cần migration; chức năng gửi đơn cần schema 04 rồi 05 và desktop mới.
+Catalog không cần migration; chức năng gửi đơn cần schema 04, 05, 06 và desktop mới.
 
 ## Tài khoản khách hàng Web đang phát triển
 
