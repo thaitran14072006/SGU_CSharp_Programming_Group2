@@ -20,13 +20,15 @@ Không chạy script tạo mới đè lên dữ liệu đang dùng.
 | --- | --- | --- | --- |
 | Dashboard | Doanh thu, hóa đơn, đơn, tồn | Đơn và tồn | Tồn |
 | Bánh, danh mục | Thêm, sửa, ngừng dùng; xóa danh mục chưa dùng | Tra cứu | Tra cứu |
-| Kho bánh | Nhập lô, ngừng/mở bán lô, tra tồn | Tra cứu | Tra cứu |
+| Kho bánh cơ bản | Nhập lô, ngừng/mở bán lô, tra tồn | Tra cứu | Tra cứu |
+| Phiếu nhập, nguyên liệu, NCC, xuất/kiểm kê và nhật ký | Quản lý | Tra cứu | Quản lý |
 | Đơn và khách hàng | Xem, cập nhật, tiếp nhận/giao/hủy | Có | Không |
 | Hóa đơn | Tra cứu chi tiết | Có | Không |
 | Nhân viên và tài khoản | Thêm, sửa, khóa, cấp mật khẩu tạm | Không | Không |
 | Báo cáo | Doanh thu theo ngày và bánh bán chạy theo khoảng chọn | Không | Không |
 
-Kho chỉ đọc theo quyền BLL hiện hành. Không mở rộng quyền ghi khi đưa lên Web.
+Kho quản lý nghiệp vụ kho mở rộng theo WarehouseService hiện hành của desktop; chỉ
+tra cứu Catalog và màn Kho bánh cơ bản. Hướng dẫn: [kho Web của Như](Nhu_Kho_Web.md).
 Các chỉ số dashboard lấy từ SQL: doanh thu/hóa đơn hôm nay, đơn mới, tồn còn hạn đang
 bán, doanh thu 7 ngày, đơn sắp nhận, bánh bán chạy 30 ngày và cảnh báo tồn dưới 5.
 
@@ -58,7 +60,7 @@ dotnet run --project MocBakery/tests/WebAccounts/MocBakery.WebAccountChecks.cspr
 dotnet run --project MocBakery/tests/WebCart/MocBakery.WebCartChecks.csproj -c Release
 ```
 
-Kết quả: 90 ca Catalog/đơn/admin đạt với SQL LocalDB riêng; 52 ca tài khoản HTTP và
+Kết quả mới: 110 ca Catalog/đơn/admin/kho đạt với SQL LocalDB riêng; 52 ca tài khoản HTTP và
 19 ca giỏ hàng đạt với repository thử. Có kiểm tra từ chối khách truy cập admin, quyền
 nhân viên/kho, thao tác CRUD, số tiền lẻ trên Windows tiếng Việt, buộc đổi mật khẩu,
 thu hồi phiên, tự khóa quản lý, nhận/giao/hủy và không trừ kho hai lần.

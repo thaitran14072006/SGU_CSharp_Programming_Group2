@@ -1,0 +1,18 @@
+  MocBakery.Models -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.Models\bin\Release\net10.0\MocBakery.Models.dll
+  MocBakery.BLL -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.BLL\bin\Release\net10.0\MocBakery.BLL.dll
+  MocBakery.DAL -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.DAL\bin\Release\net10.0\MocBakery.DAL.dll
+  MocBakery.GUI -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.GUI\bin\Release\net10.0-windows\MocBakery.GUI.dll
+  MocBakery.GuiChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\System\bin\Release\net10.0-windows\MocBakery.GuiChecks.dll
+  MocBakery.CustomerAccountChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\CustomerAccounts\bin\Release\net10.0\MocBakery.CustomerAccountChecks.dll
+  MocBakery.UnitChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\Unit\bin\Release\net10.0\MocBakery.UnitChecks.dll
+  MocBakery.CatalogInventoryChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\Unit\CatalogInventory\bin\Release\net10.0\MocBakery.CatalogInventoryChecks.dll
+  MocBakery.Web -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\src\MocBakery.Web\bin\Release\net10.0\MocBakery.Web.dll
+  MocBakery.PublicCatalogChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\PublicCatalog\bin\Release\net10.0\MocBakery.PublicCatalogChecks.dll
+  MocBakery.WebCartChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\WebCart\bin\Release\net10.0\MocBakery.WebCartChecks.dll
+  MocBakery.WebAccountChecks -> C:\Users\LEGION\Desktop\github\CSharp-Programming\MocBakery\tests\WebAccounts\bin\Release\net10.0\MocBakery.WebAccountChecks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.96

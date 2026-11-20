@@ -1,0 +1,123 @@
+PASS Only active products in active categories are public
+PASS Empty categories remain discoverable; inactive categories hidden
+PASS Sellable SQL stock excludes expired stopped future lots; includes expiry day
+PASS Desktop and Web agree on eligible stock
+PASS Out of stock product remains visible without available flag
+PASS Trimmed name and product code searches
+PASS LIKE wildcards are literal and parameterized
+PASS Category, stock filters and stable price sorting combine
+PASS Pagination keeps totals and supports beyond last page
+PASS Invalid filters and excessive page sizes fail validation
+PASS Selection validation rejects invalid quantities and missing IDs
+PASS Vietnamese price formatting preserves fractional currency
+PASS Home is public and shares account navigation
+PASS Home category navigation includes active and empty categories only
+PASS Public categories and empty category render
+PASS Search GET renders results and preserves filters
+PASS Zero-match search is a helpful 200 result
+PASS XSS input is encoded by Razor
+PASS Invalid numeric query returns 400 instead of silently ignoring
+PASS Invalid filter values return 400 on HTML and API
+PASS Missing invalid discontinued and hidden category IDs return 404
+PASS Out of stock detail explains availability
+PASS API exposes approved fields only without internal stock or credentials
+PASS Public API supports listing and category contract
+PASS Catalog routes cannot write via POST
+warn: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[8]
+      The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and 'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery should not be cached.
+PASS Account login still renders with shared layout
+PASS Catalog response disables caching and keeps security headers
+PASS Desktop owner price edit is visible after HTTP reload and selection recheck
+PASS Desktop image edit is visible on uncached image endpoint
+PASS Removing desktop image restores the matching supplied product photo
+PASS Corrupt or executable image payload is never served
+PASS Desktop deactivation removes product from HTML API image and cart contract
+PASS Category stop hides products but preserves desktop history
+PASS Staff cannot bypass desktop product management permission
+PASS Desktop stock stop is reflected on Web reload
+PASS HTML pagination retains search category availability and sort
+PASS Database outage returns helpful 503 without internal details
+warn: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[8]
+      The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and 'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery should not be cached.
+warn: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[8]
+      The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and 'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery should not be cached.
+PASS SQL customer login works across shared storefront navigation
+warn: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[8]
+      The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and 'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery should not be cached.
+warn: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[8]
+      The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and 'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery should not be cached.
+PASS SQL profile edit keeps customer session and storefront prices
+PASS Order migration reruns without changing existing desktop history
+PASS Web order BLL rejects invalid identities quantities duplicates and missing pickup
+PASS Order service requires valid recipient name phone and email
+PASS Checkout requires antiforgery and a future pickup without losing cart
+PASS Checkout rejects incomplete contact server-side and keeps entered values
+PASS HTTP checkout writes SQL order using cookie customer and server prices
+PASS Web reception has no forged employee no invoice and no stock deduction
+PASS SQL stores recipient contact independently of the account profile
+PASS Receipt is readable by owner and safely encodes order notes
+PASS HTTP repeated checkout returns same receipt and creates no duplicate
+PASS Parallel SQL retries share one persistent order id
+PASS Repository rechecks price inside transaction before writing
+PASS Repository rechecks live stock before writing
+PASS Per-line prices are rechecked even when two changes leave total unchanged
+PASS Repository rejects stopped products and stopped categories
+PASS Repository rejects past pickup and disabled customer
+PASS Failed detail insert rolls back the header and all order lines
+warn: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[8]
+      The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and 'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery should not be cached.
+PASS Another customer cannot read the receipt by changing the URL
+PASS Warehouse employee cannot accept or deliver customer orders
+PASS Desktop acceptance records the real employee and updates customer status
+PASS Desktop delivery creates one invoice and deducts FEFO stock exactly once
+PASS Desktop cancellation is visible to customer without selling or deducting stock
+PASS Admin anonymous pages challenge employee login, not customer login
+PASS Customer cookie cannot read or write admin endpoints
+PASS Customer credentials cannot authenticate as employee
+PASS Employee login issues isolated HttpOnly path-limited cookie
+PASS Employee cookie does not impersonate a shopping customer
+PASS Dashboard renders real SQL revenue and complete management navigation
+PASS All owner management screens and creation forms render
+PASS Admin mutations require antiforgery
+PASS Admin creates category through existing catalog BLL
+PASS Admin adds product and public storefront immediately reads it
+PASS HTML decimal prices preserve fractions under Vietnamese Windows locale
+PASS Admin edits price without changing product identity
+PASS Sales employee can handle orders but cannot edit products or read accounts
+PASS Warehouse employee is denied customer, order and revenue data
+PASS Admin receives lot and changes its sellable status
+PASS Admin creates customer and keeps internal notes off public pages
+PASS Admin creates employee profile before granting account
+PASS Admin account creation links employee and requires password change
+PASS Temporary employee is forced to password page before accessing data
+PASS Required employee password page offers logout instead of a looping back link
+PASS Employee password change revokes another browser session
+PASS Admin cannot disable its own currently active manager account
+PASS Live employee role changes immediately affect admin authorization
+PASS Admin account lock revokes existing employee cookie
+PASS Admin receives Web order with correct customer contact
+PASS Admin delivery invoices once, deducts stock once and updates customer status
+PASS Admin cancellation requires reason and preserves stock
+PASS Admin archives products without deleting order history
+PASS Admin logout is POST-only and revokes a copied cookie
+PASS Warehouse Web authenticates actual owner warehouse and sales roles
+PASS Warehouse pages challenge anonymous customers
+PASS Warehouse owner pages and forms render with parent navigation
+PASS Warehouse writes require antiforgery
+PASS Warehouse supplier form rejects invalid contact without writing
+PASS Warehouse role can create suppliers and materials using shared BLL
+PASS Sales staff can read warehouse but cannot bypass write permissions
+PASS Warehouse rejects fractional cake quantities and expired receipt dates
+PASS Warehouse multiline draft stores server total and real units without changing stock
+PASS Warehouse draft rejects missing invalid and stale rowversion
+PASS Warehouse posting creates cake material lots and audit atomically
+PASS Warehouse posted receipt is read-only and repeat post does not increase stock
+PASS Warehouse post failure rolls back all lines and keeps draft
+PASS Warehouse rejects empty stocktake reason without changing stock
+PASS Warehouse stocktake derives item from lot and records before after actor and reason
+PASS Warehouse material export cannot exceed stock
+PASS Warehouse HTTP export allocates material lots in FEFO order
+PASS Warehouse disposal checkbox controls expired stock handling instead of reason text
+PASS Warehouse stock filters reject unknown kind and retain empty-result navigation
+PASS Warehouse history and forms reject nonexistent IDs without SQL changes
+RESULT 110 passed, 0 failed

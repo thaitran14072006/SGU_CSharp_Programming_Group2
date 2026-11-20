@@ -8,9 +8,14 @@ Trang nhân viên tại `/admin/dang-nhap`, dashboard tại `/admin`: doanh thu,
 Hai khu vực có giao diện và phiên đăng nhập riêng; tài khoản khách không có quyền quản trị.
 
 Chủ tiệm được quản lý đầy đủ. Thu ngân/nhân viên xử lý đơn, khách và hóa đơn; chỉ tra cứu
-bánh và kho. Kho chỉ tra cứu bánh/danh mục/tồn kho. Quyền được kiểm tra ở cả Web và BLL.
+bánh và kho. Kho tra cứu bánh/danh mục, quản lý phiếu nhập, nhà cung cấp, nguyên liệu,
+xuất kho và kiểm kê theo quyền desktop. Quyền được kiểm tra ở cả Web và BLL.
 Admin dùng tài khoản nhân viên hiện có của desktop, không có mật khẩu mặc định.
 Chi tiết, cách chạy và kiểm thử: [khu quản trị Web](docs/web/Admin_Web.md).
+
+Đã bổ sung kho Web đầy đủ theo nghiệp vụ desktop: nhà cung cấp, nguyên liệu, phiếu nhập
+nhiều dòng nháp/ghi sổ, xuất FEFO, kiểm kê và nhật ký. [Hướng dẫn phần Như](docs/web/Nhu_Kho_Web.md),
+[kiểm thử và minh chứng](docs/testing/results/2026-11-20-nhu-warehouse-web.md).
 
 ## Web Catalog của Như
 

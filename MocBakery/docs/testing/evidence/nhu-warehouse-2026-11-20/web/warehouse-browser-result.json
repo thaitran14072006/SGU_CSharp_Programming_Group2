@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-20T09:11:54.795Z",
+  "checks": [
+    "Create supplier through browser and return to supplier list",
+    "Create material with fractional warning threshold",
+    "Build multiline receipt, remove middle row and recalculate total",
+    "Save draft leaves stock unchanged and edit disables posting until saved",
+    "Post receipt creates stock and locks the receipt",
+    "Stocktake records old and new quantity with reason and returns to history",
+    "Warehouse lists forms receipt and audit fit desktop and mobile",
+    "New warehouse forms cancel and back return to correct lists"
+  ],
+  "passed": 8,
+  "pagesChecked": 44,
+  "pageErrors": [],
+  "fixtureOnly": true
+}
