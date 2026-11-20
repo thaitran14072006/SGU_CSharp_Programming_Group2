@@ -1,0 +1,4 @@
+@model AdminCategoryForm
+@{ViewData["Title"]=Model.Id==0?"Thêm danh mục":"Sửa danh mục";}
+<div class="page-heading"><h1>@ViewData["Title"]</h1><a class="btn" href="/admin/danh-muc">← Danh mục</a></div>
+<form action="/admin/danh-muc/luu" method="post" asp-antiforgery="true" class="panel edit-panel"><div asp-validation-summary="All" class="validation" role="alert"></div><input asp-for="Id" type="hidden"/><label asp-for="Name">Tên danh mục *</label><input asp-for="Name" maxlength="100" required/><label asp-for="Description">Mô tả</label><textarea asp-for="Description" maxlength="255"></textarea><label class="check"><input asp-for="Active"/> Đang sử dụng</label><div class="form-actions"><button class="btn primary" type="submit">Lưu danh mục</button><a class="btn" href="/admin/danh-muc">Hủy</a></div></form>

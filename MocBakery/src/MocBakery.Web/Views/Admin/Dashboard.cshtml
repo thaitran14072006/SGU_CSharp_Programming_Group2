@@ -1,0 +1,19 @@
+@model AdminDashboard
+@{ViewData["Title"]="Tổng quan";bool sales=Roles.CanSell(((UserSession)ViewData["AdminEmployee"]!).VaiTro);var dates=Enumerable.Range(0,7).Select(i=>DateTime.Today.AddDays(i-6)).ToArray();var values=dates.Select(date=>Model.Days.Where(x=>x.Day.Date==date).Sum(x=>x.Revenue)).ToArray();decimal maximum=Math.Max(1,values.Max());}
+<div class="page-heading"><div><h1>Bảng điều khiển</h1><p>Hoạt động cửa hàng hôm nay · @DateTime.Today.ToString("dd/MM/yyyy")</p></div>@if(sales){<a class="btn primary" href="/admin/don-hang?status=MoiTiepNhan">Tiếp nhận đơn mới</a>}</div>
+<div class="stats">
+@if(Model.Revenue is decimal revenue){<article class="stat"><span>Doanh thu hôm nay</span><strong>@BakeryDisplay.Money(revenue)</strong><small>Từ hóa đơn đã lập</small></article><article class="stat"><span>Hóa đơn hôm nay</span><strong>@Model.Invoices</strong><small>Giao dịch đã hoàn tất</small></article>}
+@if(sales){<article class="stat"><span>Đơn chờ tiếp nhận</span><strong>@Model.Pending</strong><small>Đang cần tiệm xử lý</small></article>}
+<article class="stat"><span>Bánh có thể bán</span><strong>@Model.Stock</strong><small>Lô còn hạn và đang mở bán</small></article></div>
+<div class="dashboard-grid">
+@if(Model.Revenue is not null){<section class="panel"><div class="panel-heading"><h2>Doanh thu 7 ngày</h2><a href="/admin/bao-cao">Xem báo cáo →</a></div>
+<svg class="chart" viewBox="0 0 620 180" role="img" aria-label="Biểu đồ doanh thu bảy ngày gần nhất"><line x1="10" y1="160" x2="610" y2="160" stroke="#dfd4c2"/>
+@for(int i=0;i<7;i++){var height=values[i]/maximum*135;var y=160-height;<rect x="@(i*85+27)" y="@y.ToString("0.##",CultureInfo.InvariantCulture)" width="52" height="@height.ToString("0.##",CultureInfo.InvariantCulture)" rx="5" fill="#ae8750"><title>@dates[i].ToString("dd/MM"): @BakeryDisplay.Money(values[i])</title></rect>}</svg>
+<div class="chart-legend">@foreach(var date in dates){<span>@date.ToString("dd/MM")</span>}</div>
+@if(values.All(v=>v==0)){<p class="muted small">Chưa có hóa đơn trong 7 ngày này.</p>}</section>}
+<section class="panel"><div class="panel-heading"><h2>Tồn kho cần lưu ý</h2><a href="/admin/kho">Mở kho →</a></div><p class="muted small">Các bánh đang kinh doanh có tồn bán được dưới 5.</p>
+@if(Model.LowStock.Count==0){<p class="empty">Chưa có bánh cần cảnh báo.</p>}else{<div class="table-scroll"><table><thead><tr><th>Bánh</th><th>Có thể bán</th></tr></thead><tbody>@foreach(var p in Model.LowStock){<tr><td>@p.TenSanPham</td><td>@p.TonCoTheBan @p.DonViTinh</td></tr>}</tbody></table></div>}</section>
+@if(sales){<section class="panel"><div class="panel-heading"><h2>Đơn sắp đến giờ nhận</h2><a href="/admin/don-hang">Tất cả đơn →</a></div>
+@if(Model.Orders.Count==0){<p class="empty">Không có đơn đang chờ xử lý.</p>}else{<div class="table-scroll"><table><thead><tr><th>Mã</th><th>Người nhận</th><th>Giờ nhận</th><th>Trạng thái</th></tr></thead><tbody>@foreach(var o in Model.Orders){<tr><td><a href="/admin/don-hang/@o.Id">#@o.Id</a></td><td>@(o.Contact?.FullName??o.Customer)</td><td>@o.Pickup.ToString("dd/MM HH:mm")</td><td><span class="status @o.Status">@AdminDisplay.Status(o.Status)</span></td></tr>}</tbody></table></div>}</section>}
+@if(Model.Revenue is not null){<section class="panel"><div class="panel-heading"><h2>Bánh bán chạy trong tháng</h2></div>@if(Model.Bestsellers.Count==0){<p class="empty">Chưa có dữ liệu bán hàng.</p>}else{<div class="table-scroll"><table><thead><tr><th>Bánh</th><th>Đã bán</th><th>Doanh thu</th></tr></thead><tbody>@foreach(var p in Model.Bestsellers){<tr><td>@p.Name</td><td>@p.Quantity</td><td>@BakeryDisplay.Money(p.Revenue)</td></tr>}</tbody></table></div>}</section>}
+</div>

@@ -37,6 +37,10 @@ public static class Program
         builder.Services.AddScoped<MocBakery.Models.WebOrders.IWebOrderRepository, MocBakery.DAL.Repositories.Orders.WebOrderRepository>();
         builder.Services.AddScoped<MocBakery.BLL.Services.Orders.WebOrderService>();
         builder.Services.AddScoped<MocBakery.Models.WebCart.IWebOrderSubmission>(sp => sp.GetRequiredService<MocBakery.BLL.Services.Orders.WebOrderService>());
+        builder.Services.AddSingleton(sp=>new MocBakery.Web.Admin.AdminServices(new DbConnectionFactory(
+            sp.GetRequiredService<IConfiguration>()["MOCBAKERY_CONNECTION_STRING"]??
+            sp.GetRequiredService<IConfiguration>().GetConnectionString("MocBakery")??
+            throw new InvalidOperationException("Configure the employee database connection."))));
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>
         {
@@ -58,6 +62,14 @@ public static class Program
             options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             options.SlidingExpiration = false;
             options.Events.OnValidatePrincipal = CustomerCookie.Validate;
+        }).AddCookie(EmployeeCookie.Scheme,options=>
+        {
+            options.Cookie.Name="MocBakery.Employee";options.Cookie.Path="/admin";options.Cookie.HttpOnly=true;
+            options.Cookie.SameSite=SameSiteMode.Strict;
+            options.Cookie.SecurePolicy=builder.Environment.IsDevelopment()?CookieSecurePolicy.SameAsRequest:CookieSecurePolicy.Always;
+            options.LoginPath="/admin/dang-nhap";options.AccessDeniedPath="/admin/khong-co-quyen";
+            options.ExpireTimeSpan=TimeSpan.FromMinutes(30);options.SlidingExpiration=false;
+            options.Events.OnValidatePrincipal=EmployeeCookie.Validate;
         });
         builder.Services.AddAuthorization();
         builder.Services.AddAntiforgery(options =>
@@ -70,7 +82,7 @@ public static class Program
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            foreach (var name in new[] { "customer-register", "customer-login", "customer-password" })
+            foreach (var name in new[] { "customer-register", "customer-login", "customer-password", "employee-login" })
                 options.AddPolicy(name, context => RateLimitPartition.GetFixedWindowLimiter(
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions
                     { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));

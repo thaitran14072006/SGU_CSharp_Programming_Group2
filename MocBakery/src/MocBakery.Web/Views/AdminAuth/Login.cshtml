@@ -1,0 +1,8 @@
+@model AdminLoginForm
+@{ViewData["Title"]="Đăng nhập quản trị";}
+<p class="admin-eyebrow">MỘC BAKERY / QUẢN TRỊ</p><h2>Đăng nhập nhân viên</h2><p class="muted">Dùng tài khoản nhân viên đã được quản lý cấp.</p>
+@if(TempData["AdminMessage"] is string message){<p class="notice success" role="status">@message</p>}
+<form asp-controller="AdminAuth" asp-action="Login" method="post"><div asp-validation-summary="All" class="validation" role="alert"></div><input asp-for="ReturnUrl" type="hidden"/>
+<label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" maxlength="50" required/>
+<label for="Password">Mật khẩu</label><input id="Password" name="Password" type="password" autocomplete="current-password" maxlength="64" required/>
+<button class="btn primary full" type="submit">Vào trang quản trị</button></form><p class="muted small">Tài khoản khách mua bánh đăng nhập ở <a href="/tai-khoan/dang-nhap">trang khách hàng</a>.</p>

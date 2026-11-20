@@ -1,0 +1,4 @@
+@model IReadOnlyList<AccountSummary>
+@{ViewData["Title"]="Tài khoản nhân viên";}
+<div class="page-heading"><div><h1>Tài khoản nhân viên</h1><p>Tách biệt với tài khoản khách mua bánh.</p></div><a class="btn primary" href="/admin/tai-khoan/them">+ Cấp tài khoản</a></div>
+<section class="panel"><div class="table-scroll"><table><thead><tr><th>Tên đăng nhập</th><th>Nhân viên</th><th>Quyền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>@foreach(var a in Model){<tr><td>@a.TenDangNhap</td><td>@a.HoTen</td><td>@Roles.Display(a.VaiTro)</td><td><span class="status @(a.TrangThai?"active":"inactive")">@(a.TrangThai?"Hoạt động":"Đã khóa")</span></td><td><a class="btn small" href="/admin/tai-khoan/@a.MaTaiKhoan/sua">Quản lý</a></td></tr>}</tbody></table></div></section>

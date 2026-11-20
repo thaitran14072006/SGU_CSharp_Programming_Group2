@@ -73,7 +73,7 @@ try
     {
         builder.Configuration["MOCBAKERY_CONNECTION_STRING"]=connection;
         builder.WebHost.UseUrls(args.Contains("--serve")?"http://127.0.0.1:5088":"http://127.0.0.1:0");
-        builder.Logging.ClearProviders();builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
+        builder.Logging.ClearProviders();builder.Logging.AddConsole().SetMinimumLevel(LogLevel.Error);builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
     });
     await app.StartAsync();
     string address=app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
@@ -179,6 +179,7 @@ try
         Assert(profile.Contains("Khách đã cập nhật")&&profile.Contains("Thông tin hồ sơ đã được cập nhật")&&detail.Contains("49.000")&&detail.Contains("Đăng xuất"));
     });
     await WebOrderChecks.Run(db,customer,croissant,auth,owner,root,Check);
+    await AdminChecks.Run(db,customer,Check);
     Console.WriteLine($"RESULT {passed} passed, {failed} failed");
     if(args.Contains("--serve")&&failed==0)
     {
