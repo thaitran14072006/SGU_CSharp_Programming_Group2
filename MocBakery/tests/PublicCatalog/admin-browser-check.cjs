@@ -8,6 +8,16 @@ const {chromium}=require('playwright');const path=require('path'),fs=require('fs
  let checked=0;
  for(const width of [320,375,768,1440]){
   await page.setViewportSize({width,height:1000});
+  await page.goto(base+'/admin');
+  const menu=page.locator('#admin-navigation'),toggle=page.getByRole('button',{name:'Mở menu quản trị',exact:true});
+  if(width<=850){
+   if(await menu.isVisible())throw Error('compact menu starts expanded '+width);
+   if(await page.locator('.admin-topbar').evaluate(el=>el.getBoundingClientRect().bottom>110))throw Error('compact header too tall '+width);
+   await toggle.click();if(!await menu.isVisible())throw Error('menu did not open');
+   await page.keyboard.press('Escape');if(await menu.isVisible()||!await toggle.evaluate(el=>el===document.activeElement))throw Error('Escape did not restore menu focus');
+   await toggle.click();await menu.getByRole('link',{name:'Quản lý bánh',exact:true}).click();await page.waitForURL(base+'/admin/banh');
+   if(await menu.isVisible())throw Error('menu remained expanded after navigation');
+  }else if(!await menu.isVisible())throw Error('desktop navigation hidden');
   for(const route of ['/admin','/admin/don-hang','/admin/banh','/admin/danh-muc','/admin/kho','/admin/khach-hang','/admin/nhan-vien','/admin/tai-khoan','/admin/hoa-don','/admin/bao-cao','/admin/banh/them','/admin/danh-muc/them','/admin/kho/nhap','/admin/khach-hang/them','/admin/nhan-vien/them','/admin/tai-khoan/them']){
    const response=await page.goto(base+route);if(response.status()!==200)throw Error(route+' returned '+response.status());
    if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('overflow '+route+' '+width);

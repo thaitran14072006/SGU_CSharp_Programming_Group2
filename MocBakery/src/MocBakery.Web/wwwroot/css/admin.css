@@ -4,3 +4,50 @@
 @media(max-width:850px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{padding:20px;gap:18px}.admin-brand{font-size:25px}.admin-sidebar nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.admin-sidebar nav a{padding:8px;font-size:12px}.nav-caption{display:none}.sidebar-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:18px;margin:0;padding-top:15px}.admin-topbar{padding:18px 20px}.admin-content{padding:24px 18px}.order-grid{grid-template-columns:1fr}.admin-footer{padding:18px}.admin-auth-shell{margin:24px 16px;grid-template-columns:1fr;min-height:0}.auth-story{padding:26px;gap:26px}.auth-story div{display:none}.auth-form{padding:30px 24px}.auth-story>a:last-child{align-self:start}}
 @media(max-width:520px){.stats{gap:12px}.stat{padding:17px}.stat strong{font-size:23px}.page-heading{flex-direction:column;gap:15px}.page-heading h1{font-size:26px}.panel{padding:18px}.form-grid{grid-template-columns:1fr}.full-row{grid-column:auto}.admin-sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{display:grid;grid-template-columns:1fr;width:100%}.toolbar input[type=search],.toolbar input,.toolbar select{min-width:0;width:100%}.employee-badge{max-width:145px;overflow-wrap:anywhere}.table-scroll table{min-width:570px}.info-list{grid-template-columns:1fr;gap:5px}.info-list dd{margin-bottom:10px}}
 @media(max-width:520px){.receipt-line-grid{grid-template-columns:minmax(0,1fr)}.receipt-line{padding:15px}.receipt-total{font-size:18px}}
+
+/* Workspace navigation */
+.admin-shell{position:relative;grid-template-columns:248px minmax(0,1fr)}
+.admin-sidebar{padding:32px 20px;background:#30271f;gap:24px}
+.admin-brand{padding:0 12px 24px;border-bottom:1px solid #ffffff19;font-weight:400;letter-spacing:4px}
+.admin-brand span{letter-spacing:2.5px;color:#c4b39b}
+.nav-caption{padding-left:13px;letter-spacing:1.7px}
+.admin-sidebar nav{gap:3px}
+.admin-sidebar nav a{border-radius:5px;padding:10px 13px;transition:background .18s,color .18s}
+.admin-sidebar nav a[aria-current=page]{background:#ead7b5;color:#3c2b1d;border-color:#ead7b5;box-shadow:inset 3px 0 #b7894c}
+.sidebar-bottom{padding:22px 12px 0}
+.admin-topbar{min-height:90px;padding:18px 36px;background:#fffdf9;gap:16px;border-bottom:1px solid #e4dbcd}
+.admin-location{min-width:0;flex:1}
+.admin-eyebrow{font-size:9px;letter-spacing:1.5px;color:#8c7962}
+.admin-eyebrow span{margin:0 8px;color:#c1b19a}
+.admin-topbar .admin-location p{font-size:17px;font-weight:600;line-height:1.3;color:#433526;margin:7px 0 0;overflow-wrap:anywhere}
+.employee-badge{display:flex;align-items:center;gap:11px;text-align:left;max-width:250px;min-width:0;padding-left:24px;border-left:1px solid #e8dfd3;overflow-wrap:anywhere}
+.employee-avatar{display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border:1px solid #dfcba9;border-radius:50%;background:#f5eddf;color:#725637;font:20px Georgia,serif}
+.employee-badge small{margin-top:2px;color:#8b7c6b}
+.admin-menu-toggle{display:none;align-items:center;justify-content:center;flex-shrink:0;width:40px;height:40px;padding:0;border:1px solid #dfd2bf;border-radius:8px;background:#fffaf1;color:#705236}
+.admin-menu-toggle:hover,.admin-menu-toggle[aria-expanded=true]{background:#eee2ce;border-color:#b8996d}
+.admin-sidebar[hidden]{display:none}
+.admin-skip{z-index:100}
+@media(max-width:850px){
+ .admin-shell{grid-template-columns:minmax(0,1fr)}
+ .admin-nav-ready .admin-menu-toggle{display:inline-flex}
+ .admin-nav-ready .admin-sidebar{position:absolute;top:88px;left:14px;right:14px;z-index:30;max-height:calc(100dvh - 110px);overflow-y:auto;border:1px solid #6d5740;border-radius:12px;box-shadow:0 18px 50px #30271f40;padding:22px;gap:18px}
+ .admin-sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+ .admin-sidebar nav a{font-size:13px;padding:11px 12px}
+ .admin-brand{font-size:26px;padding:0 12px 18px}
+ .sidebar-bottom{padding:18px 12px 0;gap:18px}
+ .admin-topbar{min-height:88px;padding:16px 20px;gap:14px}
+ .employee-badge{max-width:190px;padding-left:16px;gap:9px;font-size:12px}
+ .employee-avatar{width:34px;height:34px;font-size:18px}
+}
+@media(max-width:520px){
+ .admin-topbar{padding:14px 16px;gap:10px;min-height:82px}
+ .admin-topbar .admin-location p{font-size:14px;margin-top:5px}
+ .admin-eyebrow{font-size:8px;letter-spacing:1px}
+ .admin-eyebrow span{margin:0 3px}
+ .employee-badge{padding-left:0;border:0;flex-shrink:0}
+ .employee-badge>div{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .employee-avatar{width:32px;height:32px}
+ .admin-nav-ready .admin-sidebar{top:82px;left:10px;right:10px;padding:18px;max-height:calc(100dvh - 100px)}
+ .admin-sidebar nav{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){.admin-sidebar nav a{transition:none}}
