@@ -4,6 +4,7 @@ namespace MocBakery.Web.Models;
 
 public class LoginForm
 {
+    public string? ReturnUrl { get; set; }
     [Required(ErrorMessage = "Nhập tên đăng nhập."), StringLength(50, MinimumLength = 3, ErrorMessage = "Tên đăng nhập phải có 3–50 ký tự.")]
     public string Username { get; set; } = "";
     [Required(ErrorMessage = "Nhập mật khẩu."), StringLength(64, MinimumLength = 8, ErrorMessage = "Mật khẩu phải có 8–64 ký tự.")]

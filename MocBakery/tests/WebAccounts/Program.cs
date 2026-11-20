@@ -116,6 +116,24 @@ try
         Assert(response.StatusCode == HttpStatusCode.Redirect && response.Headers.Location!.ToString() == profile);
         Assert(cookie.Contains("httponly", StringComparison.OrdinalIgnoreCase) && cookie.Contains("samesite=lax", StringComparison.OrdinalIgnoreCase));
     });
+    await Check("Customer login resumes checkout and refuses an admin return destination", async () =>
+    {
+        var checkout = Login(); checkout["ReturnUrl"] = "/gio-hang/xac-nhan";
+        using var resumed = await Post(login, checkout);
+        Assert(resumed.Headers.Location?.ToString() == "/gio-hang/xac-nhan");
+        var admin = Login(); admin["ReturnUrl"] = "/admin";
+        using var rejected = await Post(login, admin);
+        Assert(rejected.Headers.Location?.ToString() == profile);
+    });
+    await Check("Login and registration discard unsafe or looping return links", async () =>
+    {
+        foreach (string target in new[] { "https://example.invalid", "//example.invalid", "/admin", "/tai-khoan/dang-nhap" })
+        foreach (string route in new[] { login, register })
+        {
+            string html = await Page(route + "?returnUrl=" + Uri.EscapeDataString(target));
+            Assert(!Regex.IsMatch(html, "name=\"ReturnUrl\"[^>]*value=\"[^\"]+\""));
+        }
+    });
     await Check("Authenticated page reads only the signed-in customer profile", async () =>
     {
         string html = WebUtility.HtmlDecode(await Page(profile));

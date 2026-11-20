@@ -17,7 +17,11 @@ namespace MocBakery.Web.Controllers;
 public sealed class AccountController(CustomerAccountService accounts, ILogger<AccountController> logger) : Controller
 {
     [HttpGet("dang-ky")]
-    public IActionResult Register() => View(new RegisterForm());
+    public IActionResult Register(string? returnUrl = null)
+    {
+        ModelState.Remove(nameof(LoginForm.ReturnUrl));
+        return View(new RegisterForm { ReturnUrl = ReturnTarget(returnUrl) });
+    }
 
     [HttpPost("dang-ky"), EnableRateLimiting("customer-register")]
     public IActionResult Register(RegisterForm input)
@@ -26,7 +30,7 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
         try
         {
             accounts.Register(new(input.Username, input.Password, input.Confirmation, input.FullName, input.Phone, input.Address));
-            return RedirectToAction(nameof(Login), new { registered = true });
+            return RedirectToAction(nameof(Login), new { registered = true, returnUrl = ReturnTarget(input.ReturnUrl) });
         }
         catch (BusinessException ex) { ModelState.AddModelError(ex.Field ?? "", ex.Message); }
         catch (Exception ex) when (ex is DbException or InvalidOperationException)
@@ -35,10 +39,11 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
     }
 
     [HttpGet("dang-nhap")]
-    public IActionResult Login(bool registered = false)
+    public IActionResult Login(bool registered = false, string? returnUrl = null)
     {
+        ModelState.Remove(nameof(LoginForm.ReturnUrl));
         ViewData["Registered"] = registered;
-        return View(new LoginForm());
+        return View(new LoginForm { ReturnUrl = ReturnTarget(returnUrl) });
     }
 
     [HttpPost("dang-nhap"), EnableRateLimiting("customer-login")]
@@ -54,7 +59,7 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
             HttpContext.Session.Remove("Mai.Cart.Review");
             HttpContext.Session.Remove("Mai.Cart.Draft");
             HttpContext.Session.Remove("Mai.Cart.LastOrder");
-            return RedirectToAction(nameof(Index));
+            return ReturnTarget(input.ReturnUrl) is {} target ? LocalRedirect(target) : RedirectToAction(nameof(Index));
         }
         catch (BusinessException ex) { ModelState.AddModelError("", ex.Message); }
         catch (Exception ex) when (ex is DbException or InvalidOperationException)
@@ -128,6 +133,15 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         HttpContext.Session.Clear();
         return RedirectToAction(nameof(Login));
+    }
+
+    private string? ReturnTarget(string? value)
+    {
+        if (!Url.IsLocalUrl(value)) return null;
+        var path = new PathString(value!.Split('?', '#')[0]);
+        return path == "/" || path == "/tai-khoan" || path == "/tai-khoan/ho-so" || path == "/tai-khoan/doi-mat-khau"
+            || path.StartsWithSegments("/gio-hang") || path.StartsWithSegments("/don-hang")
+            || path.StartsWithSegments("/banh") || path.StartsWithSegments("/danh-muc") ? value : null;
     }
 
     private void Unavailable(Exception ex)

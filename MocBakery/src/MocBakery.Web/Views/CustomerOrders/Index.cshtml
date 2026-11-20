@@ -1,6 +1,7 @@
 @model IReadOnlyList<MocBakery.Models.WebOrders.CustomerOrder>
 @{ ViewData["Title"]="Đơn hàng của bạn"; }
 <div class="store"><p class="eyebrow">MỘC BAKERY / ĐƠN HÀNG</p><h1>Đơn hàng của bạn</h1>
+<p><a href="/">← Quay lại trang chủ</a></p>
 @if(Model.Count==0){<div class="empty-state"><h2>Bạn chưa có đơn hàng</h2><a href="/banh">Khám phá thực đơn →</a></div>}
 @foreach(var order in Model)
 {

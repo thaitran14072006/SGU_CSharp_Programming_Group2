@@ -13,6 +13,7 @@
         <p class="success" role="status">Tài khoản đã được tạo. Bạn có thể đăng nhập.</p>
     }
     <form asp-action="Login" method="post">
+        <input asp-for="ReturnUrl" type="hidden" />
         <div asp-validation-summary="All" class="validation" role="alert"></div>
         <label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" maxlength="50" required />
         <span asp-validation-for="Username"></span>
@@ -20,5 +21,6 @@
         <span asp-validation-for="Password"></span>
         <button class="primary" type="submit">Đăng nhập</button>
     </form>
-    <p class="switch">Chưa có tài khoản? <a asp-action="Register">Tạo tài khoản</a></p>
+    <p class="switch">Chưa có tài khoản? <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">Tạo tài khoản</a></p>
+    <a class="secondary" href="@(Model.ReturnUrl?.StartsWith("/gio-hang", StringComparison.Ordinal)==true ? "/gio-hang" : "/")">← @(Model.ReturnUrl?.StartsWith("/gio-hang", StringComparison.Ordinal)==true ? "Quay lại giỏ hàng" : "Quay lại trang chủ")</a>
 </section>
