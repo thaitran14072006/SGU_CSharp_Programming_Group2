@@ -1,0 +1,59 @@
+PASS Only active products in active categories are public
+PASS Empty categories remain discoverable; inactive categories hidden
+PASS Sellable SQL stock excludes expired stopped future lots; includes expiry day
+PASS Desktop and Web agree on eligible stock
+PASS Out of stock product remains visible without available flag
+PASS Trimmed name and product code searches
+PASS LIKE wildcards are literal and parameterized
+PASS Category, stock filters and stable price sorting combine
+PASS Pagination keeps totals and supports beyond last page
+PASS Invalid filters and excessive page sizes fail validation
+PASS Selection validation rejects invalid quantities and missing IDs
+PASS Vietnamese price formatting preserves fractional currency
+PASS Home is public and shares account navigation
+PASS Home category navigation includes active and empty categories only
+PASS Public categories and empty category render
+PASS Search GET renders results and preserves filters
+PASS Zero-match search is a helpful 200 result
+PASS XSS input is encoded by Razor
+PASS Invalid numeric query returns 400 instead of silently ignoring
+PASS Invalid filter values return 400 on HTML and API
+PASS Missing invalid discontinued and hidden category IDs return 404
+PASS Out of stock detail explains availability
+PASS API exposes approved fields only without internal stock or credentials
+PASS Public API supports listing and category contract
+PASS Catalog routes cannot write via POST
+PASS Account login still renders with shared layout
+PASS Catalog response disables caching and keeps security headers
+PASS Desktop owner price edit is visible after HTTP reload and selection recheck
+PASS Desktop image edit is visible on uncached image endpoint
+PASS Removing desktop image restores the matching supplied product photo
+PASS Corrupt or executable image payload is never served
+PASS Desktop deactivation removes product from HTML API image and cart contract
+PASS Category stop hides products but preserves desktop history
+PASS Staff cannot bypass desktop product management permission
+PASS Desktop stock stop is reflected on Web reload
+PASS HTML pagination retains search category availability and sort
+PASS Database outage returns helpful 503 without internal details
+PASS SQL customer login works across shared storefront navigation
+PASS SQL profile edit keeps customer session and storefront prices
+PASS Order migration reruns without changing existing desktop history
+PASS Web order BLL rejects invalid identities quantities duplicates and missing pickup
+PASS Checkout requires antiforgery and a future pickup without losing cart
+PASS HTTP checkout writes SQL order using cookie customer and server prices
+PASS Web reception has no forged employee no invoice and no stock deduction
+PASS Receipt is readable by owner and safely encodes order notes
+PASS HTTP repeated checkout returns same receipt and creates no duplicate
+PASS Parallel SQL retries share one persistent order id
+PASS Repository rechecks price inside transaction before writing
+PASS Repository rechecks live stock before writing
+PASS Per-line prices are rechecked even when two changes leave total unchanged
+PASS Repository rejects stopped products and stopped categories
+PASS Repository rejects past pickup and disabled customer
+PASS Failed detail insert rolls back the header and all order lines
+PASS Another customer cannot read the receipt by changing the URL
+PASS Warehouse employee cannot accept or deliver customer orders
+PASS Desktop acceptance records the real employee and updates customer status
+PASS Desktop delivery creates one invoice and deducts FEFO stock exactly once
+PASS Desktop cancellation is visible to customer without selling or deducting stock
+RESULT 58 passed, 0 failed
