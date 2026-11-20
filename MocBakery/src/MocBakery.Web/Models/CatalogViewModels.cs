@@ -14,10 +14,15 @@ public static class BakeryDisplay
     {
         if (product.HasImage) return product.ImageUrl;
         string name = product.Name.ToLowerInvariant();
-        string? file = name.Contains("cookie") || name.Contains("bánh quy") ? "cookie"
-            : name.Contains("muffin") ? "muffin"
-            : name.Contains("croissant") || name.Contains("sừng bò") ? "croissant"
-            : name.Contains("tiramisu") ? "tiramisu" : null;
-        return file is null ? null : $"/images/bakery/{file}.jpg";
+        string? file = name.Contains("cookie") || name.Contains("bánh quy") ? "cookie.jpg"
+            : name.Contains("muffin") ? "muffin.jpg"
+            : name.Contains("croissant") || name.Contains("sừng bò") ? "croissant.jpg"
+            : name.Contains("tiramisu") ? "tiramisu.jpg"
+            : name.Contains("canelé") || name.Contains("canele") ? "canele.png"
+            : name.Contains("madeleine") ? "madeleine.png"
+            : name.Contains("financier") ? "financier.png"
+            : name.Contains("macaron") ? "macaron.png"
+            : name.Contains("éclair") || name.Contains("eclair") ? "eclair.png" : null;
+        return file is null ? null : $"/images/bakery/{file}";
     }
 }
