@@ -9,6 +9,19 @@ namespace MocBakery.DAL.Repositories.Orders;
 
 public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderRepository
 {
+    public bool Cancel(int customerId,int orderId,string reason)
+    {
+        using var c=db.Open();using var q=Db.Command(c,"""
+            UPDATE d SET TrangThai=N'DaHuy',LyDoHuy=@reason
+            FROM dbo.DonDatBanh d
+            WHERE d.MaDon=@id AND d.MaKhachHang=@customer AND d.TrangThai=N'MoiTiepNhan'
+              AND d.WebRequestKey IS NOT NULL AND d.TienCoc=0
+              AND NOT EXISTS(SELECT 1 FROM dbo.HoaDon h WHERE h.MaDon=d.MaDon)
+              AND EXISTS(SELECT 1 FROM dbo.TaiKhoanKhachHang a WHERE a.MaKhachHang=@customer AND a.TrangThai=1)
+            """);
+        q.Param("@id",orderId,DbType.Int32);q.Param("@customer",customerId,DbType.Int32);
+        q.Param("@reason",reason,DbType.String,255);return q.ExecuteNonQuery()==1;
+    }
     public int Submit(WebPurchaseRequest request)
     {
         var contact=request.Contact??throw new BusinessException("Thiếu thông tin người nhận.");

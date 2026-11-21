@@ -2,6 +2,8 @@
 @{ViewData["Title"]="Chi tiết đơn #"+Model.Order.Id;}
 <div class="store"><p class="eyebrow">MỘC BAKERY / ĐƠN HÀNG</p><h1>Đơn #@Model.Order.Id</h1>
 <div class="cart-layout order-detail-layout"><section>
+@if(TempData["OrderMessage"] is string message){<p class="success" role="status">@message</p>}
+@if(TempData["OrderError"] is string error){<p class="cart-message" role="alert">@error</p>}
 @if(TempData["CartSuccess"] is string success){<p class="success order-success" role="status">@success</p>}
 <h2>Các bánh đã đặt</h2>
 @foreach(var line in Model.Lines){<article class="cart-row"><div><h3>@line.Product</h3><p>@line.Quantity × @BakeryDisplay.Money(line.Price)</p></div><strong>@BakeryDisplay.Money(line.Total)</strong></article>}
@@ -10,4 +12,13 @@
 @if(Model.Order.Contact is {} contact){<div class="order-contact"><h3>Thông tin người nhận</h3><p>@contact.FullName</p><p>@contact.Phone</p><p>@contact.Email</p></div>}
 @if(Model.Order.Note is not null){<p class="order-note">Yêu cầu: @Model.Order.Note</p>}
 @if(Model.Order.CancelReason is not null){<p>Lý do hủy: @Model.Order.CancelReason</p>}
+@if(Model.Order.Status=="MoiTiepNhan")
+{
+    <form asp-controller="CustomerOrders" asp-action="Cancel" asp-route-id="@Model.Order.Id" method="post" class="customer-cancel">
+        <p>Bạn có thể hủy khi đơn còn mới tiếp nhận. Đơn đã chuẩn bị hoặc giao không thể tự hủy.</p>
+        <label for="cancel-reason">Lý do hủy (không bắt buộc)</label>
+        <textarea id="cancel-reason" name="reason" maxlength="255" rows="2" placeholder="Nhập lý do hủy"></textarea>
+        <button class="store-button" type="submit">Hủy đơn hàng</button>
+    </form>
+}
 <p class="detail-note">Yêu cầu đã được ghi nhận. Bạn có thể xem trạng thái mới nhất tại đây. Việc gửi yêu cầu chưa thanh toán hoặc giữ kho.</p></aside></div></div>

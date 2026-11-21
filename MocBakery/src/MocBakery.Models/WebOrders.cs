@@ -14,6 +14,7 @@ public sealed record CustomerOrder(int Id, DateTime Placed, DateTime Pickup, dec
 public sealed record CustomerOrderDetail(CustomerOrder Order, IReadOnlyList<OrderLine> Lines);
 public interface IWebOrderRepository
 {
+    bool Cancel(int customerId, int orderId, string reason);
     int Submit(WebPurchaseRequest request);
     IReadOnlyList<CustomerOrder> List(int customerId);
     CustomerOrderDetail? Find(int customerId, int orderId);

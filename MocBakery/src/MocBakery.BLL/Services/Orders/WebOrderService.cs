@@ -7,6 +7,14 @@ namespace MocBakery.BLL.Services.Orders;
 
 public sealed class WebOrderService(IWebOrderRepository repository) : IWebOrderSubmission
 {
+    public void Cancel(int customerId,int orderId,string? reason)
+    {
+        if(customerId<=0||orderId<=0)throw new BusinessException("Đơn hàng không hợp lệ.");
+        reason=string.IsNullOrWhiteSpace(reason)?"Khách hủy đơn trên Web.":reason.Trim();
+        if(reason.Length>255)throw new BusinessException("Lý do hủy tối đa 255 ký tự.");
+        if(!repository.Cancel(customerId,orderId,reason))
+            throw new BusinessException("Không thể hủy đơn. Chỉ được hủy đơn Web mới tiếp nhận, chưa có cọc hoặc hóa đơn. Vui lòng tải lại trạng thái.");
+    }
     public int Submit(WebPurchaseRequest request)
     {
         if(request.CustomerId<=0||request.RequestKey==Guid.Empty)

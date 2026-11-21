@@ -41,6 +41,7 @@ Check(cart.Quote(items).Total == 60000, "quote uses current server price");
 catalog.Price = 15000;
 var orders = new Orders();
 var carts = new MemoryCarts();
+var customerOrders=new CancelOrderFixture();
 var app = MocBakery.Web.Program.Build(["--environment", "Development"], builder =>
 {
     builder.WebHost.UseUrls("http://127.0.0.1:0");
@@ -48,6 +49,7 @@ var app = MocBakery.Web.Program.Build(["--environment", "Development"], builder 
     builder.Services.AddSingleton<IPublicCatalogRepository>(catalog);
     builder.Services.AddSingleton<IWebOrderSubmission>(orders);
     builder.Services.AddSingleton<ICustomerCartRepository>(carts);
+    builder.Services.AddSingleton<MocBakery.Models.WebOrders.IWebOrderRepository>(customerOrders);
     builder.Services.AddAuthentication(options => { options.DefaultAuthenticateScheme = "test"; options.DefaultChallengeScheme = "test"; })
         .AddScheme<AuthenticationSchemeOptions, TestAuth>("test", _ => { });
 });
@@ -111,6 +113,20 @@ try
     Check(orders.Count == 1, "sequential repeat cannot create second order");
     Check((await Page("/gio-hang")).Contains("Giỏ hàng đang trống"), "successful submission clears cart");
     Check((await otherBrowser.GetStringAsync("/gio-hang")).Contains("Giỏ hàng đang trống"),"successful submission clears shared cart in other browser");
+    string cancelPage=await Page("/don-hang/11");
+    Check(cancelPage.Contains("Hủy đơn hàng"),"new order displays cancellation form");
+    using(var missingToken=await client.PostAsync("/don-hang/11/huy",new FormUrlEncodedContent(new Dictionary<string,string>())))
+        Check(missingToken.StatusCode==HttpStatusCode.BadRequest&&customerOrders.Status=="MoiTiepNhan","cancel requires antiforgery");
+    using(var getCancel=await client.GetAsync("/don-hang/11/huy"))Check(getCancel.StatusCode==HttpStatusCode.MethodNotAllowed,"GET cannot cancel order");
+    await Post("/don-hang/11/huy",cancelPage,("reason",new string('x',256)));
+    Check(customerOrders.Status=="MoiTiepNhan","overlong cancellation reason rejected");
+    customerOrders.Status="DangChuanBi";
+    Check(!(await Page("/don-hang/11")).Contains("Hủy đơn hàng"),"preparing order hides cancellation button");
+    await Post("/don-hang/11/huy",cancelPage,("reason","Stale page"));
+    Check(customerOrders.Status=="DangChuanBi","stale cancellation form cannot cancel preparing order");
+    customerOrders.Status="MoiTiepNhan";
+    await Post("/don-hang/11/huy",cancelPage,("reason","Đổi lịch"),("customerId","999"));
+    Check(customerOrders.Status=="DaHuy","authenticated owner cancels own order despite forged customer field");
     Console.WriteLine($"{passed} checks passed. SQL and live Nam integration not exercised.");
 }
 
@@ -124,6 +140,17 @@ sealed class MemoryCarts : ICustomerCartRepository
     {lock(states){var old=Read(id);return states[id]=new(old.Version+1,change(old.Items));}}
     public bool ClearIfVersion(int id,long version)
     {lock(states){if(Read(id).Version!=version)return false;states[id]=new(version+1,[]);return true;}}
+}
+
+sealed class CancelOrderFixture : MocBakery.Models.WebOrders.IWebOrderRepository
+{
+    public string Status="MoiTiepNhan";
+    public int Submit(WebPurchaseRequest request)=>throw new NotSupportedException();
+    public IReadOnlyList<MocBakery.Models.WebOrders.CustomerOrder> List(int customerId)=>[];
+    public MocBakery.Models.WebOrders.CustomerOrderDetail? Find(int customerId,int orderId)=>customerId==7&&orderId==11?
+        new(new(11,DateTime.Now,DateTime.Now.AddDays(1),15000,Status,null,null),[]):null;
+    public bool Cancel(int customerId,int orderId,string reason)
+    {if(customerId!=7||orderId!=11||Status!="MoiTiepNhan")return false;Status="DaHuy";return true;}
 }
 
 sealed class Catalog : IPublicCatalogRepository

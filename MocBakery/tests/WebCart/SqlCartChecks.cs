@@ -68,6 +68,16 @@ internal static class SqlCartChecks
             var results=await Task.WhenAll(Submit(),Submit());
             Check(results.Count(x=>x)==1,"two browsers submitting same cart create only one order");
             Check(Value("SELECT COUNT(*) FROM dbo.HoaDon")==0&&Value("SELECT SoLuongCon FROM dbo.LoBanh WHERE MaLo=1")==10,"saving cart and submitting order do not invoice or deduct stock");
+            int cancelId=orders.Submit(Request(0,Guid.NewGuid()) with{CartVersion=null});
+            Check(!orders.Cancel(8,cancelId,"Other customer"),"customer cannot cancel another customer's order");
+            Check(orders.Cancel(7,cancelId,"Đổi lịch nhận")&&orders.Find(7,cancelId)?.Order.Status=="DaHuy","owner cancels newly received Web order");
+            Check(!orders.Cancel(7,cancelId,"Again"),"repeat cancellation is rejected");
+            int prepared=orders.Submit(Request(0,Guid.NewGuid()) with{CartVersion=null});
+            Sql(db,$"UPDATE dbo.DonDatBanh SET TrangThai=N'DangChuanBi' WHERE MaDon={prepared}");
+            Check(!orders.Cancel(7,prepared,"Too late"),"preparing order cannot be cancelled by customer");
+            Sql(db,$"UPDATE dbo.DonDatBanh SET TrangThai=N'DaGiao' WHERE MaDon={prepared}");
+            Check(!orders.Cancel(7,prepared,"Too late"),"delivered order cannot be cancelled by customer");
+            Check(Value("SELECT COUNT(*) FROM dbo.HoaDon")==0&&Value("SELECT SoLuongCon FROM dbo.LoBanh WHERE MaLo=1")==10,"customer cancellation does not change invoices or stock");
             Sql(db,"UPDATE dbo.TaiKhoanKhachHang SET TrangThai=0 WHERE MaKhachHang=8");
             try{b.Read(8);throw new Exception("disabled account accepted");}catch(BusinessException){}
             Check(true,"disabled customer cannot access stored cart");
