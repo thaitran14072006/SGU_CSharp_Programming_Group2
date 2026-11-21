@@ -1,170 +1,176 @@
-﻿# Mộc Bakery
+# Mộc Bakery
 
-## Hai khu vực Web riêng
+Ứng dụng quản lý tiệm bánh trên Desktop và Web, dùng chung cơ sở dữ liệu SQL Server. Thông tin sản phẩm, khách hàng và đơn hàng được cập nhật giữa hai ứng dụng khi tải lại dữ liệu.
 
-Trang khách tại `/`: xem bánh, giỏ hàng, xác nhận người nhận và theo dõi đơn của mình.
-Trang nhân viên tại `/admin/dang-nhap`, dashboard tại `/admin`: doanh thu, tồn bán được,
-đơn chờ xử lý, quản lý bánh/danh mục/kho/khách hàng/nhân viên/tài khoản và hóa đơn/báo cáo.
-Hai khu vực có giao diện và phiên đăng nhập riêng; tài khoản khách không có quyền quản trị.
+## Chức năng
 
-Chủ tiệm được quản lý đầy đủ. Thu ngân/nhân viên xử lý đơn, khách và hóa đơn; chỉ tra cứu
-bánh và kho. Kho tra cứu bánh/danh mục, quản lý phiếu nhập, nhà cung cấp, nguyên liệu,
-xuất kho và kiểm kê theo quyền desktop. Quyền được kiểm tra ở cả Web và BLL.
-Admin dùng tài khoản nhân viên hiện có của desktop, không có mật khẩu mặc định.
-Chi tiết, cách chạy và kiểm thử: [khu quản trị Web](docs/web/Admin_Web.md).
-
-Đã bổ sung kho Web đầy đủ theo nghiệp vụ desktop: nhà cung cấp, nguyên liệu, phiếu nhập
-nhiều dòng nháp/ghi sổ, xuất FEFO, kiểm kê và nhật ký. [Hướng dẫn phần Như](docs/web/Nhu_Kho_Web.md),
-[kiểm thử và minh chứng](docs/testing/results/2026-11-20-nhu-warehouse-web.md).
-
-## Web Catalog của Như
-
-ASP.NET Core MVC có trang chủ, danh mục, tìm/lọc, chi tiết và ảnh bánh, đọc cùng CSDL
-desktop. [Bàn giao và cách chạy](docs/web/Nhu_BanGiao_Web.md),
-[kết quả kiểm thử mới](docs/web/Nhu_KetQuaKiemThu_2026_11_18.md).
-Đã nối giỏ hàng với tiếp nhận đơn, theo dõi trạng thái và xử lý đơn ở desktop.
-Xem [tiếp nhận đơn Web và nâng cấp CSDL 05](docs/web/TiepNhanDon_Web.md).
-Catalog không cần migration; chức năng gửi đơn cần schema 04, 05, 06 và desktop mới.
-
-## Tài khoản khách hàng Web đang phát triển
-
-Đã có ASP.NET Core MVC cho đăng ký, đăng nhập, đăng xuất, xem và cập nhật hồ sơ tài khoản, đổi mật khẩu.
-Hướng dẫn cấu hình CSDL chung, migration 04 và chạy tại localhost:5080:
-[Tài khoản khách hàng Web](docs/deployment/CustomerWebAccounts.md).
-Đổi mật khẩu yêu cầu mật khẩu hiện tại và đăng nhập lại; chưa xác nhận tích hợp SQL thật.
-Đã thêm 16 ca SQL qua chế độ `--sql` và job CI `customer-sql` dùng CSDL tạm riêng;
-chưa xác nhận kết quả chạy SQL. Hướng dẫn và giới hạn nằm trong tài liệu tài khoản Web ở trên.
-Các kết quả bản chốt bên dưới mô tả desktop và lịch sử kiểm thử trước phần Web.
-
-## Bản chốt tích hợp ngày 15 tháng 11 năm 2026
-
-Đã tích hợp phần Thái/Như/Mai/Nam trên main; bổ sung Nhân viên liên kết Tài khoản,
-ma trận quyền, mật khẩu tạm và kiểm thử SQL toàn luồng. CSDL hiện hành có **16 bảng**.
-
-- Bắt đầu tại [Hướng dẫn bàn giao](docs/deployment/CHOT_DO_AN.md).
-- [Kịch bản demo và vấn đáp](docs/deployment/DEMO_VA_VAN_DAP.md).
-- [Báo cáo tổng hợp chương 5–6](docs/report/CHUONG_5_6_TONG_HOP.md).
-- [Báo cáo Word chương 5–6 có mục lục và ảnh minh chứng](docs/report/Bao_cao_MocBakery_Chuong_5_6.docx).
-- [Kết quả bản chốt: 190 ca đạt](docs/testing/results/2026-11-15-final.md).
-- Kiểm tra lại: `.\MocBakery\scripts\Validate-Project.ps1 -IncludeGui` từ gốc repository.
-- CSDL 9 bảng nâng cấp bằng 02 rồi 03; CSDL 15 bảng chạy 03. Script 01 chỉ dùng cho CSDL mới.
-- Bản Windows x64 kèm runtime và ZIP được tạo ở `MocBakery/artifacts/MocBakery-Final-2026-11-15`.
-  Binary/cấu hình local không đưa lên Git. Script tạo demo mới: `scripts/Initialize-Demo.ps1`.
-
-## Bản hiện hành theo thiết kế Excel
-
-Phần Như hiện bám `Thiet_ke_giao_dien_quan_ly_tiem_banh.xlsx`: Quản lý bánh, Chi tiết bánh,
-Danh mục bánh, Tồn kho và hạn dùng, Phiếu nhập kho. Có nguyên liệu, nhà cung cấp,
-ảnh/hạn dùng mặc định, danh mục ngừng dùng, nháp/ghi sổ và xuất/kiểm kê có nhật ký.
-
-- Hướng dẫn đang áp dụng: `docs/deployment/ExcelDesign_Update.md`.
-- Kết quả mới: `docs/testing/results/2026-11-15-excel-design.md`.
-- Báo cáo mới: `docs/report/chapter05/Nhu_TheoThietKeExcel.md`, `docs/report/chapter06/Nhu_TheoThietKeExcel.md`.
-- CSDL mới chạy `database/schema/01_CreateDatabase.sql`; CSDL 9 bảng đang có chạy riêng
-  `database/schema/02_Upgrade_ExcelDesign.sql` sau khi sao lưu. Không chạy 01 đè lên dữ liệu đang dùng.
-- Dữ liệu mở đầu theo mẫu: `database/seeds/04_ExcelDesign_Demo.sql`, chỉ dùng trên CSDL thử.
-- Bộ kiểm tra bổ sung: console CatalogInventoryChecks với `--excel`; test form SQL với GuiChecks `--verify-design --owner`.
-
-Các mục lịch sử bên dưới mô tả bản khởi tạo trước Excel. Bản trên main đã tích hợp phần Như
-với Bán hàng, Đơn đặt và Báo cáo của nhóm; giữ khung giao diện hiện hành của main.
-
-Cấu trúc theo tài liệu `Huong_dan_4_thanh_vien_MocBakery_Chuong_5_6.docx`.
-Mã nguồn ứng dụng nằm trong `MocBakery/`; bài thực hành vẫn nằm trong `Lab01/` ở gốc repo.
-
-## Công nghệ và kiến trúc
-
-C# / .NET 10, Windows Forms, SQL Server 2022 Express, ADO.NET với Microsoft.Data.SqlClient.
-Luồng xử lý: GUI → BLL → DAL → SQL Server. Models chứa Entities và DTOs dùng chung.
-
-| Thư mục | Nội dung |
+| Nhóm chức năng | Nội dung |
 | --- | --- |
-| `src/MocBakery.GUI/Forms/<Module>/` | Form và thao tác người dùng |
-| `src/MocBakery.BLL/Services/<Module>/` | Quyền và quy tắc nghiệp vụ |
-| `src/MocBakery.DAL/Repositories/<Module>/` | Truy vấn tham số và truy cập CSDL |
-| `src/MocBakery.Models/Entities/` | Thực thể dùng chung |
-| `src/MocBakery.Models/DTOs/<Module>/` | Dữ liệu trao đổi theo module |
-| `database/schema/` | Script tạo bảng và ràng buộc |
-| `database/seeds/` | Script dữ liệu mẫu |
-| `database/queries/` | Truy vấn đối chiếu dữ liệu |
-| `tests/Unit/` | Kiểm thử đơn vị |
-| `tests/Integration/` | Kiểm thử tích hợp CSDL |
-| `tests/System/` | Kiểm thử toàn hệ thống |
-| `docs/testing/test-cases/` | Ca kiểm thử |
-| `docs/testing/results/` | Kết quả thực tế, người chạy, ngày và commit |
-| `docs/testing/defects/` | Lỗi, cách tái hiện và kết quả kiểm tra lại |
-| `docs/testing/evidence/` | Ảnh và minh chứng đối chiếu dữ liệu |
-| `docs/deployment/` | Hướng dẫn cài đặt, cấu hình, đóng gói và khôi phục |
-| `docs/report/chapter05/` | Triển khai, kiểm thử và đánh giá kết quả |
-| `docs/report/chapter06/` | Kết luận, hạn chế và hướng phát triển |
+| Tài khoản và nhân viên | Đăng nhập, phân quyền, quản lý nhân viên, khóa tài khoản, cấp mật khẩu tạm và đổi mật khẩu |
+| Khách hàng | Quản lý hồ sơ, tìm kiếm và xem lịch sử mua hàng |
+| Sản phẩm | Quản lý danh mục, bánh, giá bán, ảnh và trạng thái kinh doanh |
+| Kho | Nhà cung cấp, nguyên liệu, lô bánh, hạn dùng, phiếu nhập, xuất kho, kiểm kê và nhật ký |
+| Bán hàng | Bán tại quầy, lập hóa đơn và cập nhật tồn theo FEFO: ưu tiên lô hết hạn trước |
+| Đơn đặt | Tiếp nhận, xử lý, giao và hủy đơn; liên kết hóa đơn khi giao hàng |
+| Báo cáo | Doanh thu và bánh bán chạy theo khoảng thời gian |
+| Website khách hàng | Danh mục, tìm kiếm, chi tiết bánh, tài khoản, giỏ hàng, đặt bánh và theo dõi đơn |
 
-## Phân công theo chiều dọc
+Chủ tiệm quản lý toàn bộ nghiệp vụ. Thu ngân/nhân viên xử lý bán hàng, khách hàng và đơn đặt theo quyền được cấp. Nhân viên kho thực hiện nghiệp vụ kho. Tài khoản khách hàng Web tách biệt với tài khoản nhân viên.
 
-Mỗi thành viên thực hiện GUI, BLL, DAL, DTO, kiểm thử và nội dung báo cáo của module mình.
+## Công nghệ
 
-| Thành viên | Module |
+- C# và .NET 10.
+- Windows Forms cho Desktop; ASP.NET Core MVC cho Web.
+- SQL Server 2022, ADO.NET và Microsoft.Data.SqlClient.
+- GitHub Actions để build và chạy các bộ kiểm thử.
+
+Giao diện gọi lớp nghiệp vụ `BLL`; lớp `DAL` truy cập SQL Server. `Models` chứa thực thể và kiểu dữ liệu dùng chung.
+
+## Cấu trúc thư mục
+
+| Đường dẫn | Nội dung |
 | --- | --- |
-| Trần Trung Thái | `Accounts`, `Customers` |
-| Phạm Quỳnh Như | `Catalog`, `Inventory` |
-| Nguyễn Thị Trúc Mai | `Sales` |
-| Trần Thanh Nam | `Orders`, `Reports` |
+| `src/MocBakery.GUI` | Ứng dụng Windows Forms |
+| `src/MocBakery.Web` | Website khách hàng và quản trị |
+| `src/MocBakery.BLL` | Xử lý nghiệp vụ và phân quyền |
+| `src/MocBakery.DAL` | Kết nối và truy vấn cơ sở dữ liệu |
+| `src/MocBakery.Models` | Thực thể và dữ liệu trao đổi |
+| `database/schema` | Script tạo và nâng cấp cơ sở dữ liệu |
+| `database/seeds` | Dữ liệu mẫu |
+| `database/queries` | Truy vấn đối chiếu dữ liệu |
+| `tests` | Các chương trình kiểm thử |
+| `scripts` | Lệnh chạy, kiểm tra và đóng gói |
+| `docs` | Tài liệu triển khai, kiểm thử và báo cáo |
 
-## Phạm vi dữ liệu bản gốc
+## Cài đặt
 
-Bản gốc có chín bảng: `TaiKhoan`, `LoaiBanh`, `SanPham`, `LoBanh`, `KhachHang`,
-`HoaDon`, `ChiTietHoaDon`, `DonDatBanh`, `ChiTietDonDat`.
-Chạy script trong `database/schema/` trước, sau đó `database/seeds/`.
-Chỉ đưa cấu hình mẫu không chứa bí mật lên Git; cấu hình theo máy đặt trong tệp `*.local.json`.
+Cần Windows để chạy Desktop, .NET 10 SDK và SQL Server có thể truy cập từ máy chạy ứng dụng. Dùng SSMS hoặc sqlcmd để thực thi script SQL.
 
-## Lịch sử triển khai ngày 14 tháng 11 năm 2026
-
-Nguồn chuẩn: `BaoCao_QuanLyTiemBanh_Updated(3).docx`, UC01, UC02, UC03, UC10 và mục 4.4.
-Đã có `MocBakery.sln`, bốn project, mã Accounts/Customers của Thái và script nền tảng 9 bảng.
-Vai trò là `ChuTiem`/`NhanVien`; họ tên nằm trong `TaiKhoan`, không thêm bảng Nhân viên hoặc Nhà cung cấp.
-Các module của thành viên khác chưa được tích hợp; trang thông báo chưa tích hợp không phải chức năng đã hoàn thành.
-
-Mở Solution, đặt `MocBakery.GUI` làm Startup Project. Chạy `database/schema/01_CreateDatabase.sql`
-trên CSDL mới rồi tùy chọn `database/seeds/02_Customers.sql`. Script không ghi đè bảng đã có.
-Driver `Microsoft.Data.SqlClient` cần được restore từ NuGet. Kết nối mặc định là
-`.\SQLEXPRESS`, CSDL `QuanLyTiemBanh`, Windows Authentication. Có thể đặt biến môi trường
-`MOCBAKERY_CONNECTION_STRING` hoặc `appsettings.local.json` cạnh executable theo tệp mẫu.
-Tại Đăng nhập, dùng **Thiết lập lần đầu** để tạo chủ tiệm khi bảng `TaiKhoan` rỗng; không có mật khẩu mặc định.
-
-Kiểm tra nghiệp vụ: build `tests/Unit/MocBakery.UnitChecks.csproj` rồi chạy DLL tương ứng;
-đây là bộ kiểm tra console, không dùng `dotnet test`. Kết quả và giới hạn ghi trong
-`docs/testing/results/2026-11-14-thai.md`. README hướng dẫn chi tiết được bàn giao ngoài repo theo yêu cầu.
-
-Các tệp `.gitkeep` giữ các thư mục chưa có nội dung. Chỉ ghi kết quả kiểm thử thực tế sau khi chạy.
-
-## Lịch sử Catalog và Inventory ban đầu
-
-Đã tích hợp menu Loại bánh, Sản phẩm, Kho bánh cho hai vai trò. Nhân viên chỉ tra cứu;
-mọi lệnh ghi đều kiểm tra quyền chủ tiệm tại BLL. Sản phẩm chuyển ngừng kinh doanh,
-không xóa lịch sử. Lô chỉ nhập mới hoặc đổi trạng thái, không sửa trực tiếp lượng còn.
-Hạn dùng DATE có hiệu lực hết ngày ghi trên lô; dùng cùng ngày nghiệp vụ ở máy ứng dụng
-và máy SQL Server. Dữ liệu demo dùng ngày SQL Server tại lúc chạy seed.
-
-Chạy tùy chọn `database/seeds/03_CatalogInventory_Demo.sql` trên CSDL thử. Script chạy lại
-không reset tồn đã bán. Đối chiếu bằng `database/queries/VerifyCatalogInventory.sql`.
-
-- Hướng dẫn sử dụng: `docs/deployment/HuongDanSuDung_Nhu.md`.
-- Bàn giao tích hợp Sales: `docs/deployment/BanGiao_CatalogInventory.md`.
-- Ca kiểm thử và kết quả: `docs/testing/test-cases/nhu-catalog-inventory.md`,
-  `docs/testing/results/2026-11-14-nhu.md`.
-- Kiểm thử GUI với SQL thật ngày 15/11: `docs/testing/results/2026-11-15-nhu-gui.md`.
-  Bộ chạy thử tách biệt và hướng dẫn ở `tests/System/README.md`.
-- Đóng góp báo cáo: `docs/report/chapter05/Nhu_CatalogInventory.md` và
-  `docs/report/chapter06/Nhu_CatalogInventory.md`.
-
-Từ gốc repo:
+Các lệnh bên dưới chạy từ thư mục `MocBakery`:
 
 ```powershell
-dotnet build .\MocBakery\MocBakery.sln
-dotnet .\MocBakery\tests\Unit\CatalogInventory\bin\Debug\net10.0\MocBakery.CatalogInventoryChecks.dll
-dotnet .\MocBakery\tests\Unit\CatalogInventory\bin\Debug\net10.0\MocBakery.CatalogInventoryChecks.dll --integration
+cd MocBakery
+dotnet restore .\MocBakery.sln
+dotnet build .\MocBakery.sln -c Release
 ```
 
-Lệnh tích hợp mặc định dùng `(localdb)\MSSQLLocalDB`, tự tạo CSDL có tiền tố
-`MocBakery_NhuTest_` và bản khôi phục `MocBakery_NhuRestore_`. Không ghi đè hay xóa
-CSDL có sẵn. Có thể đặt `MOCBAKERY_TEST_CONNECTION` để chọn SQL Server thử khác.
-CSDL thử do lần chạy đó tạo được dọn khi kết thúc để tránh chiếm dung lượng; thêm
-`--keep-database` nếu cần giữ để đối chiếu. Tệp backup nằm trong thư mục `bin`.
+### Cơ sở dữ liệu
+
+Với cơ sở dữ liệu mới, chạy lần lượt các script trong `database/schema`:
+
+1. `01_CreateDatabase.sql`
+2. `02_Upgrade_ExcelDesign.sql`
+3. `03_Upgrade_StaffAccounts.sql`
+4. `04_CustomerWebAccounts.sql`
+5. `05_WebOrders.sql`
+6. `06_WebOrderContacts.sql`
+
+Database mặc định là `QuanLyTiemBanh`. Sau bước tạo mới, chọn đúng database trước khi chạy các bản nâng cấp. Với database đang sử dụng, sao lưu và chỉ chạy những bản nâng cấp còn thiếu; không chạy lại script tạo mới lên dữ liệu hiện có. Dữ liệu trong `database/seeds` dùng cho môi trường thử.
+
+### Kết nối dùng chung
+
+Đặt biến môi trường trong mỗi cửa sổ PowerShell dùng để chạy ứng dụng. Ví dụ với SQL Server Express trên máy cá nhân:
+
+```powershell
+$env:MOCBAKERY_CONNECTION_STRING = 'Server=.\SQLEXPRESS;Database=QuanLyTiemBanh;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
+```
+
+Nếu dùng máy chủ chung, thay bằng chuỗi kết nối được cấp cho máy chủ đó. Desktop và Web phải trỏ đến cùng server và database. `TrustServerCertificate=True` dùng trong môi trường phát triển với chứng chỉ tự ký; triển khai thực tế cần cấu hình chứng chỉ phù hợp.
+
+Desktop cũng đọc `appsettings.local.json` cạnh file thực thi, theo cấu trúc của `src/MocBakery.GUI/appsettings.example.json`. Biến `MOCBAKERY_CONNECTION_STRING` được ưu tiên. Không đưa mật khẩu hoặc cấu hình kết nối thật lên Git.
+
+## Chạy ứng dụng
+
+### Desktop
+
+```powershell
+dotnet run --project .\src\MocBakery.GUI\MocBakery.GUI.csproj
+```
+
+Khi bảng tài khoản còn trống, dùng **Thiết lập lần đầu** ở màn hình đăng nhập để tạo Chủ tiệm. Khi đã có dữ liệu, đăng nhập bằng tài khoản nhân viên được cấp.
+
+Có thể dùng script hỏi mật khẩu SQL và khởi chạy Desktop:
+
+```powershell
+.\scripts\Start-Desktop-Test.ps1 -DbHost <dia-chi-may-chu> -DbPort 14333 -Database QuanLyTiemBanh -DbUser <tai-khoan-sql>
+```
+
+### Web
+
+Trong cửa sổ PowerShell đã cấu hình kết nối:
+
+```powershell
+dotnet run --project .\src\MocBakery.Web\MocBakery.Web.csproj
+```
+
+| Trang | Địa chỉ |
+| --- | --- |
+| Cửa hàng | http://localhost:5080/ |
+| Đăng ký khách hàng | http://localhost:5080/tai-khoan/dang-ky |
+| Đăng nhập khách hàng | http://localhost:5080/tai-khoan/dang-nhap |
+| Hồ sơ khách hàng | http://localhost:5080/tai-khoan |
+| Đăng nhập nhân viên | http://localhost:5080/admin/dang-nhap |
+| Quản trị | http://localhost:5080/admin |
+
+Web quản trị dùng tài khoản nhân viên của Desktop. Tài khoản SQL chỉ dùng kết nối cơ sở dữ liệu, không dùng đăng nhập ứng dụng.
+
+Ảnh tải lên từ màn hình sửa bánh được lưu trong cơ sở dữ liệu để cả Web và Desktop sử dụng. Ảnh dự phòng của Web nằm ở `src/MocBakery.Web/wwwroot/images/bakery`.
+
+### SQL Server bằng Docker
+
+`compose.yaml` chạy SQL Server, không chạy Desktop hoặc Web. Tạo file `.env` trong thư mục này với biến `MSSQL_SA_PASSWORD`, rồi chạy:
+
+```powershell
+docker compose up -d
+```
+
+Cấu hình Compose hiện gắn cổng `14333` vào địa chỉ mạng của máy chủ nhóm. Nếu chạy trên máy khác, sửa địa chỉ bind trong `compose.yaml` cho phù hợp. SQL Server dùng volume `sqlserver_data` để lưu dữ liệu; schema vẫn cần được khởi tạo theo hướng dẫn trên.
+
+## Kiểm thử
+
+Các project kiểm thử chạy bằng chương trình console, không dùng `dotnet test`.
+
+Chạy nghiệp vụ và HTTP tài khoản khách:
+
+```powershell
+.\scripts\Validate-CustomerAccounts.ps1
+```
+
+Chạy thêm tích hợp SQL sau khi đặt `MOCBAKERY_SQL_TEST_CONNECTION` cho server thử có quyền tạo cơ sở dữ liệu:
+
+```powershell
+.\scripts\Validate-CustomerAccounts.ps1 -IncludeSql
+```
+
+Bộ SQL tài khoản khách tạo database tạm riêng và dọn database vừa tạo khi kết thúc. Bộ HTTP mặc định dùng repository trong bộ nhớ. Log được lưu trong `artifacts/customer-accounts-*`.
+
+Các bộ kiểm thử Web khác:
+
+```powershell
+dotnet run --project .\tests\PublicCatalog\MocBakery.PublicCatalogChecks.csproj -c Release
+dotnet run --project .\tests\WebCart\MocBakery.WebCartChecks.csproj -c Release
+```
+
+Kiểm tra tổng hợp, bao gồm các bước tích hợp yêu cầu SQL LocalDB:
+
+```powershell
+.\scripts\Validate-Project.ps1
+```
+
+Thêm `-IncludeGui` để chạy kiểm thử form với fixture riêng. Hướng dẫn tại [kiểm thử hệ thống](tests/System/README.md). Workflow của repository nằm ở `../.github/workflows/mocbakery.yml`.
+
+## Đóng gói Desktop
+
+```powershell
+.\scripts\Package-Release.ps1
+```
+
+Bản Windows x64 kèm runtime, tài liệu và script được tạo trong `artifacts`. Cấu hình kết nối được thiết lập riêng trên máy triển khai.
+
+## Tài liệu
+
+- [Hướng dẫn triển khai](docs/deployment/CHOT_DO_AN.md)
+- [Khu quản trị Web](docs/web/Admin_Web.md)
+- [Tài khoản khách hàng Web](docs/deployment/CustomerWebAccounts.md)
+- [Luồng đơn đặt từ Web](docs/web/TiepNhanDon_Web.md)
+

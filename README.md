@@ -1,5 +1,9 @@
-# C-Programming
+# Mộc Bakery
 
-Đồ án Mộc Bakery nằm trong [MocBakery](MocBakery/README.md).
-Bản tích hợp cuối, hướng dẫn chạy/demo và kết quả kiểm tra tại
-[Bàn giao đồ án](MocBakery/docs/deployment/CHOT_DO_AN.md).
+Hệ thống quản lý tiệm bánh gồm ứng dụng Windows Forms và website ASP.NET Core MVC, sử dụng chung cơ sở dữ liệu SQL Server.
+
+- **Desktop:** quản lý nhân viên, tài khoản, khách hàng, bánh, kho, bán hàng, đơn đặt và báo cáo.
+- **Web khách hàng:** xem và tìm bánh, quản lý tài khoản, giỏ hàng, đặt bánh và theo dõi đơn.
+- **Web quản trị:** xử lý đơn và quản lý dữ liệu cửa hàng theo quyền của nhân viên.
+
+Mã nguồn và hướng dẫn cài đặt nằm tại [MocBakery](MocBakery/README.md). Thư mục `Lab01` chứa các bài thực hành C#.
