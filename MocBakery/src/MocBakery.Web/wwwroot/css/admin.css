@@ -58,6 +58,9 @@
 .admin-sidebar nav a[aria-current=page] .admin-icon{color:#78572f}
 .sidebar-bottom a,.sidebar-bottom button{display:inline-flex;align-items:center;gap:9px}
 .sidebar-bottom .admin-icon{width:16px;height:16px;min-width:16px}
+.sidebar-bottom .admin-logout{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid #ffffff26;border-radius:8px;text-decoration:none;gap:0}
+.sidebar-bottom .admin-logout:hover{background:#ffffff0d;border-color:#bd9b6b;color:#f5e3c3}
+.sidebar-bottom .admin-logout .admin-icon{width:19px;height:19px}
 .btn .admin-icon{width:17px;height:17px;min-width:17px}
 .btn.small .admin-icon{width:15px;height:15px;min-width:15px}
 .panel-heading a:has(.admin-icon){display:inline-flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
