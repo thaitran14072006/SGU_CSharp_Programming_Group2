@@ -32,7 +32,7 @@ const {chromium}=require('playwright');const path=require('path'),fs=require('fs
   if(download.suggestedFilename()!==`moc-bakery-doanh-thu-18000101-18000101.${extension}`)throw Error('export ignored edited date inputs');
   const file=await download.path();if(!fs.readFileSync(file).subarray(0,magic.length).equals(Buffer.from(magic)))throw Error('invalid '+extension+' download');
  }
- await page.getByRole('button',{name:'Xem báo cáo',exact:true}).click();await page.waitForURL(/from=1800-01-01&to=1800-01-01/);
+ await page.getByRole('button',{name:'Lọc báo cáo',exact:true}).click();await page.waitForURL(/from=1800-01-01&to=1800-01-01/);
  if(!await page.getByText('Không có hóa đơn trong kỳ.',{exact:true}).isVisible())throw Error('empty report not shown');
  const employee=(await context.cookies()).find(c=>c.name==='MocBakery.Employee');if(!employee||employee.path!=='/admin'||!employee.httpOnly)throw Error('employee cookie not isolated');
  const profile=await context.request.get(base+'/tai-khoan',{maxRedirects:0});if(profile.status()!==302||!profile.headers().location.includes('/tai-khoan/dang-nhap'))throw Error('employee authenticated customer route');
