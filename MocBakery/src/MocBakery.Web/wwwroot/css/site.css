@@ -125,3 +125,7 @@ body input:is([type=checkbox],[type=radio],[type=range]){accent-color:#a57b43}
 @media(prefers-reduced-motion:reduce){.maison-header .header-tool svg{transition:none}}
 @media(max-width:650px){.maison-header .header-tools{gap:5px}.maison-header .header-tool{width:30px}}
 .skip{z-index:100}
+.order-detail-layout{margin-top:12px}
+
+
+.order-detail-layout .order-success{margin-top:0;margin-bottom:30px}

@@ -53,6 +53,12 @@ public sealed class AccountController(CustomerAccountService accounts, ILogger<A
         try
         {
             var identity = accounts.Login(input.Username, input.Password);
+            if(HttpContext.Session.GetString("Mai.Cart.Items") is {} json)
+            {
+                var guest=System.Text.Json.JsonSerializer.Deserialize<List<MocBakery.Models.WebCart.CartItem>>(json);
+                if(guest is {Count:>0})HttpContext.RequestServices.GetRequiredService<MocBakery.BLL.Services.Sales.CustomerCartService>().MergeGuest(identity.CustomerId,guest);
+                HttpContext.Session.Remove("Mai.Cart.Items");
+            }
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 CustomerCookie.Principal(identity, input.Username.Trim().ToLowerInvariant()),
                 new AuthenticationProperties { IsPersistent = false, AllowRefresh = false });

@@ -1,5 +1,8 @@
-param([switch]$IncludeGui)
+param([switch]$IncludeGui, [switch]$IncludeCustomerSql)
 $ErrorActionPreference='Stop'
+if($IncludeCustomerSql -and [string]::IsNullOrWhiteSpace($env:MOCBAKERY_SQL_TEST_CONNECTION)){
+    throw 'Can dat MOCBAKERY_SQL_TEST_CONNECTION cho server thu truoc khi chay -IncludeCustomerSql.'
+}
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 Push-Location $root
 try {
@@ -11,6 +14,15 @@ try {
     }
     Run-Logged 'build' @('build','MocBakery/MocBakery.sln','-c','Release','--nologo')
     Run-Logged 'accounts-customers' @('MocBakery/tests/Unit/bin/Release/net10.0/MocBakery.UnitChecks.dll')
+    Run-Logged 'customer-business' @('MocBakery/tests/CustomerAccounts/bin/Release/net10.0/MocBakery.CustomerAccountChecks.dll')
+    $webAccounts='MocBakery/tests/WebAccounts/bin/Release/net10.0/MocBakery.WebAccountChecks.dll'
+    Run-Logged 'customer-http' @($webAccounts)
+    if($IncludeCustomerSql){
+        Run-Logged 'customer-sql' @($webAccounts,'--sql')
+    } else {
+        'NOT RUN: Customer SQL integration. Use -IncludeCustomerSql with MOCBAKERY_SQL_TEST_CONNECTION.' |
+            Set-Content -Encoding utf8 (Join-Path $evidence 'customer-sql.txt')
+    }
     $checks='MocBakery/tests/Unit/CatalogInventory/bin/Release/net10.0/MocBakery.CatalogInventoryChecks.dll'
     Run-Logged 'catalog-inventory' @($checks)
     Run-Logged 'integration' @($checks,'--integration')

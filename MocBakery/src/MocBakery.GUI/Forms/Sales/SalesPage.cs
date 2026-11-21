@@ -521,6 +521,11 @@ internal sealed class SalesPage : UserControl
         var grid = Ui.Grid(columns);
         grid.ColumnHeadersDefaultCellStyle.BackColor = Line;
         grid.ColumnHeadersDefaultCellStyle.ForeColor = Ink;
+        grid.EnableHeadersVisualStyles = false;
+        grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Line;
+        grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = Ink;
+        grid.RowHeadersDefaultCellStyle.SelectionBackColor = Line;
+        grid.RowHeadersDefaultCellStyle.SelectionForeColor = Ink;
         grid.DefaultCellStyle.ForeColor = Ink;
         grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 247, 243);
         grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;

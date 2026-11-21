@@ -15,17 +15,29 @@ màn hình hẹp chuyển một cột. Mọi thao tác ghi dùng POST và antifo
 - View: `src/MocBakery.Web/Views/Cart/Index.cshtml`, `Review.cshtml`; nút thêm tại `Views/Catalog/Detail.cshtml`.
 - Controller: `src/MocBakery.Web/Controllers/CartController.cs`.
 - BLL: `src/MocBakery.BLL/Services/Sales/CartService.cs` gọi `PublicCatalogService.CheckSelection` của Như.
-- DAL: dùng lại `PublicCatalogRepository` đọc SQL; không tạo repository hoặc schema cạnh tranh.
+- DAL: `PublicCatalogRepository` đọc giá/tồn; `CustomerCartRepository` lưu giỏ khách trong SQL chung.
 - Models: `src/MocBakery.Models/WebCart.cs`; view models tại `src/MocBakery.Web/Models/CartViewModels.cs`.
 
-Giỏ chỉ lưu mã bánh và số lượng trong session phía server, hết hạn khi không dùng 30 phút.
-Đăng xuất xóa session. Bản hiện tại lưu session trong bộ nhớ một tiến trình: khởi động lại Web mất giỏ;
-chạy nhiều máy Web cần shared session store. Session chưa giữ hoặc trừ kho.
+Khách chưa đăng nhập dùng giỏ session trong trình duyệt, hết hạn sau 30 phút không hoạt động.
+Sau đăng nhập, giỏ được lưu trong `GioHangKhachHang` và `ChiTietGioHang` theo mã khách lấy từ cookie
+đã xác thực. Giỏ vãng lai được gộp vào giỏ tài khoản khi đăng nhập thành công.
+Đăng xuất xóa session xác nhận nhưng giữ giỏ SQL. Cùng tài khoản trên trình duyệt hoặc máy khác
+thấy cùng giỏ sau khi tải lại trang; giỏ không tự mất khi Web khởi động lại.
+Các máy phải chạy code mới và cùng kết nối một SQL Server/database. Giỏ chỉ lưu mã bánh và số lượng,
+không giữ giá cũ, không giữ hoặc trừ kho. Người khác đăng nhập không thấy giỏ của tài khoản trước.
+
+Chạy migration `database/schema/07_CustomerCart.sql` một lần trên database chung; có thể chạy lại.
+Không cần chạy lại nếu đã tạo đúng hai bảng. Đọc giỏ trống chưa tạo dòng dữ liệu;
+khách đăng nhập thêm bánh thì SQL mới có bản ghi.
+
+Mỗi lần sửa tăng phiên bản giỏ. Nếu giỏ bị sửa ở trình duyệt khác sau màn xác nhận,
+Web yêu cầu xem lại. Tạo đơn và xóa giỏ SQL thực hiện trong cùng transaction của WebOrderRepository;
+lỗi ghi đơn giữ nguyên giỏ. Hai trình duyệt gửi cùng phiên bản chỉ một yêu cầu mới được tạo đơn.
 
 ## Ghép với Nam
 
-Repo tại thời điểm triển khai chưa có dịch vụ tạo đơn Web của Nam. Production không đăng ký dịch vụ giả;
-trang xác nhận hiển thị chờ tiếp nhận và khóa nút gửi. Không báo thành công khi chưa có mã đơn.
+Luồng hiện tại đã đăng ký WebOrderService và WebOrderRepository cho chức năng tạo đơn.
+Phần dưới mô tả hợp đồng giữa giỏ và đơn; không viết thêm luồng ghi đơn riêng.
 
 Nam triển khai `IWebOrderSubmission.Submit(WebPurchaseRequest)` và đăng ký DI trong Web:
 

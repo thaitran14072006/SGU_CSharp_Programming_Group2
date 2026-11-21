@@ -21,6 +21,13 @@ public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderReposi
             replay.Param("@customer",request.CustomerId,DbType.Int32);replay.Param("@key",request.RequestKey,DbType.Guid);
             if(replay.ExecuteScalar() is int existing){tx.Commit();return existing;}
         }
+        if(request.CartVersion is {} cartVersion)
+        {
+            using var current=Db.Command(c,"SELECT PhienBan FROM dbo.GioHangKhachHang WHERE MaKhachHang=@customer",tx);
+            current.Param("@customer",request.CustomerId,DbType.Int32);
+            if(current.ExecuteScalar() is not long actual || actual!=cartVersion)
+                throw new BusinessException("Giỏ hàng đã thay đổi hoặc đã được gửi ở trình duyệt khác. Vui lòng tải lại giỏ.");
+        }
         DateTime now;using(var clock=Db.Command(c,"SELECT SYSDATETIME()",tx))now=(DateTime)clock.ExecuteScalar()!;
         if(request.Pickup is null||request.Pickup<=now)throw new BusinessException("Ngày giờ nhận phải sau thời điểm đặt bánh.");
         var lines=new List<OrderLine>();
@@ -61,6 +68,11 @@ public sealed class WebOrderRepository(DbConnectionFactory db) : IWebOrderReposi
         {
             using var q=Db.Command(c,"INSERT dbo.ChiTietDonDat(MaDon,MaSanPham,SoLuong,DonGia) VALUES(@order,@product,@quantity,@price)",tx);
             q.Param("@order",id,DbType.Int32);q.Param("@product",line.ProductId,DbType.Int32);q.Param("@quantity",line.Quantity,DbType.Int32);q.Param("@price",line.Price,DbType.Decimal);q.ExecuteNonQuery();
+        }
+        if(request.CartVersion is not null)
+        {
+            using var consume=Db.Command(c,"DELETE dbo.ChiTietGioHang WHERE MaKhachHang=@customer; UPDATE dbo.GioHangKhachHang SET PhienBan=PhienBan+1,CapNhatLuc=SYSDATETIME() WHERE MaKhachHang=@customer",tx);
+            consume.Param("@customer",request.CustomerId,DbType.Int32);consume.ExecuteNonQuery();
         }
         tx.Commit();return id;
     }

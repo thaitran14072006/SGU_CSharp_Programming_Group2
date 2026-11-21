@@ -5,3 +5,4 @@ MocBakery/.vs/
 MocBakery/**/*.local.json
 MocBakery/**/logs/
 MocBakery/src/MocBakery.Web/wwwroot/images/bakery/french-pastries-images.md
+MocBakery/artifacts/

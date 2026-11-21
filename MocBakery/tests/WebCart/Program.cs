@@ -18,6 +18,8 @@ using MocBakery.Models.PublicCatalog;
 using MocBakery.Models.WebCart;
 using MocBakery.Web.Security;
 
+if(args.Contains("--sql")){await SqlCartChecks.Run();return;}
+
 var catalog = new Catalog();
 var cart = new CartService(new PublicCatalogService(catalog));
 int passed = 0;
@@ -38,12 +40,14 @@ catalog.Price = 20000;
 Check(cart.Quote(items).Total == 60000, "quote uses current server price");
 catalog.Price = 15000;
 var orders = new Orders();
+var carts = new MemoryCarts();
 var app = MocBakery.Web.Program.Build(["--environment", "Development"], builder =>
 {
     builder.WebHost.UseUrls("http://127.0.0.1:0");
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton<IPublicCatalogRepository>(catalog);
     builder.Services.AddSingleton<IWebOrderSubmission>(orders);
+    builder.Services.AddSingleton<ICustomerCartRepository>(carts);
     builder.Services.AddAuthentication(options => { options.DefaultAuthenticateScheme = "test"; options.DefaultChallengeScheme = "test"; })
         .AddScheme<AuthenticationSchemeOptions, TestAuth>("test", _ => { });
 });
@@ -72,9 +76,22 @@ try
     var anonymous = await client.GetAsync("/gio-hang/xac-nhan");
     Check(anonymous.StatusCode == HttpStatusCode.Unauthorized, "review requires customer authentication");
     client.DefaultRequestHeaders.Add("X-Test-Customer", "yes");
+    // This fixture bypasses the real login action, so seed its authenticated cart explicitly.
+    new CustomerCartService(carts,cart).MergeGuest(7,[new(1,2)]);
+    using var otherBrowser=new HttpClient(new HttpClientHandler{CookieContainer=new CookieContainer(),AllowAutoRedirect=false}){BaseAddress=client.BaseAddress};
+    otherBrowser.DefaultRequestHeaders.Add("X-Test-Customer","yes");
+    Check((await otherBrowser.GetStringAsync("/gio-hang")).Contains("30.000"),"same customer sees cart in a separate browser session");
+    client.DefaultRequestHeaders.Remove("X-Test-Customer");
+    await Page("/gio-hang");
+    client.DefaultRequestHeaders.Add("X-Test-Customer","yes");
+    Check((await Page("/gio-hang")).Contains("30.000"),"cart survives authentication session changes");
     page = await Page("/gio-hang/xac-nhan");
     string key = Token(page, "requestKey");
     Check(Guid.TryParse(key, out _), "review issues submission key");
+    carts.Update(7,items=>items.ToList());
+    await Post("/gio-hang/xac-nhan",page,("requestKey",key));
+    Check(orders.Count==0,"stale review blocked after another browser changes cart version");
+    page=await Page("/gio-hang/xac-nhan");key=Token(page,"requestKey");
     catalog.Price = 16000;
     await Post("/gio-hang/xac-nhan", page, ("requestKey", key), ("customerId","999"));
     Check(orders.Count == 0, "price changed after review blocks submission");
@@ -93,9 +110,21 @@ try
     await Post("/gio-hang/xac-nhan", page, ("requestKey", key));
     Check(orders.Count == 1, "sequential repeat cannot create second order");
     Check((await Page("/gio-hang")).Contains("Giỏ hàng đang trống"), "successful submission clears cart");
+    Check((await otherBrowser.GetStringAsync("/gio-hang")).Contains("Giỏ hàng đang trống"),"successful submission clears shared cart in other browser");
     Console.WriteLine($"{passed} checks passed. SQL and live Nam integration not exercised.");
 }
+
 finally { await app.StopAsync(); await app.DisposeAsync(); }
+
+sealed class MemoryCarts : ICustomerCartRepository
+{
+    private readonly Dictionary<int,SavedCart> states=[];
+    public SavedCart Read(int id){lock(states)return states.GetValueOrDefault(id)??new(0,[]);}
+    public SavedCart Update(int id,Func<IReadOnlyList<CartItem>,IReadOnlyList<CartItem>> change)
+    {lock(states){var old=Read(id);return states[id]=new(old.Version+1,change(old.Items));}}
+    public bool ClearIfVersion(int id,long version)
+    {lock(states){if(Read(id).Version!=version)return false;states[id]=new(version+1,[]);return true;}}
+}
 
 sealed class Catalog : IPublicCatalogRepository
 {
