@@ -57,6 +57,13 @@ internal static class WarehouseChecks
         });
         await check("Sales staff can read warehouse but cannot bypass write permissions",async()=>
         {Assert((await staff.GetAsync("/admin/phieu-nhap")).StatusCode==HttpStatusCode.OK);foreach(var route in new[]{"/admin/phieu-nhap/luu","/admin/nguyen-lieu/luu","/admin/nha-cung-cap/luu","/admin/ton-kho/dieu-chinh"}){using var r=await Post(staff,route,"/admin/phieu-nhap",new(){["Role"]="ChuTiem"});Assert(Denied(r),route);}});
+        await check("Warehouse invalid extreme receipt amounts show validation without crashing or writing",async()=>
+        {
+            var fields=Draft();fields["Lines[0].Quantity"]=decimal.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture);fields["Lines[0].Cost"]=fields["Lines[0].Quantity"];
+            using var response=await Post(owner,"/admin/phieu-nhap/luu","/admin/phieu-nhap/them",fields);
+            Assert(response.StatusCode==HttpStatusCode.OK&&Value("SELECT COUNT(*) FROM dbo.PhieuNhap")==0,"Invalid amounts returned "+response.StatusCode);
+            Assert((await response.Content.ReadAsStringAsync()).Contains("validation-summary-errors"));
+        });
         await check("Warehouse rejects fractional cake quantities and expired receipt dates",async()=>
         {var fields=Draft();fields["Lines[0].Quantity"]="1.5";using var r=await Post(owner,"/admin/phieu-nhap/luu","/admin/phieu-nhap/them",fields);Assert(r.StatusCode==HttpStatusCode.OK&&Value("SELECT COUNT(*) FROM dbo.PhieuNhap")==0);fields=Draft();fields["Lines[0].Expiry"]=DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd");using var date=await Post(owner,"/admin/phieu-nhap/luu","/admin/phieu-nhap/them",fields);Assert(date.StatusCode==HttpStatusCode.OK&&Value("SELECT COUNT(*) FROM dbo.PhieuNhap")==0);});
         decimal cakeBefore=Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh WHERE MaSanPham=2");
@@ -103,6 +110,13 @@ internal static class WarehouseChecks
         });
         await check("Warehouse stock filters reject unknown kind and retain empty-result navigation",async()=>
         {using var invalid=await owner.GetAsync("/admin/ton-kho?kind=Other");using var filter=await owner.GetAsync("/admin/ton-kho?filter=Other");string html=await Page(owner,"/admin/ton-kho?kind=NguyenLieu&q=khong-tim-thay&filter=Expired");Assert(invalid.StatusCode==HttpStatusCode.BadRequest&&filter.StatusCode==HttpStatusCode.BadRequest&&html.Contains("Không có lô phù hợp")&&html.Contains("← Về tổng quan"));});
+        await check("Stopped stock filter includes lots of inactive materials",async()=>
+        {
+            using var stopped=await Post(owner,"/admin/nguyen-lieu/luu",$"/admin/nguyen-lieu/{material}/sua",new(){["Id"]=material.ToString(),["Name"]="Web kho bột",["Unit"]="Kg",["LowStock"]="0.125",["Active"]="false"});
+            string html=await Page(owner,"/admin/ton-kho?kind=NguyenLieu&filter=Stopped");
+            using var restored=await Post(owner,"/admin/nguyen-lieu/luu",$"/admin/nguyen-lieu/{material}/sua",new(){["Id"]=material.ToString(),["Name"]="Web kho bột",["Unit"]="Kg",["LowStock"]="0.125",["Active"]="true"});
+            Assert(stopped.StatusCode==HttpStatusCode.Redirect&&restored.StatusCode==HttpStatusCode.Redirect&&html.Contains("WEB-KHO-RAW"),"Inactive material missing from stopped filter");
+        });
         await check("Warehouse history and forms reject nonexistent IDs without SQL changes",async()=>
         {foreach(var route in new[]{"/admin/phieu-nhap/999999","/admin/ton-kho/NguyenLieu/999999/lich-su","/admin/nha-cung-cap/999999/sua","/admin/nguyen-lieu/999999/sua"}){using var r=await owner.GetAsync(route);Assert(r.StatusCode==HttpStatusCode.NotFound,route);}});
         await app.StopAsync();

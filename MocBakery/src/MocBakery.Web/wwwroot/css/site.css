@@ -97,3 +97,35 @@ body input:is([type=checkbox],[type=radio],[type=range]){accent-color:#a57b43}
 
 .checkout-contact{padding:26px;border:1px solid var(--frame);border-radius:12px;background:linear-gradient(135deg,#fffdf9,#f8f1e6);box-shadow:0 5px 18px #59402208}.checkout-contact h2{font-size:28px;margin:0 0 10px}.checkout-contact .intro{font-size:14px;margin-bottom:6px}.checkout-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px}.checkout-fields>div{min-width:0}.checkout-products-title{font-size:26px;margin:32px 0 14px}.checkout-details .cart-row h3{font-size:22px;margin:0}.checkout-form .cart-summary>.store-button{margin-top:20px}.checkout-form .field-validation-error{display:block;margin-top:6px;font-size:13px}.checkout-contact .validation{margin-top:16px}
 @media(max-width:650px){.checkout-contact{padding:20px 18px}.checkout-fields{grid-template-columns:minmax(0,1fr)}.checkout-fields .full{grid-column:auto}.checkout-contact h2{font-size:25px}}
+
+.header.maison-header{display:block;max-width:none;margin:0;padding:0;background:#fcf9f3;border:0;border-bottom:1px solid #d9c9af;box-shadow:0 5px 24px #49331d06;position:relative;z-index:20}
+.maison-header .header-message{display:flex;justify-content:center;align-items:center;gap:13px;background:#4a3023;color:#f6e9d3;padding:7px 18px;font-size:10px;letter-spacing:1.25px;line-height:1.4}
+.header.maison-header nav.header-navigation{display:block;max-width:1280px;margin:auto;padding:0;font-size:13px}
+.maison-header .header-main{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:32px;padding:22px 44px 19px;min-height:110px}
+.maison-header .header-discover{justify-self:start;display:grid;gap:3px;color:#8c7863;font-size:11px;letter-spacing:.35px;line-height:1.5}
+.maison-header .header-discover strong{font-weight:400;color:#65462e;font-size:13px}.maison-header .header-discover strong span{margin-left:9px;color:#ac864e}
+.maison-header .maison-brand{display:flex;flex-direction:column;align-items:center;gap:7px;color:#52351f;text-align:center;line-height:1;min-width:0;text-decoration:none}
+.maison-header .maison-brand .brand-word{font:normal 48px/.95 "Times New Roman","Liberation Serif",serif;letter-spacing:5px;margin-right:-5px}
+.maison-header .maison-brand .brand-tag{font:8px/1.5 "Segoe UI",Arial,sans-serif;letter-spacing:2.5px;white-space:nowrap}
+.maison-header .header-tools{display:flex;justify-content:flex-end;align-items:center;gap:20px;min-width:0}
+.maison-header .header-tool{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 0;border:0;background:none;color:#6d513c;cursor:pointer;font:12px/1.4 "Segoe UI",Arial,sans-serif;white-space:nowrap;text-decoration:none;min-height:42px}
+.maison-header .header-tool svg{display:block;flex-shrink:0;transition:transform .2s ease}.maison-header .header-tool:hover svg{transform:translateY(-2px)}
+.maison-header .header-cart{border-left:1px solid #dfd1ba;padding-left:20px}
+.header.maison-header nav a:hover{text-decoration:none}.maison-header .maison-brand::after,.maison-header .header-tool::after,.maison-header .header-discover::after{display:none}
+.maison-header .header-menu{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:38px;border-top:1px solid #e9dfcf;margin:0 44px;padding:14px 20px 17px}
+.maison-header .header-menu a,.maison-header .header-menu .nav-button{font:11px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:1.1px;text-transform:uppercase;color:#684c35;text-decoration:none;white-space:nowrap}
+.maison-header .header-menu a[aria-current=page]{color:#3e281a;font-weight:600}.maison-header .header-menu a[aria-current=page]::after{transform:scaleX(1)}
+.maison-header .header-menu .nav-button:hover{color:#ac7e40}.maison-header .header-menu form{display:flex;align-items:center}
+.maison-header .header-search{max-width:900px;margin:0 auto;padding:22px 30px 25px;border-top:1px solid #e9dfcf}
+.maison-header .header-search[hidden]{display:none!important}.maison-header .header-search label{font-size:13px;font-weight:400;margin:0 0 10px;color:#735d47}
+.maison-header .header-search>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:14px}.maison-header .header-search .store-button{font-size:13px;min-height:46px;border-radius:7px}
+.maison-header .header-search-close{border:0;background:none;color:#796650;font:12px "Segoe UI",Arial,sans-serif;padding:10px 2px;cursor:pointer;text-underline-offset:4px}.maison-header .header-search-close:hover{text-decoration:underline}
+@media(max-width:1100px){.maison-header .header-main{padding-left:28px;padding-right:28px;gap:22px}.maison-header .header-tools{gap:17px}.maison-header .tool-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.maison-header .header-tool{width:34px;padding:7px}.maison-header .header-cart{border:0;padding-left:7px}.maison-header .header-menu{margin-left:28px;margin-right:28px}}
+@media(max-width:650px){.maison-header .header-message{font-size:9px;letter-spacing:.8px;padding:7px 12px;gap:9px}.maison-header .header-main{grid-template-columns:minmax(0,1fr) auto;gap:16px;min-height:85px;padding:17px 20px 15px}.maison-header .header-discover{display:none}.maison-header .maison-brand{align-items:flex-start;justify-self:start;gap:5px}.maison-header .maison-brand .brand-word{font-size:37px;letter-spacing:3px;margin-right:-3px}.maison-header .maison-brand .brand-tag{font-size:7px;letter-spacing:1.5px}.maison-header .header-tools{gap:9px}.maison-header .header-tool{width:32px;min-height:40px;padding:6px}.maison-header .header-menu{margin:0 20px;padding:13px 0 15px;gap:13px 22px}.maison-header .header-menu a,.maison-header .header-menu .nav-button{font-size:10px;letter-spacing:.45px}.maison-header .header-search{padding:18px 20px 20px}.maison-header .header-search>div{grid-template-columns:minmax(0,1fr) auto;gap:10px}.maison-header .header-search input{grid-column:1/-1}.maison-header .header-search-close{justify-self:end}}
+@media(prefers-reduced-motion:reduce){.maison-header .header-tool svg{transition:none}}
+@media(max-width:650px){.maison-header .header-tools{gap:5px}.maison-header .header-tool{width:30px}}
+.skip{z-index:100}
+.order-detail-layout{margin-top:12px}
+
+
+.order-detail-layout .order-success{margin-top:0;margin-bottom:30px}

@@ -159,8 +159,28 @@ public sealed class AdminController(AdminServices services) : Controller
     [HttpGet("bao-cao"),Authorize(Roles=Roles.ChuTiem)]
     public IActionResult Reports(DateTime? from=null,DateTime? to=null)
     {
-        var start=from??DateTime.Today.AddDays(-29);var end=to??DateTime.Today;ViewData["From"]=start;ViewData["To"]=end;
-        try{ViewData["Bestsellers"]=services.Reports.Bestsellers(employee,start,end);return View(services.Reports.Revenue(employee,start,end));}
-        catch(BusinessException ex){ModelState.AddModelError("",ex.Message);ViewData["Bestsellers"]=Array.Empty<MocBakery.Models.DTOs.Reports.ProductSales>();return View(Array.Empty<MocBakery.Models.DTOs.Reports.RevenueDay>());}
+        var start=(from??DateTime.Today.AddDays(-29)).Date;var end=(to??DateTime.Today).Date;ViewData["From"]=start;ViewData["To"]=end;
+        if(ModelState.IsValid)try{ViewData["Bestsellers"]=services.Reports.Bestsellers(employee,start,end);return View(nameof(Reports),services.Reports.Revenue(employee,start,end));}
+        catch(BusinessException ex){ModelState.AddModelError("",ex.Message);}
+        Response.StatusCode=StatusCodes.Status400BadRequest;
+        ViewData["Bestsellers"]=Array.Empty<MocBakery.Models.DTOs.Reports.ProductSales>();return View(nameof(Reports),Array.Empty<MocBakery.Models.DTOs.Reports.RevenueDay>());
+    }
+
+    [HttpGet("bao-cao/{format}"),Authorize(Roles=Roles.ChuTiem)]
+    public IActionResult ExportReport(string format,DateTime? from=null,DateTime? to=null)
+    {
+        if(format is not ("excel" or "pdf"))return NotFound();
+        if(!ModelState.IsValid)return Reports(from,to);
+        var start=(from??DateTime.Today.AddDays(-29)).Date;var end=(to??DateTime.Today).Date;
+        try
+        {
+            var days=services.Reports.Revenue(employee,start,end);
+            var products=services.Reports.Bestsellers(employee,start,end);
+            string filename=$"moc-bakery-doanh-thu-{start:yyyyMMdd}-{end:yyyyMMdd}";
+            return format=="excel"
+                ?File(RevenueExport.Excel(start,end,days,products),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",filename+".xlsx")
+                :File(RevenueExport.Pdf(start,end,days,products),"application/pdf",filename+".pdf");
+        }
+        catch(BusinessException ex){ModelState.AddModelError("",ex.Message);return Reports(from,to);}
     }
 }

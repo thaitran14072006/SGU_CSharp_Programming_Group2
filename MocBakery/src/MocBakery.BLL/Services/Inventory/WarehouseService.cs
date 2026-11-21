@@ -78,8 +78,8 @@ public sealed class WarehouseService(IWarehouseRepository repository,AuthService
                 bool usable=l.Active&&l.State=="DangBan"&&l.Remaining>0&&l.Produced<=today&&l.Expiry>=today;
                 bool low=available.GetValueOrDefault(l.ItemId)<l.LowStock;
                 string warning=l.Expiry<today?"Hết hạn":!l.Active||l.State!="DangBan"?"Ngừng sử dụng":l.Remaining==0?"Hết hàng":l.Expiry<=today.AddDays(3)?"Sắp hết hạn":low?"Sắp hết":"Bình thường";
-                return (Row:new WarehouseRow(l.Kind,l.Id,l.ItemId,l.Code,l.Name,l.Unit,l.Expiry,l.Remaining,warning,l.State,usable),Low:low);
-            }).Where(x=>filter switch{"Low"=>x.Low,"Soon"=>x.Row.Expiry>=today&&x.Row.Expiry<=today.AddDays(3)&&x.Row.Remaining>0,"Expired"=>x.Row.Expiry<today,"Stopped"=>x.Row.State!="DangBan",_=>true})
+                return (Row:new WarehouseRow(l.Kind,l.Id,l.ItemId,l.Code,l.Name,l.Unit,l.Expiry,l.Remaining,warning,l.State,usable),Low:low,Stopped:!l.Active||l.State!="DangBan");
+            }).Where(x=>filter switch{"Low"=>x.Low,"Soon"=>x.Row.Expiry>=today&&x.Row.Expiry<=today.AddDays(3)&&x.Row.Remaining>0,"Expired"=>x.Row.Expiry<today,"Stopped"=>x.Stopped,_=>true})
             .Select(x=>x.Row).OrderBy(l=>l.Expiry).ThenBy(l=>l.Id).ToList();
     }
     public IReadOnlyList<StockHistory> History(UserSession session,string kind,int lotId){auth.Require(session);return repository.History(kind,lotId);}

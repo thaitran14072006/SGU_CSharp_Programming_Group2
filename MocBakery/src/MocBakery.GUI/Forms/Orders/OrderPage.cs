@@ -18,6 +18,11 @@ internal sealed class OrderPage:UserControl
   orders.Columns["Status"]!.FillWeight=115;
   var products=Ui.Grid(("Name","Sản phẩm"),("Price","Đơn giá"),("Stock","Tồn"));
   var lines=Ui.Grid(("Product","Sản phẩm"),("Quantity","SL"),("Price","Đơn giá"),("Total","Thành tiền"));
+  foreach(var grid in new[]{orders,products,lines})
+  {
+   grid.ColumnHeadersDefaultCellStyle.SelectionBackColor=grid.ColumnHeadersDefaultCellStyle.BackColor;
+   grid.ColumnHeadersDefaultCellStyle.SelectionForeColor=grid.ColumnHeadersDefaultCellStyle.ForeColor;
+  }
   var chosen=new Dictionary<int,OrderLine>();int? customerId=null;string customerName="Chưa chọn khách";int editId=0;
   var phone=Ui.Input(15);phone.ReadOnly=true;phone.PlaceholderText="Chọn khách hàng để lấy SĐT";
   var totalLabel=new Label{AutoSize=true,Font=new Font("Segoe UI",11,FontStyle.Bold)};

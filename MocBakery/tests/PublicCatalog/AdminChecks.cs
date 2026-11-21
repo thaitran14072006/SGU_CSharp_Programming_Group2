@@ -5,6 +5,10 @@ using MocBakery.BLL.Services.Orders;
 using MocBakery.DAL;
 using MocBakery.DAL.Repositories.Orders;
 using MocBakery.Models.WebCart;
+using ClosedXML.Excel;
+using PdfSharp.Pdf.IO;
+using MocBakery.Web.Admin;
+using MocBakery.Models.DTOs.Reports;
 
 internal static class AdminChecks
 {
@@ -55,6 +59,25 @@ internal static class AdminChecks
         {using var r=await Post(owner,"/admin/kho/nhap","/admin/kho/nhap",new(){["ProductId"]=product.ToString(),["Quantity"]="5",["Produced"]=DateTime.Today.ToString("yyyy-MM-dd"),["Expiry"]=DateTime.Today.AddDays(2).ToString("yyyy-MM-dd"),["Source"]="Kiểm thử admin"});lot=Value($"SELECT MaLo FROM dbo.LoBanh WHERE MaSanPham={product}");Assert(r.StatusCode==HttpStatusCode.Redirect&&Value($"SELECT SoLuongCon FROM dbo.LoBanh WHERE MaLo={lot}")==5);using var stop=await Post(owner,$"/admin/kho/{lot}/trang-thai","/admin/kho",new(){["status"]="NgungBan"});using var stopped=JsonDocument.Parse(await customer.GetStringAsync($"/api/banh/{product}"));Assert(!stopped.RootElement.GetProperty("inStock").GetBoolean());using var resume=await Post(owner,$"/admin/kho/{lot}/trang-thai","/admin/kho",new(){["status"]="DangBan"});});
         await check("Admin creates customer and keeps internal notes off public pages",async()=>
         {using var r=await Post(owner,"/admin/khach-hang/luu","/admin/khach-hang/them",new(){["FullName"]="Khách quản trị thử",["Phone"]="0907788111",["Note"]="INTERNAL_ONLY_ADMIN_NOTE"});buyer=(int)Value("SELECT MaKhachHang FROM dbo.KhachHang WHERE SoDienThoai='0907788111'");Assert(r.StatusCode==HttpStatusCode.Redirect&&buyer>0&&!(await Page(customer,"/banh")).Contains("INTERNAL_ONLY_ADMIN_NOTE"));});
+        await check("Admin customer edits preserve identity and duplicate phones are rejected",async()=>
+        {
+            using var edit=await Post(owner,"/admin/khach-hang/luu",$"/admin/khach-hang/{buyer}/sua",new(){["Id"]=buyer.ToString(),["FullName"]="Khách quản trị đã sửa",["Phone"]="0907788111",["Address"]="Địa chỉ đã sửa",["Note"]="INTERNAL_ONLY_ADMIN_NOTE"});
+            using var duplicate=await Post(staff,"/admin/khach-hang/luu","/admin/khach-hang/them",new(){["FullName"]="Khách trùng số",["Phone"]="0907788111"});
+            Assert(edit.StatusCode==HttpStatusCode.Redirect&&duplicate.StatusCode==HttpStatusCode.OK&&Value($"SELECT COUNT(*) FROM dbo.KhachHang WHERE MaKhachHang={buyer} AND HoTen=N'Khách quản trị đã sửa' AND DiaChi=N'Địa chỉ đã sửa'")==1&&Value("SELECT COUNT(*) FROM dbo.KhachHang WHERE SoDienThoai='0907788111'")==1);
+        });
+        await check("Categories edit and delete unused rows; used categories cannot be deleted",async()=>
+        {
+            using var edit=await Post(owner,"/admin/danh-muc/luu",$"/admin/danh-muc/{category}/sua",new(){["Id"]=category.ToString(),["Name"]="Danh mục quản trị đã sửa",["Active"]="true"});
+            using var used=await Post(owner,$"/admin/danh-muc/{category}/xoa","/admin/danh-muc",new());
+            using var create=await Post(owner,"/admin/danh-muc/luu","/admin/danh-muc/them",new(){["Name"]="Danh mục dùng để xóa",["Active"]="true"});
+            int unused=(int)Value("SELECT MaLoai FROM dbo.LoaiBanh WHERE TenLoai=N'Danh mục dùng để xóa'");
+            using var delete=await Post(owner,$"/admin/danh-muc/{unused}/xoa","/admin/danh-muc",new());
+            Assert(edit.StatusCode==HttpStatusCode.Redirect&&used.StatusCode==HttpStatusCode.Redirect&&delete.StatusCode==HttpStatusCode.Redirect&&Value($"SELECT COUNT(*) FROM dbo.LoaiBanh WHERE MaLoai={category}")==1&&Value($"SELECT COUNT(*) FROM dbo.LoaiBanh WHERE MaLoai={unused}")==0);
+        });
+        await check("Admin product validation rejects zero negative and malformed prices without writes",async()=>
+        {
+            foreach(string price in new[]{"0","-1","abc","1.001"}){using var response=await Post(owner,"/admin/banh/luu",$"/admin/banh/{product}/sua",Product(price));Assert(response.StatusCode==HttpStatusCode.OK&&Value($"SELECT GiaBan FROM dbo.SanPham WHERE MaSanPham={product}")==29000);}
+        });
         await check("Admin creates employee profile before granting account",async()=>
         {using var r=await Post(owner,"/admin/nhan-vien/luu","/admin/nhan-vien/them",new(){["FullName"]="Nhân viên quản trị thử",["Phone"]="0907788222",["Role"]="NhanVien",["StartDate"]=DateTime.Today.ToString("yyyy-MM-dd"),["Active"]="true"});employee=(int)Value("SELECT MaNhanVien FROM dbo.NhanVien WHERE SoDienThoai='0907788222'");Assert(r.StatusCode==HttpStatusCode.Redirect&&employee>0);});
         await check("Admin account creation links employee and requires password change",async()=>
@@ -82,6 +105,65 @@ internal static class AdminChecks
         {int id=web.Submit(Request());using var blank=await Post(owner,$"/admin/don-hang/{id}/huy",$"/admin/don-hang/{id}",new(){["reason"]=""});Assert(Value($"SELECT COUNT(*) FROM dbo.DonDatBanh WHERE MaDon={id} AND TrangThai=N'MoiTiepNhan'")==1);using var cancel=await Post(owner,$"/admin/don-hang/{id}/huy",$"/admin/don-hang/{id}",new(){["reason"]="Khách đổi lịch"});Assert((await Page(customer,$"/don-hang/{id}")).Contains("Khách đổi lịch")&&Value($"SELECT SoLuongCon FROM dbo.LoBanh WHERE MaLo={lot}")==3);});
         await check("Admin archives products without deleting order history",async()=>
         {using var r=await Post(owner,$"/admin/banh/{product}/trang-thai","/admin/banh",new(){["active"]="false"});using var hidden=await customer.GetAsync($"/api/banh/{product}");Assert(hidden.StatusCode==HttpStatusCode.NotFound&&Value($"SELECT COUNT(*) FROM dbo.ChiTietDonDat WHERE MaSanPham={product}")==2);using var categoryOff=await Post(owner,"/admin/danh-muc/luu",$"/admin/danh-muc/{category}/sua",new(){["Id"]=category.ToString(),["Name"]="Danh mục quản trị thử",["Active"]="false"});});
+        await check("Revenue downloads enforce employee owner authorization",async()=>
+        {
+            using var anon=Client();
+            foreach(var format in new[]{"excel","pdf"})
+            {
+                string path="/admin/bao-cao/"+format;
+                using var a=await anon.GetAsync(path);using var c=await customer.GetAsync(path);
+                using var s=await staff.GetAsync(path);using var w=await warehouse.GetAsync(path);
+                Assert(AtLogin(a)&&AtLogin(c)&&Denied(s)&&Denied(w));
+            }
+        });
+        string reportOut=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"../../../../../artifacts/report-export"));
+        Directory.CreateDirectory(reportOut);
+        await check("Excel export matches invoiced SQL totals, numeric cells and selected inclusive dates",async()=>
+        {
+            string today=DateTime.Today.ToString("yyyy-MM-dd");
+            using var response=await owner.GetAsync($"/admin/bao-cao/excel?from={today}&to={today}");
+            Assert(response.StatusCode==HttpStatusCode.OK&&response.Content.Headers.ContentType?.MediaType=="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"&&response.Headers.CacheControl?.NoStore==true);
+            byte[] bytes=await response.Content.ReadAsByteArrayAsync();
+            using var stream=new MemoryStream(bytes);using var workbook=new XLWorkbook(stream);
+            Assert(workbook.Worksheets.Count==3&&workbook.Worksheet("Tổng hợp").Cell("B6").GetValue<decimal>()==Value("SELECT COALESCE(SUM(TongTien),0) FROM dbo.HoaDon WHERE CONVERT(date,NgayLap)=CONVERT(date,GETDATE())"));
+            Assert(workbook.Worksheet("Tổng hợp").Cell("B7").GetValue<long>()==Value("SELECT COUNT(*) FROM dbo.HoaDon WHERE CONVERT(date,NgayLap)=CONVERT(date,GETDATE())"));
+            Assert(workbook.Worksheet("Theo ngày").Cell("A8").DataType==XLDataType.DateTime&&workbook.Worksheet("Theo ngày").Cell("C8").DataType==XLDataType.Number);
+            Assert(response.Content.Headers.ContentDisposition?.FileNameStar?.Contains(today.Replace("-",""))==true);
+            await File.WriteAllBytesAsync(Path.Combine(reportOut,"report.xlsx"),bytes);
+        });
+        await check("Report exports reject malformed reversed and overflowing date ranges",async()=>
+        {
+            foreach(var format in new[]{"excel","pdf"})
+            foreach(var query in new[]{"from=bad","from=2026-11-20&to=2026-11-01","to=9999-12-31"})
+            {using var response=await owner.GetAsync("/admin/bao-cao/"+format+"?"+query);Assert(response.StatusCode==HttpStatusCode.BadRequest&&response.Content.Headers.ContentDisposition is null);}
+            using var unknown=await owner.GetAsync("/admin/bao-cao/csv");Assert(unknown.StatusCode==HttpStatusCode.NotFound);
+        });
+        await check("Empty exports remain valid; product names cannot inject Excel formulas",async()=>
+        {
+            using var response=await owner.GetAsync("/admin/bao-cao/excel?from=1800-01-01&to=1800-01-01");
+            using var stream=new MemoryStream(await response.Content.ReadAsByteArrayAsync());using var empty=new XLWorkbook(stream);
+            Assert(empty.Worksheet("Tổng hợp").Cell("B6").GetValue<decimal>()==0&&empty.Worksheet("Theo ngày").Cell("A8").GetString().Contains("Không có"));
+            byte[] safe=RevenueExport.Excel(DateTime.Today,DateTime.Today,[],[new ProductSales(1,"=HYPERLINK(\"https://example.com\")",1,12.50m)]);
+            using var safeStream=new MemoryStream(safe);using var safeBook=new XLWorkbook(safeStream);
+            var name=safeBook.Worksheet("Bánh bán chạy").Cell("A8");
+            Assert(!name.HasFormula&&name.GetString().StartsWith("=HYPERLINK")&&safeBook.Worksheet("Bánh bán chạy").Cell("C8").GetValue<decimal>()==12.50m);
+        });
+        await check("PDF export is downloadable with embedded Vietnamese fonts and paginates long reports",async()=>
+        {
+            using var response=await owner.GetAsync("/admin/bao-cao/pdf");
+            byte[] bytes=await response.Content.ReadAsByteArrayAsync();
+            Assert(response.StatusCode==HttpStatusCode.OK&&response.Content.Headers.ContentType?.MediaType=="application/pdf"&&response.Content.Headers.ContentDisposition?.FileNameStar?.EndsWith(".pdf")==true);
+            using var stream=new MemoryStream(bytes);using var pdf=PdfReader.Open(stream,PdfDocumentOpenMode.Import);Assert(pdf.PageCount>0);
+            await File.WriteAllBytesAsync(Path.Combine(reportOut,"report.pdf"),bytes);
+            var days=Enumerable.Range(0,100).Select(i=>new RevenueDay(DateTime.Today.AddDays(-i),1,12345.50m)).ToArray();
+            var products=Enumerable.Range(0,60).Select(i=>new ProductSales(i,"Bánh kem dâu, sô cô la và hạnh nhân - phiên bản đặc biệt "+i,3,34567.50m)).ToArray();
+            byte[] longBytes=RevenueExport.Pdf(DateTime.Today.AddDays(-99),DateTime.Today,days,products);
+            using var longStream=new MemoryStream(longBytes);using var longPdf=PdfReader.Open(longStream,PdfDocumentOpenMode.Import);Assert(longPdf.PageCount>=4);
+            await File.WriteAllBytesAsync(Path.Combine(reportOut,"report-long.pdf"),longBytes);
+            byte[] emptyBytes=RevenueExport.Pdf(DateTime.Today,DateTime.Today,[],[]);
+            using var emptyStream=new MemoryStream(emptyBytes);using var emptyPdf=PdfReader.Open(emptyStream,PdfDocumentOpenMode.Import);Assert(emptyPdf.PageCount==1);
+            await File.WriteAllBytesAsync(Path.Combine(reportOut,"report-empty.pdf"),emptyBytes);
+        });
         await check("Admin logout is POST-only and revokes a copied cookie",async()=>
         {
             using var get=await owner.GetAsync("/admin/dang-xuat");Assert(get.StatusCode==HttpStatusCode.MethodNotAllowed);

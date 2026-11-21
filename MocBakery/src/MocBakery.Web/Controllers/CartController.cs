@@ -12,22 +12,28 @@ namespace MocBakery.Web.Controllers;
 
 [Route("gio-hang"), ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [RequestSizeLimit(16384)]
-public sealed class CartController(CartService cart, IWebOrderSubmission orders, ILogger<CartController> logger) : Controller
+public sealed class CartController(CartService cart, CustomerCartService savedCart, IWebOrderSubmission orders, ILogger<CartController> logger) : Controller
 {
     private const string ItemsKey = "Mai.Cart.Items";
     private const string ReviewKey = "Mai.Cart.Review";
     private const string LastOrderKey = "Mai.Cart.LastOrder";
-    private IReadOnlyList<CartItem> Items => Read<List<CartItem>>(ItemsKey) ?? [];
+    private SavedCart CurrentCart() => CustomerCookie.Identity(User) is {} identity
+        ? savedCart.Read(identity.CustomerId) : new(0,Read<List<CartItem>>(ItemsKey) ?? []);
     private T? Read<T>(string key) => HttpContext.Session.GetString(key) is { } json ? JsonSerializer.Deserialize<T>(json) : default;
     private void Write<T>(string key, T value) => HttpContext.Session.SetString(key, JsonSerializer.Serialize(value));
     private void Change(int productId, int quantity, bool add)
     {
-        try { Write(ItemsKey, cart.Change(Items, productId, quantity, add)); HttpContext.Session.Remove(ReviewKey); }
+        try
+        {
+            if(CustomerCookie.Identity(User) is {} identity) savedCart.Change(identity.CustomerId,productId,quantity,add);
+            else Write(ItemsKey,cart.Change(CurrentCart().Items,productId,quantity,add));
+            HttpContext.Session.Remove(ReviewKey);
+        }
         catch (BusinessException ex) { TempData["CartError"] = ex.Message; }
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View(new CartViewModel(cart.Quote(Items)));
+    public IActionResult Index() => View(new CartViewModel(cart.Quote(CurrentCart().Items)));
 
     [HttpPost("them")]
     public IActionResult Add(int productId, int quantity) { if (ModelState.IsValid) Change(productId, quantity, true); else TempData["CartError"] = "Số lượng không hợp lệ."; return RedirectToAction(nameof(Index)); }
@@ -42,12 +48,13 @@ public sealed class CartController(CartService cart, IWebOrderSubmission orders,
     public IActionResult Review()
     {
         var identity = CustomerCookie.Identity(User)!;
-        var quote = cart.Quote(Items);
+        var state = CurrentCart();
+        var quote = cart.Quote(state.Items);
         if (!quote.CanSubmit) { TempData["CartError"] = "Giỏ trống hoặc có bánh không còn đủ số lượng. Vui lòng kiểm tra lại."; return RedirectToAction(nameof(Index)); }
         // Preserve the key across refreshes so concurrent retries reach Nam with the same key.
         var old = Read<CartReview>(ReviewKey);
-        var review = old is not null && old.CustomerId == identity.CustomerId && Same(old.Quote, quote)
-            ? old : new CartReview(identity.CustomerId, Guid.NewGuid(), quote);
+        var review = old is not null && old.CustomerId == identity.CustomerId && old.CartVersion == state.Version && Same(old.Quote, quote)
+            ? old : new CartReview(identity.CustomerId, Guid.NewGuid(), quote,state.Version);
         Write(ReviewKey, review);
         var draft=Read<CheckoutDraft>("Mai.Cart.Draft");
         return View(CheckoutViewModel.Create(quote,new CheckoutForm
@@ -68,17 +75,19 @@ public sealed class CartController(CartService cart, IWebOrderSubmission orders,
         if (input.RequestKey == Guid.Empty || review is null || review.CustomerId != identity.CustomerId || review.RequestKey != input.RequestKey)
         { TempData["CartError"] = "Phiên xác nhận đã thay đổi. Vui lòng kiểm tra lại giỏ."; return RedirectToAction(nameof(Index)); }
         Write("Mai.Cart.Draft",new CheckoutDraft(input.Pickup,input.Note,input.FullName,input.Phone,input.Email));
-        var quote = cart.Quote(Items);
-        if (!quote.CanSubmit || !Same(review.Quote, quote))
-        { HttpContext.Session.Remove(ReviewKey); TempData["CartError"] = "Giá hoặc tình trạng bánh vừa thay đổi. Vui lòng xem lại và xác nhận mức giá mới."; return RedirectToAction(nameof(Index)); }
+        var state = CurrentCart();
+        var quote = cart.Quote(state.Items);
+        if (!quote.CanSubmit || review.CartVersion != state.Version || !Same(review.Quote, quote))
+        { HttpContext.Session.Remove(ReviewKey); TempData["CartError"] = "Giỏ hàng, giá hoặc tình trạng bánh vừa thay đổi. Vui lòng xem lại và xác nhận."; return RedirectToAction(nameof(Index)); }
         if(input.Pickup is not null&&input.Pickup<=DateTime.Now)
             ModelState.AddModelError(nameof(input.Pickup),"Chọn ngày giờ nhận trong tương lai.");
         if(!ModelState.IsValid)return View("Review",CheckoutViewModel.Create(quote,input));
         try
         {
             // Only server-owned customer identity, quantities and rechecked total cross this boundary.
-            int id = orders.Submit(new(identity.CustomerId, input.RequestKey, Items, quote.Total, input.Pickup, input.Note, quote.Lines,new(input.FullName,input.Phone,input.Email)));
+            int id = orders.Submit(new(identity.CustomerId, input.RequestKey, state.Items, quote.Total, input.Pickup, input.Note, quote.Lines,new(input.FullName,input.Phone,input.Email),state.Version));
             if (id <= 0) throw new BusinessException("Chưa nhận được mã đơn. Vui lòng thử lại.");
+            savedCart.ClearIfVersion(identity.CustomerId,state.Version);
             HttpContext.Session.Remove(ItemsKey); HttpContext.Session.Remove(ReviewKey);
             HttpContext.Session.Remove("Mai.Cart.Draft");
             Write(LastOrderKey,new CompletedOrder(identity.CustomerId,input.RequestKey,id));

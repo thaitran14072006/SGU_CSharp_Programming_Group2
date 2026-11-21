@@ -17,6 +17,14 @@ try {
     Run-Logged 'customer-business' @('MocBakery/tests/CustomerAccounts/bin/Release/net10.0/MocBakery.CustomerAccountChecks.dll')
     $webAccounts='MocBakery/tests/WebAccounts/bin/Release/net10.0/MocBakery.WebAccountChecks.dll'
     Run-Logged 'customer-http' @($webAccounts)
+    $webCart='MocBakery/tests/WebCart/bin/Release/net10.0/MocBakery.WebCartChecks.dll'
+    Run-Logged 'web-cart-http' @($webCart)
+    # SQL cart checks resolve schema paths from the MocBakery working directory.
+    Push-Location (Join-Path $root 'MocBakery')
+    try {
+        Run-Logged 'web-cart-sql' @('tests/WebCart/bin/Release/net10.0/MocBakery.WebCartChecks.dll','--sql')
+    } finally { Pop-Location }
+    Run-Logged 'public-catalog-web-orders' @('MocBakery/tests/PublicCatalog/bin/Release/net10.0/MocBakery.PublicCatalogChecks.dll')
     if($IncludeCustomerSql){
         Run-Logged 'customer-sql' @($webAccounts,'--sql')
     } else {
