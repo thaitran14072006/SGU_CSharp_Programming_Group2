@@ -51,3 +51,13 @@
  .admin-sidebar nav{grid-template-columns:minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){.admin-sidebar nav a{transition:none}}
+
+.admin-icon{display:inline-block;width:18px;height:18px;min-width:18px;flex-shrink:0;vertical-align:middle;pointer-events:none}
+.admin-sidebar nav a{display:flex;align-items:center;gap:11px}
+.admin-sidebar nav .admin-icon{color:#bca785}
+.admin-sidebar nav a[aria-current=page] .admin-icon{color:#78572f}
+.sidebar-bottom a,.sidebar-bottom button{display:inline-flex;align-items:center;gap:9px}
+.sidebar-bottom .admin-icon{width:16px;height:16px;min-width:16px}
+.btn .admin-icon{width:17px;height:17px;min-width:17px}
+.btn.small .admin-icon{width:15px;height:15px;min-width:15px}
+.panel-heading a:has(.admin-icon){display:inline-flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
