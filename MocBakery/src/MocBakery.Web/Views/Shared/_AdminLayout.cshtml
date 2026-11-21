@@ -23,4 +23,8 @@
 @if(new[]{"Products","Categories","Inventory","Orders","Customers","Staff","Accounts","Invoices","Reports","Suppliers","Materials","Receipts","Stock"}.Contains(ViewContext.RouteData.Values["action"]?.ToString())){<p><a href="/admin">← Về tổng quan</a></p>}
 @if(TempData["AdminSuccess"] is string success){<p class="notice success" role="status">@success</p>}
 @if(TempData["AdminError"] is string error){<p class="notice error" role="alert">@error</p>}
-@RenderBody()</main><footer class="admin-footer">Mộc Bakery · Khu vực dành cho nhân viên được phân quyền</footer></div></div><script src="~/js/admin-shell.js" asp-append-version="true" defer></script></body></html>
+@RenderBody()</main><footer class="admin-footer">Mộc Bakery · Khu vực dành cho nhân viên được phân quyền</footer></div></div>
+<dialog class="admin-confirm" id="admin-confirm" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+<span class="confirm-emblem" admin-icon="shield" aria-hidden="true"></span><h2 id="confirm-title"></h2><p id="confirm-message"></p>
+<div class="confirm-actions"><button class="btn" type="button" data-confirm-cancel autofocus>Quay lại</button><button class="btn primary" type="button" data-confirm-accept>Xác nhận</button></div></dialog>
+<script src="~/js/admin-shell.js" asp-append-version="true" defer></script><script src="~/js/admin-actions.js" asp-append-version="true" defer></script></body></html>

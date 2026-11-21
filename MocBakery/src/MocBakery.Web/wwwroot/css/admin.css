@@ -64,3 +64,19 @@
 .btn .admin-icon{width:17px;height:17px;min-width:17px}
 .btn.small .admin-icon{width:15px;height:15px;min-width:15px}
 .panel-heading a:has(.admin-icon){display:inline-flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
+
+.admin-confirm{width:min(460px,calc(100% - 32px));max-height:calc(100dvh - 40px);overflow:auto;padding:30px;border:1px solid #dfceb3;border-radius:16px;background:#fffdf8;color:#302b26;box-shadow:0 24px 80px #221a1640}
+.admin-confirm::backdrop{background:#251d1899}
+.confirm-emblem{display:grid;place-items:center;width:44px;height:44px;border:1px solid #e2d0b3;background:#f6edde;color:#8c6639;border-radius:12px;margin-bottom:20px}
+.confirm-emblem .admin-icon{width:24px;height:24px}
+.admin-confirm h2{font-size:21px;line-height:1.35;margin-bottom:12px}
+.admin-confirm p{font-size:14px;color:#746858;overflow-wrap:anywhere;margin-bottom:26px;white-space:pre-line}
+.confirm-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.confirm-actions .btn{min-height:42px;padding:10px 18px}
+.confirm-actions .btn.danger{background:#9b4637;color:#fff;border-color:#9b4637}
+.confirm-actions .btn.danger:hover{background:#7e3529}
+.btn.is-submitting::after,.admin-logout.is-submitting::after{content:"";width:14px;height:14px;flex-shrink:0;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:admin-spin .7s linear infinite}
+.is-submitting .admin-icon{display:none}
+@keyframes admin-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.btn.is-submitting::after,.admin-logout.is-submitting::after{animation:none}}
+@media(max-width:520px){.admin-confirm{padding:24px}.confirm-actions .btn{flex:1}}

@@ -78,7 +78,7 @@ const fs=require('fs'),path=require('path');
   assert((await admin.locator('main').innerText()).includes('navigation@example.com'),'Wrong order contact');
   await admin.getByRole('button',{name:'Tiếp nhận và chuẩn bị'}).click();await at(admin,route);
   await user.goto(base+orderRoute);assert((await user.locator('.cart-summary').innerText()).includes('Đang chuẩn bị'),'Customer status not preparing');
-  await admin.getByRole('button',{name:'Giao đơn và lập hóa đơn'}).click();await admin.waitForURL(/\/admin\/hoa-don\/\d+$/);
+  await admin.getByRole('button',{name:'Giao đơn và lập hóa đơn'}).click();await admin.getByRole('dialog').getByRole('button',{name:'Xác nhận giao đơn',exact:true}).click();await admin.waitForURL(/\/admin\/hoa-don\/\d+$/);
   await click(admin,'← Hóa đơn','/admin/hoa-don');await admin.goBack();assert(new URL(admin.url()).pathname.startsWith('/admin/hoa-don/'),'Browser Back did not return invoice');
   await user.reload();assert((await user.locator('.cart-summary').innerText()).includes('Đã giao'),'Customer status not delivered');
   await admin.goto(base+route);assert(await admin.getByRole('button',{name:'Giao đơn và lập hóa đơn'}).count()===0,'Delivered order can deliver twice');
