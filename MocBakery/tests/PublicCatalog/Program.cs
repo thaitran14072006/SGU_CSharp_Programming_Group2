@@ -154,6 +154,7 @@ try
     });
     // Apply Thái's existing account migration only to this isolated test database.
     Sql(File.ReadAllText(Path.Combine(root,"database/schema/04_CustomerWebAccounts.sql")));
+    Sql(File.ReadAllText(Path.Combine(root,"database/schema/07_CustomerCart.sql")));
     using var customer=new HttpClient(new HttpClientHandler{AllowAutoRedirect=false,CookieContainer=new CookieContainer()}){BaseAddress=new Uri(address)};
     async Task<HttpResponseMessage> CustomerPost(string route,Dictionary<string,string> data)
     {

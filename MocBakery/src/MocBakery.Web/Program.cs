@@ -34,6 +34,8 @@ public static class Program
         builder.Services.AddScoped<IPublicCatalogRepository, PublicCatalogRepository>();
         builder.Services.AddScoped<PublicCatalogService>();
         builder.Services.AddScoped<MocBakery.BLL.Services.Sales.CartService>();
+        builder.Services.AddScoped<MocBakery.Models.WebCart.ICustomerCartRepository,MocBakery.DAL.Repositories.Sales.CustomerCartRepository>();
+        builder.Services.AddScoped<MocBakery.BLL.Services.Sales.CustomerCartService>();
         builder.Services.AddScoped<MocBakery.Models.WebOrders.IWebOrderRepository, MocBakery.DAL.Repositories.Orders.WebOrderRepository>();
         builder.Services.AddScoped<MocBakery.BLL.Services.Orders.WebOrderService>();
         builder.Services.AddScoped<MocBakery.Models.WebCart.IWebOrderSubmission>(sp => sp.GetRequiredService<MocBakery.BLL.Services.Orders.WebOrderService>());

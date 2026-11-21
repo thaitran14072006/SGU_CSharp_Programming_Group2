@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace MocBakery.Web.Models;
 
 public sealed record CartViewModel(CartQuote Quote, bool OrderServiceReady = false, Guid RequestKey = default);
-public sealed record CartReview(int CustomerId, Guid RequestKey, CartQuote Quote);
+public sealed record CartReview(int CustomerId, Guid RequestKey, CartQuote Quote, long CartVersion = 0);
 public sealed record CheckoutDraft(DateTime? Pickup, string? Note, string? FullName=null, string? Phone=null, string? Email=null);
 
 public class CheckoutForm
