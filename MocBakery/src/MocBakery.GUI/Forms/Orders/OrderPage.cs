@@ -42,7 +42,14 @@ internal sealed class OrderPage:UserControl
   top.Controls.Add(Ui.Button("Thêm bánh",(_,_)=>{if(products.CurrentRow?.DataBoundItem is not SalesProduct p){MessageBox.Show(this,"Chọn bánh.");return;}var old=chosen.GetValueOrDefault(p.Id);chosen[p.Id]=new(p.Id,p.Name,(old?.Quantity??0)+(int)quantity.Value,p.Price);ReloadLines();}));
   top.Controls.Add(Ui.Button("Xóa dòng",(_,_)=>{if(lines.CurrentRow?.DataBoundItem is OrderLine p)chosen.Remove(p.ProductId);ReloadLines();}));
   top.Controls.Add(Ui.Button("Tạo đơn",async(_,_)=>await Run(async()=>{int cid=customerId??throw new BusinessException("Chọn khách hàng.");await Task.Run(()=>services.Orders.Create(session,cid,pickup.Value,deposit.Value,BuildNote(),chosen.Values.ToArray()));Reset();await LoadOrders();}),true));
-  top.Controls.Add(Ui.Button("Sửa đơn",async(_,_)=>await Run(async()=>{int cid=customerId??throw new BusinessException("Chọn khách hàng.");if(editId==0)throw new BusinessException("Chọn đơn trước.");await Task.Run(()=>services.Orders.Update(session,editId,cid,pickup.Value,deposit.Value,BuildNote(),chosen.Values.ToArray()));Reset();await LoadOrders();})));
+  top.Controls.Add(Ui.Button("Sửa đơn",async(_,_)=>await Run(async()=>{
+   int cid=customerId??throw new BusinessException("Chọn khách hàng.");
+   int savedId=editId;if(savedId==0)throw new BusinessException("Chọn đơn trước.");
+   var savedPickup=pickup.Value;var savedDeposit=deposit.Value;var savedNote=BuildNote();var savedLines=chosen.Values.ToArray();
+   await Task.Run(()=>services.Orders.Update(session,savedId,cid,savedPickup,savedDeposit,savedNote,savedLines));
+   await LoadOrders(savedId);
+   MessageBox.Show(this,$"Đã lưu thay đổi đơn #{savedId}.","Cập nhật thành công",MessageBoxButtons.OK,MessageBoxIcon.Information);
+  })));
   top.Controls.Add(Ui.Button("Tiếp nhận / chuẩn bị",async(_,_)=>await Run(async()=>{int id=Selected();await Task.Run(()=>services.Orders.Prepare(session,id));await LoadOrders();})));
   top.Controls.Add(Ui.Button("Giao đơn",async(_,_)=>await Run(async()=>{int id=Selected();if(!Ui.Confirm(this,"Giao đơn và trừ tồn kho?"))return;int invoice=await Task.Run(()=>services.Orders.Deliver(session,id));MessageBox.Show(this,$"Đã giao, hóa đơn #{invoice}.");await LoadOrders();})));
   top.Controls.Add(reason);top.Controls.Add(Ui.Button("Hủy đơn",async(_,_)=>await Run(async()=>{int id=Selected();if(!Ui.Confirm(this,"Hủy đơn này?"))return;await Task.Run(()=>services.Orders.Cancel(session,id,reason.Text));await LoadOrders();})));
@@ -58,6 +65,6 @@ internal sealed class OrderPage:UserControl
   static string DisplayStatus(string s)=>s switch{"MoiTiepNhan"=>"Mới tiếp nhận","DangChuanBi"=>"Đang chuẩn bị","DaGiao"=>"Đã giao","DaHuy"=>"Đã hủy",_=>s};
   void Reset(){editId=0;customerId=null;customer.Text="Chưa chọn khách";chosen.Clear();note.Clear();cakeText.Clear();phone.Clear();deposit.Value=0;ReloadLines();pickup.Value=DateTime.Now.AddDays(1);statusLabel.Text="Trạng thái: Mới tiếp nhận";}
   async Task Run(Func<Task> f)=>await Ui.Run(this,errors,new(),f);
-  async Task LoadOrders()=>await Run(async()=>{var entries=(await Task.Run(()=>services.Orders.List(session))).ToList();orders.DataSource=entries;if(focusOrderId>0){foreach(DataGridViewRow row in orders.Rows)if(row.DataBoundItem is OrderSummary entry&&entry.Id==focusOrderId){row.Selected=true;orders.CurrentCell=row.Cells[0];break;}}});
+  async Task LoadOrders(int selectedId=0)=>await Run(async()=>{var entries=(await Task.Run(()=>services.Orders.List(session))).ToList();orders.DataSource=entries;int targetId=selectedId>0?selectedId:focusOrderId;if(targetId>0){foreach(DataGridViewRow row in orders.Rows)if(row.DataBoundItem is OrderSummary entry&&entry.Id==targetId){row.Selected=true;orders.CurrentCell=row.Cells[0];break;}}});
  }
 }

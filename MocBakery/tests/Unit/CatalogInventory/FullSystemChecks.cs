@@ -61,6 +61,14 @@ internal static class FullSystemChecks
             checks.Test("Group KT06 sale allocates 4 + 2, history stores 150000",()=>{invoice=sales.Sell(cashier!,customer,[new(product,6,25000)]);var lines=sales.Invoice(cashier!,invoice);Checks.Assert(lines.Select(x=>x.Quantity).SequenceEqual(new[]{4,2})&&customers.History(cashier!,customer).Single().TongTien==150000&&Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh")==28);});
             checks.Test("Group sale rejects insufficient stock and stale price without invoice",()=>{long count=Value("SELECT COUNT(*) FROM dbo.HoaDon");Checks.Reject(()=>sales.Sell(cashier!,customer,[new(product,100,25000)]));Checks.Reject(()=>sales.Sell(cashier!,customer,[new(product,1,1)]));Checks.Assert(Value("SELECT COUNT(*) FROM dbo.HoaDon")==count&&Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh")==28);});
             checks.Test("Group KT10 create order 200000 deposit 50000 does not reserve stock",()=>{order=NewOrder(8,50000);var d=orders.List(owner).Single();Checks.Assert(d.Total==200000&&d.Deposit==50000&&d.Due==150000&&d.Status=="MoiTiepNhan"&&Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh")==28);});
+            checks.Test("Group edit pending order persists details without invoice or stock changes",()=>{
+                var pickup=DateTime.Now.AddDays(2);
+                orders.Update(cashier!,order,customer,pickup,50000,"Đã sửa lịch nhận",[new(product,"Bánh thử",7,25000)]);
+                var saved=orders.List(owner).Single(x=>x.Id==order);
+                Checks.Assert(saved.Note=="Đã sửa lịch nhận"&&Math.Abs((saved.Pickup-pickup).TotalSeconds)<1&&saved.Total==175000&&orders.Lines(owner,order).Single().Quantity==7);
+                Checks.Assert(Value("SELECT COUNT(*) FROM dbo.HoaDon")==1&&Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh")==28);
+                orders.Update(cashier!,order,customer,pickup,50000,"Đã sửa lịch nhận",[new(product,"Bánh thử",8,25000)]);
+            });
             checks.Test("Group KT11 deliver creates one invoice, deducts deposit once",()=>{orders.Prepare(cashier!,order);int h=orders.Deliver(cashier!,order);var row=sales.Invoices(owner).Single(x=>x.MaHoaDon==h);Checks.Assert(row.TongTien==200000&&row.TienCocTru==50000&&row.SoTienThu==150000&&Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh")==20&&orders.List(owner).Single(x=>x.Id==order).Status=="DaGiao");});
             checks.Test("Group KT12 duplicate delivery cannot duplicate invoice or stock",()=>{Checks.Reject(()=>orders.Deliver(owner,order));Checks.Assert(Value("SELECT COUNT(*) FROM dbo.HoaDon")==2&&Value("SELECT SUM(SoLuongCon) FROM dbo.LoBanh")==20);});
             checks.Test("Group KT13 delivered order cannot edit or cancel",()=>{Checks.Reject(()=>orders.Cancel(owner,order,"Sai"));Checks.Reject(()=>orders.Update(owner,order,customer,DateTime.Now.AddDays(2),0,null,[new(product,"X",1,25000)]));});
