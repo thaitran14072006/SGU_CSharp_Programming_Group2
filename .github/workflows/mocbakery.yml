@@ -60,6 +60,20 @@ jobs:
       - name: Test Web cart and confirmation over HTTP
         run: dotnet MocBakery/tests/WebCart/bin/Release/net10.0/MocBakery.WebCartChecks.dll
 
+      - name: Start isolated SQL test instance
+        run: |
+          sqllocaldb start MSSQLLocalDB
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot start the SQL test instance.' }
+
+      - name: Test shared cart SQL transactions
+        working-directory: MocBakery
+        env:
+          MOCBAKERY_CART_TEST_SERVER: '(localdb)\MSSQLLocalDB'
+        run: dotnet tests/WebCart/bin/Release/net10.0/MocBakery.WebCartChecks.dll --sql
+
+      - name: Test public catalog and Web order integration
+        run: dotnet MocBakery/tests/PublicCatalog/bin/Release/net10.0/MocBakery.PublicCatalogChecks.dll
+
   customer-sql:
     name: Customer Web and desktop SQL integration
     runs-on: ubuntu-latest

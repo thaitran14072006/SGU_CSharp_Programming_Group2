@@ -1,5 +1,20 @@
 # Mai — Giỏ hàng và xác nhận yêu cầu mua Web
 
+## Cập nhật kiểm tra chung ngày 21/11/2026
+
+Workflow `.github/workflows/mocbakery.yml` bổ sung kiểm thử giỏ SQL và luồng xem bánh,
+đặt đơn Web. Các bộ kiểm thử SQL tạo CSDL riêng, không dùng dữ liệu nhóm.
+Nếu build hoặc kiểm thử thất bại, bước phát hành sẽ bị chặn.
+
+`scripts/Validate-Project.ps1` chạy các bộ kiểm thử, lưu log riêng và dừng khi có lỗi.
+Máy chạy cần Windows, .NET 10 và môi trường SQL phù hợp với từng bộ kiểm thử.
+
+Kết quả kiểm tra trên máy ngày 21/11: restore thành công; build Release toàn Solution
+đạt, 0 cảnh báo và 0 lỗi. WebCart đạt 23 kiểm tra nghiệp vụ/HTTP và 13 kiểm tra SQL
+trên CSDL tạm riêng. Script PowerShell không có lỗi cú pháp.
+Bộ PublicCatalog chưa hoàn tất do thiếu môi trường SQL kiểm thử cần thiết,
+không ghi nhận bộ này đạt. Chưa xác nhận toàn bộ script kiểm tra hoặc lượt CI có các bước bổ sung.
+
 ## Phạm vi và luồng
 
 Khách xem chi tiết bánh → thêm số lượng vào giỏ → sửa/xóa → đăng nhập → xem lại giá → xác nhận yêu cầu.
